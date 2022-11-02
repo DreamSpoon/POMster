@@ -22,7 +22,7 @@ bl_info = {
     "author": "Dave",
     "version": (0, 0, 1),
     "blender": (2, 80, 0),
-    "location": "Material Node Editor -> Tools -> POMster",
+    "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
     "wiki_url": "",
 }
@@ -32,6 +32,7 @@ import math
 import bpy
 
 from .heightmap_nodes import POMSTER_CreateHeightmapParallaxTexture
+from .uv_vu_map import POMSTER_CreateVUMap
 
 class POMSTER_PT_Main(bpy.types.Panel):
     bl_idname = "POMSTER_PT_Main"
@@ -45,15 +46,30 @@ class POMSTER_PT_Main(bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="Create")
-        box.operator("pomster.create_heightmap_parallax_texture")
+        box.label(text="Create POM Nodes")
+        box.operator("pomster.create_pom_uv")
         box.prop(scn, "POMSTER_NodesOverrideCreate")
         box.prop(scn, "POMSTER_UV_InputIndex")
         box.prop(scn, "POMSTER_HeightOutputIndex")
+        box.prop(scn, "POMSTER_NumSamples")
+
+class POMSTER_PT_FlipUV(bpy.types.Panel):
+    bl_label = "Flip UV"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Create VU Map from UV Map")
+        box.operator("pomster.create_vu_from_uv")
 
 classes = [
     POMSTER_PT_Main,
     POMSTER_CreateHeightmapParallaxTexture,
+    POMSTER_PT_FlipUV,
+    POMSTER_CreateVUMap,
 ]
 
 def register():
@@ -66,6 +82,11 @@ def unregister():
         bpy.utils.unregister_class(cls)
     bts = bpy.types.Scene
 
+    del bts.POMSTER_NumSamples
+    del bts.POMSTER_HeightOutputIndex
+    del bts.POMSTER_UV_InputIndex
+    del bts.POMSTER_NodesOverrideCreate
+
 def register_props():
     bts = bpy.types.Scene
     bp = bpy.props
@@ -77,6 +98,8 @@ def register_props():
         "input in POM node setup", default=1, min=1)
     bts.POMSTER_HeightOutputIndex = bp.IntProperty(name="Height Output Number", description="Output to use as final " +
         "height output of POM node setup", default=1, min=1)
+    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of samples (after jitter) to " +
+        "calculate POM", default=1, min=0)
 
 if __name__ == "__main__":
     register()
