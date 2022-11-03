@@ -31,7 +31,7 @@ import math
 
 import bpy
 
-from .heightmap_nodes import POMSTER_CreateHeightmapParallaxTexture
+from .heightmap_nodes import POMSTER_AddPOMsterToSelectedNode
 from .uv_vu_map import POMSTER_CreateVUMap
 
 class POMSTER_PT_Main(bpy.types.Panel):
@@ -67,7 +67,7 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 
 classes = [
     POMSTER_PT_Main,
-    POMSTER_CreateHeightmapParallaxTexture,
+    POMSTER_AddPOMsterToSelectedNode,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
 ]

@@ -20,32 +20,65 @@ import bpy
 
 from .node_other import ensure_node_groups
 
-POM_UV_MAT_NG_NAME = "POM_UV.POMSTER.MatNG"
+# material (shader) node group names
+POMSTER_UV_MAT_NG_NAME = "POMsterUV.POMSTER.MatNG"
 
-JITTER3_MAT_NG_NAME = "Jitter3.POMSTER.MatNG"
-JITTER_WEIGHT3_MAT_NG_NAME = "JitterWeight3.POMSTER.MatNG"
+BEGIN_JITTER3_MAT_NG_NAME = "BeginJitter3.POMSTER.MatNG"
+WEIGHT_JITTER3_MAT_NG_NAME = "WeightJitter3.POMSTER.MatNG"
 
-SAMPLE_WEIGHT1_MAT_NG_NAME = "SampleWeight1.POMSTER.MatNG"
+DENOISE1_MAT_NG_NAME = "Denoise1.POMSTER.MatNG"
+
+# node names
+BEGIN_JITTER_HEIGHTMAP_000_NODENAME = "HeightmapJitter.000"
+BEGIN_JITTER_HEIGHTMAP_001_NODENAME = "HeightmapJitter.001"
+BEGIN_JITTER_HEIGHTMAP_002_NODENAME = "HeightmapJitter.002"
+
+JITTER_POM_GROUP_000_GRP_NODENAME = "JitterPOM_Group.000"
+JITTER_POM_GROUP_001_GRP_NODENAME = "JitterPOM_Group.001"
+JITTER_POM_GROUP_002_GRP_NODENAME = "JitterPOM_Group.002"
+
+BEGIN_JITTER_GRP_NODENAME = "JitterGroup"
+JITTER_POM_GRP_NODENAME = "JitterPOM_CombineGroup"
+
+HEIGHTMAP_ORIGINAL_NODENAME = "Heightmap.Original"
+
+WEIGHT_JITTER_GRP_NODENAME = "JitterWeightGroup"
+
+HEIGHTMAP_DENOISE_000_NODENAME = "HeightmapDenoise.000"
+
+DENOISE_WEIGHT_000_GRP_NODENAME = "DenoiseWeight1Group"
+
+DENOISE_POM_000_GRP_NODENAME = "DenoisePOM1Group"
+
+U_TANGENT_NODENAME = "U_Tangent"
+V_TANGENT_NODENAME = "V_Tangent"
+#PREWEIGHT_BIAS_NODENAME = "PreWeightBias"
+ASPECT_RATIO_NODENAME = "AspectRatio"
+TEXTURE_COORD_NODENAME = "Texture Coordinate.UV"
+
+WEIGHTED_HEIGHT_OF_JITTER_NODENAME = "WHJitter.Math"
+
+WEIGHTED_HEIGHT_OF_DENOISE_000_NODENAME = "WHDenoise000.Math"
 
 def create_prereq_util_node_group(node_group_name, node_tree_type):
     if node_tree_type == 'ShaderNodeTree':
-        if node_group_name == POM_UV_MAT_NG_NAME:
-            return create_mat_ng_parallax_uv()
-        elif node_group_name == JITTER3_MAT_NG_NAME:
-            return create_mat_ng_jitter3()
-        elif node_group_name == JITTER_WEIGHT3_MAT_NG_NAME:
-            return create_mat_ng_jitter_weight3()
-        elif node_group_name == SAMPLE_WEIGHT1_MAT_NG_NAME:
-            return create_mat_ng_sample_weight1()
+        if node_group_name == POMSTER_UV_MAT_NG_NAME:
+            return create_mat_ng_pomster()
+        elif node_group_name == BEGIN_JITTER3_MAT_NG_NAME:
+            return create_mat_ng_begin_jitter3()
+        elif node_group_name == WEIGHT_JITTER3_MAT_NG_NAME:
+            return create_mat_ng_weight_jitter3()
+        elif node_group_name == DENOISE1_MAT_NG_NAME:
+            return create_mat_ng_denoise1()
 
     # error
     print("Unknown name passed to create_prereq_util_node_group: " + str(node_group_name))
     return None
 
-def create_mat_ng_parallax_uv():
+def create_mat_ng_pomster():
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=POM_UV_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=POMSTER_UV_MAT_NG_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
     new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
@@ -105,7 +138,7 @@ def create_mat_ng_parallax_uv():
     new_nodes["Vector Math.006"] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
-    node.location = (-620, -320)
+    node.location = (-580, -160)
     new_nodes["Geometry"] = node
 
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
@@ -118,7 +151,7 @@ def create_mat_ng_parallax_uv():
     new_nodes["Separate XYZ"] = node
 
     node = tree_nodes.new(type="NodeGroupInput")
-    node.location = (-920, -240)
+    node.location = (-580, 40)
     new_nodes["Group Input"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
@@ -155,10 +188,10 @@ def create_mat_ng_parallax_uv():
 
     return new_node_group
 
-def create_mat_ng_jitter3():
+def create_mat_ng_begin_jitter3():
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=JITTER3_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=BEGIN_JITTER3_MAT_NG_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Amount")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Bias")
@@ -207,17 +240,18 @@ def create_mat_ng_jitter3():
 
     return new_node_group
 
-def create_mat_ng_jitter_weight3():
+def create_mat_ng_weight_jitter3():
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=JITTER_WEIGHT3_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=WEIGHT_JITTER3_MAT_NG_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Next 1")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Prev 1")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Next 2")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Prev 2")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Next 3")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Jitter Prev 3")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="PreWeight Bias")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Weight Max Height")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Weight Min Height")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Jitter Weighted Height")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Total Jitter Weight")
     tree_nodes = new_node_group.nodes
@@ -225,166 +259,232 @@ def create_mat_ng_jitter_weight3():
     tree_nodes.clear()
 
     # create nodes
+    # line 1
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-540, 0)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.008"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 0)
-    node.operation = "ABSOLUTE"
-    node.use_clamp = False
-    new_nodes["Math.013"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-360, 0)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.0
-    new_nodes["Math.009"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 0)
+    node.location = (-1520, 0)
     node.operation = "SUBTRACT"
-    node.use_clamp = False
-    new_nodes["Math.004"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (0, 0)
-    node.operation = "MULTIPLY_ADD"
-    node.use_clamp = False
-    new_nodes["Math.001"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-540, -180)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.010"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, -180)
-    node.operation = "ABSOLUTE"
     node.use_clamp = False
     new_nodes["Math.014"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-360, -180)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.0
-    new_nodes["Math.011"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, -180)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    new_nodes["Math.005"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-180, -180)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.002"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (180, -180)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.016"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (180, -340)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.015"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 180)
+    node.location = (-1340, 0)
     node.operation = "ABSOLUTE"
     node.use_clamp = False
     new_nodes["Math.012"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-540, 180)
+    node.location = (-1160, 0)
     node.operation = "ADD"
     node.use_clamp = False
-    new_nodes["Math.006"] = node
+    node.inputs[1].default_value = 1.0
+    new_nodes["Math.013"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 180)
+    node.location = (-980, 0)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.0
+    new_nodes["Math.015"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMapRange")
+    node.location = (-800, 0)
+    node.clamp = True
+    node.data_type = "FLOAT"
+    node.interpolation_type = "LINEAR"
+    node.inputs[3].default_value = 1.0
+    node.inputs[4].default_value = 0.0
+    new_nodes["Map Range"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-620, 0)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["Math.018"] = node
+
+    # line 2
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1520, -340)
     node.operation = "SUBTRACT"
     node.use_clamp = False
     new_nodes["Math.003"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-360, 180)
+    node.location = (-1340, -340)
+    node.operation = "ABSOLUTE"
+    node.use_clamp = False
+    new_nodes["Math.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1160, -340)
+    node.operation = "ADD"
+    node.use_clamp = False
+    node.inputs[1].default_value = 1.0
+    new_nodes["Math"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-980, -340)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.0
+    new_nodes["Math.002"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMapRange")
+    node.location = (-800, -340)
+    node.clamp = True
+    node.data_type = "FLOAT"
+    node.interpolation_type = "LINEAR"
+    node.inputs[3].default_value = 1.0
+    node.inputs[4].default_value = 0.0
+    new_nodes["Map Range.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-620, -340)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["Math.020"] = node
+
+    # line 3
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1520, -680)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    new_nodes["Math.008"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1340, -680)
+    node.operation = "ABSOLUTE"
+    node.use_clamp = False
+    new_nodes["Math.006"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1160, -680)
+    node.operation = "ADD"
+    node.use_clamp = False
+    node.inputs[1].default_value = 1.0
+    new_nodes["Math.005"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-980, -680)
     node.operation = "DIVIDE"
     node.use_clamp = False
     node.inputs[0].default_value = 1.0
     new_nodes["Math.007"] = node
 
+    node = tree_nodes.new(type="ShaderNodeMapRange")
+    node.location = (-800, -680)
+    node.clamp = True
+    node.data_type = "FLOAT"
+    node.interpolation_type = "LINEAR"
+    node.inputs[3].default_value = 1.0
+    node.inputs[4].default_value = 0.0
+    new_nodes["Map Range.002"] = node
+
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (180, 180)
+    node.location = (-620, -680)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["Math.022"] = node
+
+    # end multiply adds
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-390, 0)
     node.operation = "MULTIPLY_ADD"
     node.use_clamp = False
-    new_nodes["Math"] = node
+    new_nodes["Math.016"] = node
 
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-390, -340)
+    node.operation = "MULTIPLY_ADD"
+    node.use_clamp = False
+    new_nodes["Math.004"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-390, -680)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["Math.009"] = node
+
+    # end adds
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-180, 0)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["Math.010"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-180, -340)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["Math.011"] = node
+
+    # io
     node = tree_nodes.new(type="NodeGroupInput")
-    node.location = (-1120, 0)
+    node.location = (-1780, 0)
     new_nodes["Group Input"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
-    node.location = (380, 0)
+    node.location = (0, 0)
     new_nodes["Group Output"] = node
 
     # create links
     tree_links = new_node_group.links
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.003"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.004"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.005"].inputs[0])
-    tree_links.new(new_nodes["Math.016"].outputs[0], new_nodes["Group Output"].inputs[1])
-    tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.007"].inputs[1])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.009"].inputs[1])
-    tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.008"].inputs[0])
-    tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math.011"].inputs[1])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.010"].inputs[0])
-    tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.012"].inputs[0])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.006"].inputs[0])
-    tree_links.new(new_nodes["Math.004"].outputs[0], new_nodes["Math.013"].inputs[0])
-    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.014"].inputs[0])
-    tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Math.016"].inputs[1])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.015"].inputs[1])
-    tree_links.new(new_nodes["Math.007"].outputs[0], new_nodes["Math.016"].inputs[0])
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.015"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.006"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.008"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.010"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.003"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.004"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.005"].inputs[1])
-    tree_links.new(new_nodes["Math.007"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math"].inputs[1])
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.001"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.001"].inputs[1])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.002"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.002"].inputs[1])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.001"].inputs[2])
-    tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Math"].inputs[2])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Group Output"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.014"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.003"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.008"].inputs[0])
+    tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Group Output"].inputs[1])
+    tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.015"].inputs[1])
+    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.002"].inputs[1])
+    tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Math"].inputs[0])
+    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.007"].inputs[1])
+    tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.005"].inputs[0])
+    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.012"].inputs[0])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.013"].inputs[0])
+    tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.001"].inputs[0])
+    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.006"].inputs[0])
+    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.010"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.014"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.003"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.008"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.016"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.004"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.009"].inputs[1])
+    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.004"].inputs[2])
+    tree_links.new(new_nodes["Math.004"].outputs[0], new_nodes["Math.016"].inputs[2])
+    tree_links.new(new_nodes["Math.016"].outputs[0], new_nodes["Group Output"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Map Range"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Map Range"].inputs[2])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Map Range"].inputs[0])
+    tree_links.new(new_nodes["Map Range"].outputs[0], new_nodes["Math.018"].inputs[0])
+    tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Math.018"].inputs[1])
+    tree_links.new(new_nodes["Math.018"].outputs[0], new_nodes["Math.016"].inputs[0])
+    tree_links.new(new_nodes["Math.018"].outputs[0], new_nodes["Math.010"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Map Range.001"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Map Range.001"].inputs[2])
+    tree_links.new(new_nodes["Map Range.001"].outputs[0], new_nodes["Math.020"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Map Range.001"].inputs[0])
+    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.020"].inputs[1])
+    tree_links.new(new_nodes["Math.020"].outputs[0], new_nodes["Math.004"].inputs[0])
+    tree_links.new(new_nodes["Math.020"].outputs[0], new_nodes["Math.011"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Map Range.002"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Map Range.002"].inputs[2])
+    tree_links.new(new_nodes["Map Range.002"].outputs[0], new_nodes["Math.022"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Map Range.002"].inputs[0])
+    tree_links.new(new_nodes["Math.007"].outputs[0], new_nodes["Math.022"].inputs[1])
+    tree_links.new(new_nodes["Math.022"].outputs[0], new_nodes["Math.011"].inputs[1])
+    tree_links.new(new_nodes["Math.022"].outputs[0], new_nodes["Math.009"].inputs[0])
 
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
 
     return new_node_group
 
-def create_mat_ng_sample_weight1():
+def create_mat_ng_denoise1():
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=SAMPLE_WEIGHT1_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=DENOISE1_MAT_NG_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Next 1")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Prev 1")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="PreWeight Bias")
+#    new_node_group.inputs.new(type='NodeSocketFloat', name="PreWeight Bias")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Sample Weighted Height 1")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Total Sample Weight")
     tree_nodes = new_node_group.nodes
@@ -428,7 +528,7 @@ def create_mat_ng_sample_weight1():
     new_nodes["Group Input"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
-    node.location = (640, 0)
+    node.location = (640, 40)
     new_nodes["Group Output"] = node
 
     # create links
@@ -449,16 +549,179 @@ def create_mat_ng_sample_weight1():
 
     return new_node_group
 
+def create_begin_jitter3_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, input_uv_link_socket,
+                               user_input_index, user_output_index):
+    # create nodes
+    node = duplicate_user_node(tree_nodes, user_heightmap_node)
+    node.location = (-740, 330)
+    new_nodes[BEGIN_JITTER_HEIGHTMAP_000_NODENAME] = node
+
+    running_y_offset = -user_heightmap_node.dimensions[1] / 2.5
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-740, 310+running_y_offset)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME] = node
+
+    node = duplicate_user_node(tree_nodes, user_heightmap_node)
+    node.location = (-740, 80+running_y_offset)
+    new_nodes[BEGIN_JITTER_HEIGHTMAP_001_NODENAME] = node
+
+    running_y_offset = running_y_offset - user_heightmap_node.dimensions[1] / 2.5
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-740, 60+running_y_offset)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME] = node
+
+    node = duplicate_user_node(tree_nodes, user_heightmap_node)
+    node.location = (-740, -170+running_y_offset)
+    new_nodes[BEGIN_JITTER_HEIGHTMAP_002_NODENAME] = node
+
+    running_y_offset = running_y_offset - user_heightmap_node.dimensions[1] / 2.5
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-740, -190+running_y_offset)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-740, -420+running_y_offset)
+    node.node_tree = bpy.data.node_groups.get(BEGIN_JITTER3_MAT_NG_NAME)
+    node.inputs[1].default_value = 0.1
+    node.inputs[2].default_value = 0.0
+    new_nodes[BEGIN_JITTER_GRP_NODENAME] = node
+
+    node = user_heightmap_node
+    node.location = (-740, -620+running_y_offset)
+    new_nodes[HEIGHTMAP_ORIGINAL_NODENAME] = node
+
+    # create links
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[1], new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[2], new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[ASPECT_RATIO_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[ASPECT_RATIO_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[ASPECT_RATIO_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[1])
+    tree_links.new(input_uv_link_socket, new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[0])
+    tree_links.new(input_uv_link_socket, new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[0])
+    tree_links.new(input_uv_link_socket, new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[0])
+    tree_links.new(new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].outputs[0], new_nodes[BEGIN_JITTER_HEIGHTMAP_000_NODENAME].inputs[user_input_index])
+    tree_links.new(new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].outputs[0], new_nodes[BEGIN_JITTER_HEIGHTMAP_001_NODENAME].inputs[user_input_index])
+    tree_links.new(new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].outputs[0], new_nodes[BEGIN_JITTER_HEIGHTMAP_002_NODENAME].inputs[user_input_index])
+    tree_links.new(new_nodes[HEIGHTMAP_ORIGINAL_NODENAME].outputs[user_output_index], new_nodes[BEGIN_JITTER_GRP_NODENAME].inputs[0])
+#    tree_links.new(new_nodes[HEIGHTMAP_ORIGINAL_NODENAME].outputs[user_output_index], new_nodes[BEGIN_JITTER_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[U_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[U_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[U_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[V_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[4])
+    tree_links.new(new_nodes[V_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[4])
+    tree_links.new(new_nodes[V_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[4])
+    tree_links.new(new_nodes[TEXTURE_COORD_NODENAME].outputs[1], new_nodes[JITTER_POM_GROUP_000_GRP_NODENAME].inputs[5])
+    tree_links.new(new_nodes[TEXTURE_COORD_NODENAME].outputs[1], new_nodes[JITTER_POM_GROUP_001_GRP_NODENAME].inputs[5])
+    tree_links.new(new_nodes[TEXTURE_COORD_NODENAME].outputs[1], new_nodes[JITTER_POM_GROUP_002_GRP_NODENAME].inputs[5])
+
+def create_weight_jitter3_nodes_column(tree_nodes, tree_links, new_nodes, input_uv_link_socket, user_output_index):
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-460, -390)
+    node.node_tree = bpy.data.node_groups.get(WEIGHT_JITTER3_MAT_NG_NAME)
+    node.inputs[6].default_value = 1
+    node.inputs[7].default_value = -1
+    new_nodes[WEIGHT_JITTER_GRP_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-460, -220)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    new_nodes[WEIGHTED_HEIGHT_OF_JITTER_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-460, 0)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[JITTER_POM_GRP_NODENAME] = node
+
+    # create links
+    tree_links.new(new_nodes[BEGIN_JITTER_HEIGHTMAP_000_NODENAME].outputs[user_output_index], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[0])
+    tree_links.new(new_nodes[BEGIN_JITTER_HEIGHTMAP_001_NODENAME].outputs[user_output_index], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[BEGIN_JITTER_HEIGHTMAP_002_NODENAME].outputs[user_output_index], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[4])
+#    tree_links.new(new_nodes[PREWEIGHT_BIAS_NODENAME].outputs[0], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[6])
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[2], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[5])
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[1], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[BEGIN_JITTER_GRP_NODENAME].outputs[0], new_nodes[WEIGHT_JITTER_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[WEIGHT_JITTER_GRP_NODENAME].outputs[1], new_nodes[WEIGHTED_HEIGHT_OF_JITTER_NODENAME].inputs[1])
+    tree_links.new(new_nodes[WEIGHT_JITTER_GRP_NODENAME].outputs[0], new_nodes[WEIGHTED_HEIGHT_OF_JITTER_NODENAME].inputs[0])
+    tree_links.new(input_uv_link_socket, new_nodes[JITTER_POM_GRP_NODENAME].inputs[0])
+    tree_links.new(new_nodes[ASPECT_RATIO_NODENAME].outputs[0], new_nodes[JITTER_POM_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[U_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[V_TANGENT_NODENAME].outputs[0], new_nodes[JITTER_POM_GRP_NODENAME].inputs[4])
+    tree_links.new(new_nodes[WEIGHTED_HEIGHT_OF_JITTER_NODENAME].outputs[0], new_nodes[JITTER_POM_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[TEXTURE_COORD_NODENAME].outputs[1], new_nodes[JITTER_POM_GRP_NODENAME].inputs[5])
+
+def create_denoise1_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, input_uv_link_socket,
+                                 user_input_index, user_output_index):
+    # create nodes
+    node = duplicate_user_node(tree_nodes, user_heightmap_node)
+    node.location = (-280, -890)
+    new_nodes[HEIGHTMAP_DENOISE_000_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-280, -700)
+    node.node_tree = bpy.data.node_groups.get(DENOISE1_MAT_NG_NAME)
+    new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-280, -540)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["DenoiseMath.002"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-280, -380)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["DenoiseMath.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-280, -220)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    new_nodes[WEIGHTED_HEIGHT_OF_DENOISE_000_NODENAME] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (-280, 0)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[DENOISE_POM_000_GRP_NODENAME] = node
+
+    # create links
+    tree_links.new(new_nodes[JITTER_POM_GRP_NODENAME].outputs[0], new_nodes[HEIGHTMAP_DENOISE_000_NODENAME].inputs[user_input_index])
+    tree_links.new(new_nodes[HEIGHTMAP_DENOISE_000_NODENAME].outputs[user_output_index], new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME].inputs[0])
+#    tree_links.new(new_nodes[PREWEIGHT_BIAS_NODENAME].outputs[0], new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[WEIGHTED_HEIGHT_OF_JITTER_NODENAME].outputs[0], new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME].outputs[1], new_nodes["DenoiseMath.002"].inputs[1])
+    tree_links.new(new_nodes[WEIGHT_JITTER_GRP_NODENAME].outputs[1], new_nodes["DenoiseMath.002"].inputs[0])
+    tree_links.new(input_uv_link_socket, new_nodes[HEIGHTMAP_ORIGINAL_NODENAME].inputs[user_input_index])
+    tree_links.new(new_nodes[DENOISE_WEIGHT_000_GRP_NODENAME].outputs[0], new_nodes["DenoiseMath.001"].inputs[1])
+    tree_links.new(new_nodes[WEIGHT_JITTER_GRP_NODENAME].outputs[0], new_nodes["DenoiseMath.001"].inputs[0])
+    tree_links.new(new_nodes["DenoiseMath.001"].outputs[0], new_nodes[WEIGHTED_HEIGHT_OF_DENOISE_000_NODENAME].inputs[0])
+    tree_links.new(new_nodes["DenoiseMath.002"].outputs[0], new_nodes[WEIGHTED_HEIGHT_OF_DENOISE_000_NODENAME].inputs[1])
+    tree_links.new(input_uv_link_socket, new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[0])
+    tree_links.new(new_nodes[ASPECT_RATIO_NODENAME].outputs[0], new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[1])
+    tree_links.new(new_nodes[U_TANGENT_NODENAME].outputs[0], new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[3])
+    tree_links.new(new_nodes[V_TANGENT_NODENAME].outputs[0], new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[4])
+    tree_links.new(new_nodes[WEIGHTED_HEIGHT_OF_DENOISE_000_NODENAME].outputs[0], new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[2])
+    tree_links.new(new_nodes[TEXTURE_COORD_NODENAME].outputs[1], new_nodes[DENOISE_POM_000_GRP_NODENAME].inputs[5])
+
 def create_heightmap_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, user_output_index):
     # initialize variables
     new_nodes = {}
 
-    node_loc_offset = (user_heightmap_node.location[0] + 860, user_heightmap_node.location[1] - 500)
+    nodes_offset = (user_heightmap_node.location[0], user_heightmap_node.location[1])
 
     node = tree_nodes.new(type="ShaderNodeTexCoord")
-    node.location = (-1780, 60)
+    node.location = (-920, -440)
     node.from_instancer = False
-    new_nodes["Texture Coordinate.UV"] = node
+    new_nodes[TEXTURE_COORD_NODENAME] = node
     # use Texture Coordinate input node if no input UV coordinates are available
     if len(user_heightmap_node.inputs[user_input_index].links) < 1:
         input_uv_link_socket = node.outputs[2]
@@ -486,193 +749,50 @@ def create_heightmap_apply_nodes(tree_nodes, tree_links, user_heightmap_node, us
     # create nodes
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = "Aspect Ratio"
-    node.location = (-1780, 500)
+    node.location = (-920, 0)
     node.inputs[0].default_value = 1.0
     node.inputs[1].default_value = 1.0
     node.inputs[2].default_value = 1.0
-    new_nodes["Combine XYZ.001"] = node
+    new_nodes[ASPECT_RATIO_NODENAME] = node
 
-    node = tree_nodes.new(type="ShaderNodeValue")
-    node.label = "PreWeight Bias"
-    node.location = (-1780, 360)
-    node.outputs[0].default_value = 1.0
-    new_nodes["PreWeightBias"] = node
+#    node = tree_nodes.new(type="ShaderNodeValue")
+#    node.label = "PreWeight Bias"
+#    node.location = (-920, 140)
+#    node.outputs[0].default_value = 1.0
+#    new_nodes[PREWEIGHT_BIAS_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = "U Tangent"
-    node.location = (-1780, 260)
+    node.location = (-920, 240)
     node.direction_type = "UV_MAP"
-    new_nodes["UVTangent"] = node
+    new_nodes[U_TANGENT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = "V Tangent"
-    node.location = (-1780, 160)
+    node.location = (-920, 340)
     node.direction_type = "UV_MAP"
-    new_nodes["VUTangent"] = node
+    new_nodes[V_TANGENT_NODENAME] = node
 
+    create_begin_jitter3_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, input_uv_link_socket,
+                                     user_input_index, user_output_index)
+    create_weight_jitter3_nodes_column(tree_nodes, tree_links, new_nodes, input_uv_link_socket, user_output_index)
+    create_denoise1_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, input_uv_link_socket,
+                                 user_input_index, user_output_index)
+
+    # create final node, a duplicate that appears to be in the same place as the originally selected node
     node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.location = (-1600, 920-90)
-    new_nodes["HeightmapJitter.000"] = node
-
-    running_y_offset = -user_heightmap_node.dimensions[1] / 2.5
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1600, 900-90+running_y_offset)
-    node.node_tree = bpy.data.node_groups.get(POM_UV_MAT_NG_NAME)
-    new_nodes["JitterPOM_Group.000"] = node
-
-    node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.location = (-1600, 670-90+running_y_offset)
-    new_nodes["HeightmapJitter.001"] = node
-
-    running_y_offset = running_y_offset - user_heightmap_node.dimensions[1] / 2.5
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1600, 730-90-80+running_y_offset)
-    node.node_tree = bpy.data.node_groups.get(POM_UV_MAT_NG_NAME)
-    new_nodes["JitterPOM_Group.001"] = node
-
-    node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.location = (-1600, 500-90-80+running_y_offset)
-    new_nodes["HeightmapJitter.002"] = node
-
-    running_y_offset = running_y_offset - user_heightmap_node.dimensions[1] / 2.5
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1600, 560-90-160+running_y_offset)
-    node.node_tree = bpy.data.node_groups.get(POM_UV_MAT_NG_NAME)
-    new_nodes["JitterPOM_Group.002"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1600, 330-90-160+running_y_offset)
-    node.node_tree = bpy.data.node_groups.get(JITTER3_MAT_NG_NAME)
-    node.inputs[1].default_value = 0.01
-    node.inputs[2].default_value = 0.0
-    new_nodes["JitterGroup"] = node
-
-    node = user_heightmap_node
-    node.location = (-1600, 130-90-160+running_y_offset)
-    new_nodes["Heightmap.Original"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1320, 500)
-    node.node_tree = bpy.data.node_groups.get(POM_UV_MAT_NG_NAME)
-    new_nodes["JitterPOM_CombineGroup"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1320, 280)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    new_nodes["Math"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1320, 110)
-    node.node_tree = bpy.data.node_groups.get(JITTER_WEIGHT3_MAT_NG_NAME)
-    new_nodes["JitterWeightGroup"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1140, 500)
-    node.node_tree = bpy.data.node_groups.get(POM_UV_MAT_NG_NAME)
-    new_nodes["SamplePOM1Group"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1140, 280)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    new_nodes["Math.002"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1140, 120)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.001"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1140, -40)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.015"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-1140, -200)
-    node.node_tree = bpy.data.node_groups.get(SAMPLE_WEIGHT1_MAT_NG_NAME)
-    new_nodes["SampleWeight1Group"] = node
-
-    node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.location = (-1140, -390)
-    new_nodes["HeightmapSample.000"] = node
-
-    node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.location = (-860, 500)
+    node.location = (0, 0)
     new_nodes["Heightmap.Final"] = node
-    final_user_node = node
-
-    # create links
-    tree_links.new(input_uv_link_socket, new_nodes["JitterPOM_Group.000"].inputs[0])
-    tree_links.new(new_nodes["JitterGroup"].outputs[0], new_nodes["JitterPOM_Group.000"].inputs[2])
-    tree_links.new(new_nodes["JitterGroup"].outputs[1], new_nodes["JitterPOM_Group.001"].inputs[2])
-    tree_links.new(new_nodes["JitterGroup"].outputs[2], new_nodes["JitterPOM_Group.002"].inputs[2])
-    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["JitterPOM_Group.000"].inputs[1])
-    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["JitterPOM_Group.001"].inputs[1])
-    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["JitterPOM_Group.002"].inputs[1])
-    tree_links.new(input_uv_link_socket, new_nodes["JitterPOM_Group.001"].inputs[0])
-    tree_links.new(input_uv_link_socket, new_nodes["JitterPOM_Group.002"].inputs[0])
-    tree_links.new(new_nodes["JitterPOM_Group.000"].outputs[0], new_nodes["HeightmapJitter.000"].inputs[user_input_index])
-    tree_links.new(new_nodes["Heightmap.Original"].outputs[user_output_index], new_nodes["JitterGroup"].inputs[0])
-    tree_links.new(new_nodes["Heightmap.Original"].outputs[user_output_index], new_nodes["JitterGroup"].inputs[1])
-    tree_links.new(new_nodes["JitterPOM_Group.002"].outputs[0], new_nodes["HeightmapJitter.002"].inputs[user_input_index])
-    tree_links.new(new_nodes["JitterPOM_Group.001"].outputs[0], new_nodes["HeightmapJitter.001"].inputs[user_input_index])
-    tree_links.new(input_uv_link_socket, new_nodes["JitterPOM_CombineGroup"].inputs[0])
-    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["JitterPOM_CombineGroup"].inputs[1])
-    tree_links.new(input_uv_link_socket, new_nodes["SamplePOM1Group"].inputs[0])
-    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["SamplePOM1Group"].inputs[1])
-    tree_links.new(new_nodes["JitterPOM_CombineGroup"].outputs[0], new_nodes["HeightmapSample.000"].inputs[user_input_index])
-    tree_links.new(new_nodes["UVTangent"].outputs[0], new_nodes["JitterPOM_Group.000"].inputs[3])
-    tree_links.new(new_nodes["UVTangent"].outputs[0], new_nodes["JitterPOM_Group.001"].inputs[3])
-    tree_links.new(new_nodes["UVTangent"].outputs[0], new_nodes["JitterPOM_Group.002"].inputs[3])
-    tree_links.new(new_nodes["UVTangent"].outputs[0], new_nodes["JitterPOM_CombineGroup"].inputs[3])
-    tree_links.new(new_nodes["UVTangent"].outputs[0], new_nodes["SamplePOM1Group"].inputs[3])
-    tree_links.new(new_nodes["VUTangent"].outputs[0], new_nodes["JitterPOM_Group.000"].inputs[4])
-    tree_links.new(new_nodes["VUTangent"].outputs[0], new_nodes["JitterPOM_Group.001"].inputs[4])
-    tree_links.new(new_nodes["VUTangent"].outputs[0], new_nodes["JitterPOM_Group.002"].inputs[4])
-    tree_links.new(new_nodes["VUTangent"].outputs[0], new_nodes["JitterPOM_CombineGroup"].inputs[4])
-    tree_links.new(new_nodes["VUTangent"].outputs[0], new_nodes["SamplePOM1Group"].inputs[4])
-    tree_links.new(new_nodes["HeightmapJitter.000"].outputs[user_output_index], new_nodes["JitterWeightGroup"].inputs[0])
-    tree_links.new(new_nodes["HeightmapJitter.001"].outputs[user_output_index], new_nodes["JitterWeightGroup"].inputs[2])
-    tree_links.new(new_nodes["HeightmapJitter.002"].outputs[user_output_index], new_nodes["JitterWeightGroup"].inputs[4])
-    tree_links.new(new_nodes["PreWeightBias"].outputs[0], new_nodes["JitterWeightGroup"].inputs[6])
-    tree_links.new(new_nodes["SampleWeight1Group"].outputs[1], new_nodes["Math.015"].inputs[1])
-    tree_links.new(new_nodes["HeightmapSample.000"].outputs[user_output_index], new_nodes["SampleWeight1Group"].inputs[0])
-    tree_links.new(new_nodes["PreWeightBias"].outputs[0], new_nodes["SampleWeight1Group"].inputs[2])
-    tree_links.new(new_nodes["JitterGroup"].outputs[2], new_nodes["JitterWeightGroup"].inputs[5])
-    tree_links.new(new_nodes["JitterGroup"].outputs[1], new_nodes["JitterWeightGroup"].inputs[3])
-    tree_links.new(new_nodes["JitterGroup"].outputs[0], new_nodes["JitterWeightGroup"].inputs[1])
-    tree_links.new(new_nodes["JitterWeightGroup"].outputs[1], new_nodes["Math.015"].inputs[0])
-    tree_links.new(input_uv_link_socket, new_nodes["Heightmap.Original"].inputs[user_input_index])
-    tree_links.new(new_nodes["JitterWeightGroup"].outputs[1], new_nodes["Math"].inputs[1])
-    tree_links.new(new_nodes["JitterWeightGroup"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["JitterPOM_CombineGroup"].inputs[2])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["SampleWeight1Group"].inputs[1])
-    tree_links.new(new_nodes["SampleWeight1Group"].outputs[0], new_nodes["Math.001"].inputs[1])
-    tree_links.new(new_nodes["JitterWeightGroup"].outputs[0], new_nodes["Math.001"].inputs[0])
-    tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Math.002"].inputs[0])
-    tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Math.002"].inputs[1])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["SamplePOM1Group"].inputs[2])
-    tree_links.new(new_nodes["Texture Coordinate.UV"].outputs[1], new_nodes["JitterPOM_Group.000"].inputs[5])
-    tree_links.new(new_nodes["Texture Coordinate.UV"].outputs[1], new_nodes["JitterPOM_Group.001"].inputs[5])
-    tree_links.new(new_nodes["Texture Coordinate.UV"].outputs[1], new_nodes["JitterPOM_Group.002"].inputs[5])
-    tree_links.new(new_nodes["Texture Coordinate.UV"].outputs[1], new_nodes["JitterPOM_CombineGroup"].inputs[5])
-    tree_links.new(new_nodes["Texture Coordinate.UV"].outputs[1], new_nodes["SamplePOM1Group"].inputs[5])
 
     # fix output links to re-create original user node's output links, but use calculated height
-    relink_final_user_node(tree_links, final_user_node, new_nodes["SamplePOM1Group"].outputs[0], output_to_sockets,
-                           user_input_index)
+    relink_final_user_node(tree_links, new_nodes["Heightmap.Final"], new_nodes[DENOISE_POM_000_GRP_NODENAME].outputs[0],
+                           output_to_sockets, user_input_index)
 
     # deselect and offset all new nodes
     for n in new_nodes.values():
         n.select = False
-        n.location[0] = n.location[0] + node_loc_offset[0]
-        n.location[1] = n.location[1] + node_loc_offset[1]
+        n.location[0] = n.location[0] + nodes_offset[0]
+        n.location[1] = n.location[1] + nodes_offset[1]
 
     return new_nodes
 
@@ -702,21 +822,21 @@ def relink_final_user_node(tree_links, final_user_node, final_uv_input_socket, o
 
 def create_uv_vu_pom_node_setup(node_tree, override_create, user_heightmap_node, user_input_index, user_output_index):
     ensure_node_groups(override_create,
-                       [POM_UV_MAT_NG_NAME,
-                        JITTER3_MAT_NG_NAME,
-                        JITTER_WEIGHT3_MAT_NG_NAME,
-                        SAMPLE_WEIGHT1_MAT_NG_NAME,
+                       [POMSTER_UV_MAT_NG_NAME,
+                        BEGIN_JITTER3_MAT_NG_NAME,
+                        WEIGHT_JITTER3_MAT_NG_NAME,
+                        DENOISE1_MAT_NG_NAME,
                         ],
                        'ShaderNodeTree', create_prereq_util_node_group)
 
     create_heightmap_apply_nodes(node_tree.nodes, node_tree.links, user_heightmap_node, user_input_index,
                                  user_output_index)
 
-class POMSTER_CreateHeightmapParallaxTexture(bpy.types.Operator):
+class POMSTER_AddPOMsterToSelectedNode(bpy.types.Operator):
     bl_description = "Using selected node as a basis, add nodes to create a Parallax Occlusion Map (POM) effect to " \
         "the material. Selected node must have at least one vector input and at least one value output"
     bl_idname = "pomster.create_pom_uv"
-    bl_label = "UV POM"
+    bl_label = "POMster UV"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
