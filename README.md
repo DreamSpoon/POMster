@@ -13,21 +13,28 @@ Adjustable sample counts, and sharpen cycles are currently WIP. Only 3 and 1 imp
 
 ## Math Shortcuts (boring, but explains the nodes)
 POMster implements Parallax Occlusion Map (POM) textures by taking advantage of some math shortcuts:
-1) If the displacement height at the UV coordinates before applying POM match the height at the UV coordinates after applying POM, then the amount of error (visual warping) is zero.
-  - i.e. the displacement height "in" should equal the displacement height "out"
+1) Zero Error where POM Height In equals POM Height Out
+  - if the displacement height at the UV coordinates before applying POM is the same as the height at the UV coordinates after applying POM, then the amount of error (visual warping) is zero
+    - i.e. the displacement height "in" should equal the displacement height "out"
   - this is used to easily get the estimated error value for any input displacement height by subtracting height in from height out
-  - avoid messy UV calculations, just one value: height
-2) A quick spread sample is calculated given a "center" and a "radius", height samples before and after can be compared/biased to get a "best" sample.
+  - avoid messy UV calculations, just a one-dimensional value to sample: height
+2) Higher Parts of POM Texture Appear Closer to Viewer
+  - higher samples occlude lower samples
+3) Evenly Spread Sample for First Approximation
+  - quick spread sample is calculated given a "center" and a "radius", height samples before and after can be compared/biased to get a "best" sample
   - sample points are spaced equidistant from each other, high to low
   - e.g. sample 1 is "highest", sample 3 is "lowest"
-3) The signs of the sample error values "point to" the most accurate sample(s).
+4) The Signs of the Sample Error Values "Point to" the Most Accurate Sample(s)
   - similar to the way a magnetic compass needle points towards Earth's magnetic poles
     - e.g. if the highest sample(s) have negative error, and the lowest sample(s) have positive error, then the "compass needles" (error sign values) are pointing to the middle sample(s), so bias towards the middle sample(s)
-  - bias towards high displacement samples and away from low displacement samples at the same time by only adding weight if the sign is positive ("compass needle" points towards up)
+  - may be more than one "correct" (zero error) sample - e.g. if view ray would pass through high point first and lower point(s) later
+  - bias towards high displacement samples and away from low displacement samples at the same time, by only adding weight if the sign is positive ("compass needle" points towards up)
   - biasing does not eliminate samples, and multiple heights may be correct (e.g. at shallow angles to the mesh face), so further refinement is needed
-5) Cutoff Quadrants, keep only the lowest average error, highest average displacement sample(s).
-  A) calculate average absolute error, take only sample(s) below or equal to average absolute error
-  B) calculate average of remaining sample height(s), take only remaining sample(s) above or equal to average height
+5) Reduce Sample Count to Best Samples
+  - apply two successive cutoffs, in multiple cycles, weighting worst samples to zero
+  - keep only the lowest average error, highest average displacement sample(s)
+    1) calculate average absolute error, take only sample(s) below or equal to average absolute error
+    2) calculate average of remaining sample height(s), take only remaining sample(s) above or equal to average height
   - this cuts the number of samples in half, or less
   - repeat the Cutoff Quadrants nodegroup as needed, to reduce number of samples to 1
     - e.g. if 8 original samples were taken then use Cutoff Quadrants 3 times successively to get only the best 1 out of 8 samples
