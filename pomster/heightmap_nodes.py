@@ -20,33 +20,18 @@ import bpy
 
 from .node_other import ensure_node_groups
 
-# material (shader) node group names
+# node group names
 POMSTER_UV_MAT_NG_NAME = "POMsterUV.MatNG.POMSTER"
-
-# nodegroup names
-#SPREAD_SAMPLE3_MAT_NG_NAME = "SpreadSample3.MatNG.POMSTER"
-SPREAD_SAMPLE3_MAT_NG_NAME_START = "SpreadSample"
-SPREAD_SAMPLE3_MAT_NG_NAME_END = ".MatNG.POMSTER"
-ERROR_SIGN_BIAS3_MAT_NG_NAME = "ErrorSignBias3.MatNG.POMSTER"
-HEIGHT_ERROR_CUTOFF3_MAT_NG_NAME = "HeightErrorCutoff3.MatNG.POMSTER"
-COMBINE_SAMPLE3_MAT_NG_NAME = "CombineSample3.MatNG.POMSTER"
-BIAS_CUTOFF_COMBINE3_MAT_NG_NAME = "BiasCutoffCombine3.MatNG.POMSTER"
 SHARPEN_POM_MAT_NG_NAME = "SharpenPOM.MatNG.POMSTER"
 
-SHARPEN_POM_000_GRP_NODENAME = "SharpenPOM_Grp"
-SHARPEN_HEIGHTMAP_000_GRP_NODENAME = "SharpenHeightmap_Grp"
+# dynamic nodegroup names
+ALL_MAT_NG_NAME_END = ".MatNG.POMSTER"
 
-SAMPLE_HEIGHTMAP_NODE_NAME_START = "Sample"
-SAMPLE_HEIGHTMAP_NODE_NAME_END = "Heightmap_Grp"
-
-SAMPLE_POM_NODE_NAME_START = "Sample"
-SAMPLE_POM_NODE_NAME_END = "POM_Grp"
-
-SPREAD_SAMPLE_NODE_NAME_START = "SpreadSample"
-SPREAD_SAMPLE_NODE_NAME_END = "_Grp"
-
-BIAS_CUTOFF_COMBINE_GRP_NODENAME_START = "BiasCutoffCombine"
-BIAS_CUTOFF_COMBINE_GRP_NODENAME_END = "_Grp"
+SPREAD_SAMPLE_MAT_NG_NAME_START = "SpreadSample"
+ERROR_SIGN_BIAS_MAT_NG_NAME_START = "ErrorSignBias"
+ERROR_CUTOFF_MAT_NG_NAME_START = "ErrorCutoff"
+HEIGHT_CUTOFF_MAT_NG_NAME_START = "HeightCutoff"
+COMBINE_SAMPLE_MAT_NG_NAME_START = "CombineSample"
 
 # node names
 HEIGHTMAP_ORIGINAL_NODENAME = "Heightmap.Original"
@@ -62,6 +47,7 @@ SAMPLE_RADIUS_INPUT_NODENAME = "SampleRadiusInput"
 HIGH_BIAS_FACTOR_INPUT_NODENAME = "HighBiasFactorInput"
 SHARPEN_FACTOR_INPUT_NODENAME = "SharpenFactorInput"
 
+# reroute node names
 UV_TEX_COORD_INPUT_RR_NAME = "UV_TextureCoordinateInputReroute"
 ASPECT_RATIO_INPUT_RR_NAME = "AspectRatioInputReroute"
 TANGENT_U_INPUT_RR_NAME = "TangentU_InputReroute"
@@ -73,22 +59,35 @@ SHARPEN_FACTOR_INPUT_RR_NAME = "SharpenFactorInputReroute"
 SAMPLE_CENTER_INPUT_RR_NAME = "SampleCenterInputReroute"
 SAMPLE_RADIUS_INPUT_RR_NAME = "SampleRadiusInputReroute"
 
-SPREAD_SAMPLE_MULT_ADD_NODENAME = "Math.POMster"
+# node names
+COMBINED_SAMPLE_NODENAME = "CombinedSamplePOM"
+
+# dynamic node names
+SHARPEN_POM_DYN_NODENAME = "SharpenPOM"
+SHARPEN_HEIGHTMAP_DYN_NODENAME = "SharpenHeightmap"
+SAMPLE_HEIGHTMAP_DYN_NODENAME = "SampleHeightmap"
+SAMPLE_POM_DYN_NODENAME = "SamplePOM"
+SPREAD_SAMPLE_DYN_NODENAME = "SpreadSample"
+ERROR_SIGN_BIAS_DYN_NODENAME = "ErrorSignBias"
+ERROR_CUTOFF_DYN_NODENAME = "ErrorCutoff"
+HEIGHT_CUTOFF_DYN_NODENAME = "HeightCutoff"
+COMBINE_SAMPLES_DYN_NODENAME = "CombineSamples"
 
 def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
+    dyn_end_name = str(custom_data)+ALL_MAT_NG_NAME_END
     if node_tree_type == 'ShaderNodeTree':
         if node_group_name == POMSTER_UV_MAT_NG_NAME:
             return create_mat_ng_pomster()
-        elif node_group_name == SPREAD_SAMPLE3_MAT_NG_NAME_START+str(custom_data)+SPREAD_SAMPLE3_MAT_NG_NAME_END:
+        elif node_group_name == SPREAD_SAMPLE_MAT_NG_NAME_START+dyn_end_name:
             return create_mat_ng_spread_sample(custom_data)
-        elif node_group_name == ERROR_SIGN_BIAS3_MAT_NG_NAME:
+        elif node_group_name == ERROR_SIGN_BIAS_MAT_NG_NAME_START+dyn_end_name:
             return create_mat_ng_error_sign_bias(custom_data)
-        elif node_group_name == HEIGHT_ERROR_CUTOFF3_MAT_NG_NAME:
-            return create_mat_ng_height_error_cutoff(custom_data)
-        elif node_group_name == COMBINE_SAMPLE3_MAT_NG_NAME:
+        elif node_group_name == ERROR_CUTOFF_MAT_NG_NAME_START+dyn_end_name:
+            return create_mat_ng_error_cutoff(custom_data)
+        elif node_group_name == HEIGHT_CUTOFF_MAT_NG_NAME_START+dyn_end_name:
+            return create_mat_ng_height_cutoff(custom_data)
+        elif node_group_name == COMBINE_SAMPLE_MAT_NG_NAME_START+dyn_end_name:
             return create_mat_ng_combine_sample(custom_data)
-        elif node_group_name == BIAS_CUTOFF_COMBINE3_MAT_NG_NAME:
-            return create_mat_ng_bias_cutoff_combine(custom_data)
         elif node_group_name == SHARPEN_POM_MAT_NG_NAME:
             return create_mat_ng_sharpen_pom()
 
@@ -206,14 +205,14 @@ def create_mat_ng_pomster():
 
     return new_node_group
 
-def create_mat_ng_spread_sample(num_samples):
+def create_mat_ng_spread_sample(sample_num):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=
-        SPREAD_SAMPLE3_MAT_NG_NAME_START+str(num_samples)+SPREAD_SAMPLE3_MAT_NG_NAME_END, type='ShaderNodeTree')
+        SPREAD_SAMPLE_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketFloat', name="Center")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Radius")
-    for c in range(num_samples):
+    for c in range(sample_num):
         new_node_group.outputs.new(type='NodeSocketFloat', name="Sample "+str(c+1))
 
     tree_nodes = new_node_group.nodes
@@ -230,8 +229,8 @@ def create_mat_ng_spread_sample(num_samples):
     new_nodes["Group Output"] = node
 
     tree_links = new_node_group.links
-    for ns in range(num_samples):
-        radius_mult = 1.0 - 2 * ns / (num_samples-1)
+    for ns in range(sample_num):
+        radius_mult = 1.0 - 2 * ns / (sample_num-1)
         # do not create node if at center, but do create the link to output
         if radius_mult == 0:
             tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Group Output"].inputs[ns])
@@ -243,7 +242,6 @@ def create_mat_ng_spread_sample(num_samples):
         node.operation = "MULTIPLY_ADD"
         node.use_clamp = False
         node.inputs[0].default_value = radius_mult
-        new_nodes[SPREAD_SAMPLE_MULT_ADD_NODENAME+str(ns)] = node
 
         # create links
         tree_links.new(new_nodes["Group Input"].outputs[0], node.inputs[2])
@@ -255,175 +253,484 @@ def create_mat_ng_spread_sample(num_samples):
 
     return new_node_group
 
-def create_mat_ng_error_sign_bias(num_samples):
+def create_dyn_mat_ng_error_sign_bias_row_start(tree_nodes, tree_links, new_nodes, sample_num):
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "A"
+    node.location = (-900, 180)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    new_nodes["ES_Row1ColA"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "A < 0"
+    node.location = (-720, 180)
+    node.operation = "LESS_THAN"
+    node.use_clamp = False
+    node.inputs[1].default_value = 0.000000
+    new_nodes["ES_Row1ColB"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "A >= 0"
+    node.location = (-540, 180)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes["ES_Row1ColC"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "(A >= 0) / 4"
+    node.location = (-180, 180)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    node.inputs[1].default_value = sample_num
+    new_nodes["ES_Row1ColE"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "A / 4 * high_bias"
+    node.location = (0, 180)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["ES_Row1ColF"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "A / 4 * high_bias + 1"
+    node.location = (180, 180)
+    node.operation = "ADD"
+    node.use_clamp = False
+    node.inputs[1].default_value = 1.000000
+    new_nodes["ES_Row1ColG"] = node
+
+    # create links
+    tree_links.new(new_nodes["ES_Row1ColA"].outputs[0], new_nodes["ES_Row1ColB"].inputs[0])
+    tree_links.new(new_nodes["ES_Row1ColB"].outputs[0], new_nodes["ES_Row1ColC"].inputs[1])
+    tree_links.new(new_nodes["ES_Row1ColC"].outputs[0], new_nodes["ES_Row1ColE"].inputs[0])
+    tree_links.new(new_nodes["ES_Row1ColE"].outputs[0], new_nodes["ES_Row1ColF"].inputs[0])
+    tree_links.new(new_nodes["ES_Row1ColF"].outputs[0], new_nodes["ES_Row1ColG"].inputs[0])
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[0], new_nodes["ES_Row1ColF"].inputs[1])
+    tree_links.new(new_nodes["ES_Row1ColA"].outputs[0], new_nodes["ES_GroupOutput"].inputs[0])
+
+    return new_nodes["ES_Row1ColC"], new_nodes["ES_Row1ColG"]
+
+def create_dyn_mat_ng_error_sign_bias_row_iterate(tree_nodes, tree_links, new_nodes, prev_bias_add_node,
+                                                  prev_bias_mult_node, sample_num, row_num):
+    name_row_prepend = "ES_Row" + str(row_num)
+
+    y_offset = -180 * (row_num - 2)
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "B"
+    node.location = (-900, y_offset)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColA"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "B < 0"
+    node.location = (-720, y_offset)
+    node.operation = "LESS_THAN"
+    node.use_clamp = False
+    node.inputs[1].default_value = 0.000000
+    new_nodes[name_row_prepend+"ColB"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "B >= 0"
+    node.location = (-540, y_offset)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes[name_row_prepend+"ColC"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "(A >= 0) + (B >= 0)"
+    node.location = (-360, y_offset)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColD"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "( (A >= 0) + (B >= 0) ) / 4"
+    node.location = (-180, y_offset)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    node.inputs[1].default_value = sample_num
+    new_nodes[name_row_prepend+"ColE"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "( (A >= 0) + (B >= 0) ) / 4 * high_bias"
+    node.location = (0, y_offset)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColF"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "( (A >= 0) + (B >= 0) ) / 4 * high_bias + 1"
+    node.location = (180, y_offset)
+    node.operation = "ADD"
+    node.use_clamp = False
+    node.inputs[1].default_value = 1.000000
+    new_nodes[name_row_prepend+"ColG"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "B * ( A / 4 * high_bias + 1 )"
+    node.location = (400, y_offset)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColH"] = node
+
+    # create links
+    tree_links.new(new_nodes[name_row_prepend+"ColA"].outputs[0], new_nodes[name_row_prepend+"ColH"].inputs[1])
+    tree_links.new(new_nodes[name_row_prepend+"ColA"].outputs[0], new_nodes[name_row_prepend+"ColB"].inputs[0])
+    tree_links.new(new_nodes[name_row_prepend+"ColD"].outputs[0], new_nodes[name_row_prepend+"ColE"].inputs[0])
+    tree_links.new(new_nodes[name_row_prepend+"ColB"].outputs[0], new_nodes[name_row_prepend+"ColC"].inputs[1])
+    tree_links.new(new_nodes[name_row_prepend+"ColC"].outputs[0], new_nodes[name_row_prepend+"ColD"].inputs[1])
+    tree_links.new(new_nodes[name_row_prepend+"ColE"].outputs[0], new_nodes[name_row_prepend+"ColF"].inputs[0])
+    tree_links.new(new_nodes[name_row_prepend+"ColF"].outputs[0], new_nodes[name_row_prepend+"ColG"].inputs[0])
+    tree_links.new(prev_bias_add_node.outputs[0], new_nodes[name_row_prepend+"ColD"].inputs[0])
+    tree_links.new(prev_bias_mult_node.outputs[0], new_nodes[name_row_prepend+"ColH"].inputs[0])
+
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[0], new_nodes[name_row_prepend+"ColF"].inputs[1])
+
+    tree_links.new(new_nodes[name_row_prepend+"ColH"].outputs[0], new_nodes["ES_GroupOutput"].inputs[row_num-1])
+
+    return new_nodes[name_row_prepend+"ColD"], new_nodes[name_row_prepend+"ColG"]
+
+def create_dyn_mat_ng_error_sign_bias_row_end(tree_nodes, tree_links, new_nodes, row_bias_mult, row_num):
+    name_row_prepend = "ES_Row" + str(row_num)
+
+    y_offset = -180 * (row_num - 2)
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "C"
+    node.location = (-900, y_offset)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColA"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "C * ( ( (A >= 0) + (B >= 0) + (X >= 0) ) / 4 * high_bias + 1 )"
+    node.location = (400, y_offset)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes[name_row_prepend+"ColH"] = node
+
+    # create links
+    tree_links.new(new_nodes[name_row_prepend+"ColA"].outputs[0], new_nodes[name_row_prepend+"ColH"].inputs[1])
+    tree_links.new(row_bias_mult.outputs[0], new_nodes[name_row_prepend+"ColH"].inputs[0])
+
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[1+(row_num-1)*2], new_nodes[name_row_prepend+"ColA"].inputs[0])
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[2+(row_num-1)*2], new_nodes[name_row_prepend+"ColA"].inputs[1])
+
+    tree_links.new(new_nodes[name_row_prepend+"ColH"].outputs[0], new_nodes["ES_GroupOutput"].inputs[row_num-1])
+
+def create_mat_ng_error_sign_bias(sample_num):
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=ERROR_SIGN_BIAS3_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=
+        ERROR_SIGN_BIAS_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketFloat', name="High Bias Factor")
-    for sn in range(num_samples):
+    for sn in range(sample_num):
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Next "+str(sn+1))
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Prev "+str(sn+1))
         new_node_group.outputs.new(type='NodeSocketFloat', name="Error "+str(sn+1))
 
     tree_nodes = new_node_group.nodes
+    tree_links = new_node_group.links
+
     # delete all nodes
     tree_nodes.clear()
 
     # create nodes
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 180)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    new_nodes["Math.014"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 0)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    new_nodes["Math.003"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 180)
-    node.operation = "LESS_THAN"
-    node.use_clamp = False
-    node.inputs[1].default_value = 0.000000
-    new_nodes["Math"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 0)
-    node.operation = "LESS_THAN"
-    node.use_clamp = False
-    node.inputs[1].default_value = 0.000000
-    new_nodes["Math.004"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, -180)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    new_nodes["Math.008"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-540, 0)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
-    new_nodes["Math.012"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-360, 0)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.005"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-540, 180)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
-    new_nodes["Math.011"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-180, 180)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    node.inputs[1].default_value = 3.000000
-    new_nodes["Math.001"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (0, 180)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.013"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-180, 0)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    node.inputs[1].default_value = 3.000000
-    new_nodes["Math.006"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (0, 0)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.015"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (180, 0)
-    node.operation = "ADD"
-    node.use_clamp = False
-    node.inputs[1].default_value = 1.000000
-    new_nodes["Math.010"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (400, -180)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.007"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (400, 0)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.002"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (180, 180)
-    node.operation = "ADD"
-    node.use_clamp = False
-    node.inputs[1].default_value = 1.000000
-    new_nodes["Math.009"] = node
-
     node = tree_nodes.new(type="NodeGroupInput")
     node.location = (-1120, 0)
-    new_nodes["Group Input"] = node
+    new_nodes["ES_GroupInput"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
     node.location = (580, 20)
-    new_nodes["Group Output"] = node
+    new_nodes["ES_GroupOutput"] = node
 
-    # create links
-    tree_links = new_node_group.links
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.014"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.003"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.008"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.014"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.003"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.008"].inputs[1])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Group Output"].inputs[0])
-    tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.002"].inputs[1])
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.002"].inputs[0])
-    tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.004"].inputs[0])
-    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.006"].inputs[0])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Group Output"].inputs[1])
-    tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math.007"].inputs[0])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.007"].inputs[1])
-    tree_links.new(new_nodes["Math.007"].outputs[0], new_nodes["Group Output"].inputs[2])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.011"].inputs[1])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.001"].inputs[0])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.005"].inputs[0])
-    tree_links.new(new_nodes["Math.004"].outputs[0], new_nodes["Math.012"].inputs[1])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.005"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.013"].inputs[1])
-    tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Math.013"].inputs[0])
-    tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.009"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.015"].inputs[1])
-    tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.015"].inputs[0])
-    tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Math.010"].inputs[0])
+    # create dynamic nodes and links
+    prev_bias_add_node, prev_bias_mult_node = create_dyn_mat_ng_error_sign_bias_row_start(tree_nodes, tree_links, new_nodes, sample_num)
+    for c in range(sample_num - 2):
+        temp_bias_add_node, temp_bias_mult_node = create_dyn_mat_ng_error_sign_bias_row_iterate(tree_nodes, tree_links, new_nodes,
+            prev_bias_add_node, prev_bias_mult_node, sample_num, c+2)
+        prev_bias_add_node, prev_bias_mult_node = temp_bias_add_node, temp_bias_mult_node
+    create_dyn_mat_ng_error_sign_bias_row_end(tree_nodes, tree_links, new_nodes, prev_bias_mult_node, sample_num)
+
+    # create dynamic links
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[1], new_nodes["ES_Row1ColA"].inputs[0])
+    tree_links.new(new_nodes["ES_GroupInput"].outputs[2], new_nodes["ES_Row1ColA"].inputs[1])
+    #
+    for c in range(sample_num-2):
+        name_row_prepend = "ES_Row" + str(c+2)
+        tree_links.new(new_nodes["ES_GroupInput"].outputs[3+c*2], new_nodes[name_row_prepend+"ColA"].inputs[0])
+        tree_links.new(new_nodes["ES_GroupInput"].outputs[4+c*2], new_nodes[name_row_prepend+"ColA"].inputs[1])
 
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
 
     return new_node_group
 
-def create_mat_ng_height_error_cutoff(num_samples):
+def create_ec_column_add(tree_nodes, tree_links, new_nodes, sample_num, prev_add_node):
+    add_nodes_needed = sample_num-2
+    for r in range(add_nodes_needed):
+        name_row_prepend = "EC_Row"+str(r+2)+"ColA"
+
+        # create node
+        node = tree_nodes.new(type="ShaderNodeMath")
+        node.location = (-160, -200-r*180)
+        node.operation = "ADD"
+        node.use_clamp = False
+        new_nodes[name_row_prepend] = node
+
+        # create links
+        tree_links.new(node.outputs[0], prev_add_node.inputs[1])
+
+        # if this is the last add node, then use the last two samples, instead of just 1
+        if r == add_nodes_needed-1:
+            tree_links.new(new_nodes["EC_GroupInput"].outputs[3+r*2], node.inputs[0])
+            tree_links.new(new_nodes["EC_GroupInput"].outputs[5+r*2], node.inputs[1])
+        # otherwise just use one
+        else:
+            tree_links.new(new_nodes["EC_GroupInput"].outputs[3+r*2], node.inputs[0])
+
+        prev_add_node = node
+
+def create_ec_row1(tree_nodes, tree_links, new_nodes):
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-160, 160)
+    node.operation = "COMPARE"
+    node.use_clamp = False
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 0.000000
+    new_nodes["EC_Row1ColA.Real"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Cutoff Count"
+    node.location = (20, 160)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["EC_Row1ColB.Real"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Average Error"
+    node.location = (200, 160)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    new_nodes["EC_Row1ColC.Real"] = node
+
+    # create links
+    tree_links.new(new_nodes["EC_Row1ColA.Real"].outputs[0], new_nodes["EC_Row1ColB.Real"].inputs[0])
+    tree_links.new(new_nodes["EC_Row1ColB.Real"].outputs[0], new_nodes["EC_Row1ColC.Real"].inputs[1])
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (640, -20)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes["EC_Row2ColE"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (460, -20)
+    node.operation = "GREATER_THAN"
+    node.use_clamp = False
+    new_nodes["EC_Row2ColD"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (200, -20)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["EC_Row2ColC"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (20, -20)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row2ColB"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-160, -20)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["EC_Row2ColA"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Cutoff Sample Weight 1"
+    node.location = (820, -20)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row2ColF"] = node
+
+    # create links
+    tree_links.new(new_nodes["EC_Row2ColD"].outputs[0], new_nodes["EC_Row2ColE"].inputs[1])
+    tree_links.new(new_nodes["EC_Row2ColE"].outputs[0], new_nodes["EC_Row2ColF"].inputs[0])
+    tree_links.new(new_nodes["EC_Row2ColB"].outputs[0], new_nodes["EC_Row2ColC"].inputs[0])
+
+    # create links to input and output
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[1], new_nodes["EC_Row2ColA"].inputs[0])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[0], new_nodes["EC_Row2ColB"].inputs[0])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[1], new_nodes["EC_Row2ColB"].inputs[1])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[0], new_nodes["EC_Row2ColD"].inputs[0])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[1], new_nodes["EC_Row2ColF"].inputs[1])
+    tree_links.new(new_nodes["EC_Row2ColF"].outputs[0], new_nodes["EC_GroupOutput"].inputs[0])
+
+    # create links from this row to row1
+    tree_links.new(new_nodes["EC_Row2ColC"].outputs[0], new_nodes["EC_Row1ColC.Real"].inputs[0])
+    tree_links.new(new_nodes["EC_Row1ColC.Real"].outputs[0], new_nodes["EC_Row2ColD"].inputs[1])
+    tree_links.new(new_nodes["EC_Row2ColA"].outputs[0], new_nodes["EC_Row1ColA.Real"].inputs[0])
+    tree_links.new(new_nodes["EC_Row1ColA.Real"].outputs[0], new_nodes["EC_Row1ColB.Real"].inputs[0])
+    tree_links.new(new_nodes["EC_Row2ColA"].outputs[0], new_nodes["EC_Row1ColB.Real"].inputs[1])
+    tree_links.new(new_nodes["EC_Row1ColB.Real"].outputs[0], new_nodes["EC_Row1ColC.Real"].inputs[1])
+
+    return new_nodes["EC_Row2ColA"], new_nodes["EC_Row2ColC"], new_nodes["EC_Row1ColC.Real"]
+
+def create_ec_row3(tree_nodes, tree_links, new_nodes, prev_error_add_node, average_error_node):
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (640, -200)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes["EC_Row3ColE"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (460, -200)
+    node.operation = "GREATER_THAN"
+    node.use_clamp = False
+    new_nodes["EC_Row3ColD"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (200, -200)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["EC_Row3ColC"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (20, -200)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row3ColB"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Cutoff Sample Weight 2"
+    node.location = (820, -200)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row3ColF"] = node
+
+    # create links
+    tree_links.new(new_nodes["EC_Row3ColB"].outputs[0], new_nodes["EC_Row3ColC"].inputs[0])
+    tree_links.new(new_nodes["EC_Row3ColD"].outputs[0], new_nodes["EC_Row3ColE"].inputs[1])
+    tree_links.new(new_nodes["EC_Row3ColE"].outputs[0], new_nodes["EC_Row3ColF"].inputs[0])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[2], new_nodes["EC_Row3ColB"].inputs[0])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[4], new_nodes["EC_Row3ColB"].inputs[1])
+
+    tree_links.new(new_nodes["EC_Row3ColC"].outputs[0], prev_error_add_node.inputs[1])
+
+    tree_links.new(average_error_node.outputs[0], new_nodes["EC_Row3ColD"].inputs[1])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[2], new_nodes["EC_Row3ColD"].inputs[0])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[2], new_nodes["EC_Row3ColF"].inputs[1])
+
+    tree_links.new(new_nodes["EC_Row3ColF"].outputs[0], new_nodes["EC_GroupOutput"].inputs[1])
+
+    return new_nodes["EC_Row3ColC"]
+
+def create_ec_row4(tree_nodes, tree_links, new_nodes, final_error_add_node, average_error_node):
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Cutoff Sample Weight 3"
+    node.location = (820, -380)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row4ColF"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (640, -380)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes["EC_Row4ColE"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (460, -380)
+    node.operation = "GREATER_THAN"
+    node.use_clamp = False
+    new_nodes["EC_Row4ColD"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (20, -380)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    new_nodes["EC_Row4ColB"] = node
+
+    # create links
+    tree_links.new(new_nodes["EC_Row4ColD"].outputs[0], new_nodes["EC_Row4ColE"].inputs[1])
+    tree_links.new(new_nodes["EC_Row4ColE"].outputs[0], new_nodes["EC_Row4ColF"].inputs[0])
+
+    tree_links.new(new_nodes["EC_Row4ColB"].outputs[0], final_error_add_node.inputs[1])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[4], new_nodes["EC_Row4ColB"].inputs[0])
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[5], new_nodes["EC_Row4ColB"].inputs[1])
+
+    tree_links.new(average_error_node.outputs[0], new_nodes["EC_Row4ColD"].inputs[1])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[4], new_nodes["EC_Row4ColD"].inputs[0])
+
+    tree_links.new(new_nodes["EC_GroupInput"].outputs[4], new_nodes["EC_Row4ColF"].inputs[1])
+
+    tree_links.new(new_nodes["EC_Row4ColF"].outputs[0], new_nodes["EC_GroupOutput"].inputs[2])
+
+def create_mat_ng_error_cutoff(sample_num):
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=HEIGHT_ERROR_CUTOFF3_MAT_NG_NAME, type='ShaderNodeTree')
-    for sn in range(num_samples):
+    new_node_group = bpy.data.node_groups.new(name=ERROR_CUTOFF_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END,
+                                              type='ShaderNodeTree')
+    for sn in range(sample_num):
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Error "+str(sn+1))
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Cutoff "+str(sn+1))
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Sample Cutoff "+str(sn+1))
+
+    tree_nodes = new_node_group.nodes
+    tree_links = new_node_group.links
+
+    # delete all nodes
+    tree_nodes.clear()
+
+    # create nodes
+    node = tree_nodes.new(type="NodeGroupInput")
+    node.location = (-400, -20)
+    new_nodes["EC_GroupInput"] = node
+
+    node = tree_nodes.new(type="NodeGroupOutput")
+    node.location = (1020, -20)
+    new_nodes["EC_GroupOutput"] = node
+
+    prev_cutoff_add_node, prev_error_add_node, average_error_node = create_ec_row1(tree_nodes, tree_links, new_nodes)
+#    prev_cutoff_add_node, prev_error_add_node = create_ec_row2(tree_nodes, tree_links, new_nodes)
+    create_ec_column_add(tree_nodes, tree_links, new_nodes, sample_num, prev_cutoff_add_node)
+
+    final_error_add_node = create_ec_row3(tree_nodes, tree_links, new_nodes, prev_error_add_node, average_error_node)
+    create_ec_row4(tree_nodes, tree_links, new_nodes, final_error_add_node, average_error_node)
+
+    # deselect all new nodes
+    for n in new_nodes.values(): n.select = False
+
+    return new_node_group
+
+def create_mat_ng_height_cutoff(sample_num):
+    # initialize variables
+    new_nodes = {}
+    new_node_group = bpy.data.node_groups.new(name=HEIGHT_CUTOFF_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END,
+                                              type='ShaderNodeTree')
+    for sn in range(sample_num):
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Next "+str(sn+1))
-        new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Prev "+str(sn+1))
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Cutoff "+str(sn+1))
         new_node_group.outputs.new(type='NodeSocketFloat', name="Sample Cutoff "+str(sn+1))
 
@@ -433,345 +740,188 @@ def create_mat_ng_height_error_cutoff(num_samples):
 
     # create nodes
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Average Error"
-    node.location = (-720, 440)
-    node.operation = "DIVIDE"
-    node.use_clamp = False
-    new_nodes["Math.002"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 280)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.015"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 120)
+    node.location = (-630, 250)
     node.operation = "ADD"
     node.use_clamp = False
-    new_nodes["Math"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-900, 120)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.016"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1080, 120)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.017"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-720, 280)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.001"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1800, 440)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.018"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1620, 440)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.019"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Ensure > 0"
-    node.location = (-1440, 440)
-    node.operation = "COMPARE"
-    node.use_clamp = False
-    node.inputs[1].default_value = 0.000000
-    node.inputs[2].default_value = 0.000000
-    new_nodes["Math.020"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-1260, 440)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.021"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (280, 280)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.034"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (460, 280)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.035"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Ensure > 0"
-    node.location = (640, 280)
-    node.operation = "COMPARE"
-    node.use_clamp = False
-    node.inputs[1].default_value = 0.000000
-    node.inputs[2].default_value = 0.000000
-    new_nodes["Math.036"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (820, 280)
-    node.operation = "ADD"
-    node.use_clamp = False
-    new_nodes["Math.037"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-400, 440)
-    node.operation = "GREATER_THAN"
-    node.use_clamp = False
-    new_nodes["Math.006"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-220, 440)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
-    new_nodes["Math.007"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-400, 280)
-    node.operation = "GREATER_THAN"
-    node.use_clamp = False
-    new_nodes["Math.009"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-220, 280)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
     new_nodes["Math.010"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-400, 120)
-    node.operation = "GREATER_THAN"
-    node.use_clamp = False
-    new_nodes["Math.012"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (-220, 120)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
-    new_nodes["Math.013"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Cutoff Sample Weight 2"
-    node.location = (-40, 280)
-    node.operation = "MULTIPLY"
+    node.location = (-450, 250)
+    node.operation = "ADD"
     node.use_clamp = False
     new_nodes["Math.011"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Cutoff Sample Weight 1"
-    node.location = (-40, 440)
-    node.operation = "MULTIPLY"
+    node.label = "Ensure > 0"
+    node.location = (-270, 250)
+    node.operation = "COMPARE"
     node.use_clamp = False
-    new_nodes["Math.008"] = node
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 0.000000
+    new_nodes["Math.012"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Cutoff Sample Weight 3"
-    node.location = (-40, 120)
-    node.operation = "MULTIPLY"
-    node.use_clamp = False
-    new_nodes["Math.014"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1000, -220)
+    node.location = (-90, 250)
     node.operation = "ADD"
     node.use_clamp = False
-    new_nodes["Math.003"] = node
+    new_nodes["Math.013"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1000, -60)
+    node.location = (90, -250)
     node.operation = "ADD"
     node.use_clamp = False
-    new_nodes["Math.004"] = node
+    new_nodes["Math.023"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (820, -220)
+    node.location = (90, -90)
+    node.operation = "ADD"
+    node.use_clamp = False
+    new_nodes["Math.024"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-90, -250)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    new_nodes["Math.022"] = node
+    new_nodes["Math.025"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1180, -60)
+    node.location = (270, -90)
+    node.operation = "LESS_THAN"
+    node.use_clamp = False
+    new_nodes["Math.026"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (270, -250)
     node.operation = "LESS_THAN"
     node.use_clamp = False
     new_nodes["Math.027"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1180, -220)
+    node.location = (270, 70)
     node.operation = "LESS_THAN"
     node.use_clamp = False
-    new_nodes["Math.029"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1180, 100)
-    node.operation = "LESS_THAN"
-    node.use_clamp = False
-    new_nodes["Math.025"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1360, -60)
-    node.operation = "SUBTRACT"
-    node.use_clamp = False
-    node.inputs[0].default_value = 1.000000
     new_nodes["Math.028"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1360, -220)
+    node.location = (450, -90)
+    node.operation = "SUBTRACT"
+    node.use_clamp = False
+    node.inputs[0].default_value = 1.000000
+    new_nodes["Math.029"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (450, -250)
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
     new_nodes["Math.030"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (1360, 100)
+    node.location = (450, 70)
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
-    new_nodes["Math.026"] = node
+    new_nodes["Math.031"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Average Height"
-    node.location = (1000, 100)
+    node.location = (90, 70)
     node.operation = "DIVIDE"
     node.use_clamp = False
-    new_nodes["Math.005"] = node
+    new_nodes["Math.032"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Cutoff Sample Height 3"
-    node.location = (1540, -220)
+    node.location = (630, -250)
     node.operation = "MULTIPLY"
     node.use_clamp = False
     new_nodes["Math.033"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (640, -220)
+    node.location = (-270, -250)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    new_nodes["Math.023"] = node
+    new_nodes["Math.034"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Cutoff Sample Height 1"
-    node.location = (1540, 100)
+    node.location = (630, 70)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    new_nodes["Math.031"] = node
+    new_nodes["Math.035"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Cutoff Sample Height 2"
-    node.location = (1540, -60)
+    node.location = (630, -90)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    new_nodes["Math.032"] = node
+    new_nodes["Math.036"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
-    node.location = (820, -60)
+    node.location = (-90, -90)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    new_nodes["Math.024"] = node
+    new_nodes["Math.037"] = node
 
     node = tree_nodes.new(type="NodeGroupInput")
-    node.location = (-2060, 160)
+    node.location = (-960, 80)
     new_nodes["Group Input"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
-    node.location = (1760, 100)
+    node.location = (820, 0)
     new_nodes["Group Output"] = node
 
     # create links
     tree_links = new_node_group.links
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.001"].inputs[1])
-    tree_links.new(new_nodes["Math.016"].outputs[0], new_nodes["Math"].inputs[1])
-    tree_links.new(new_nodes["Math.017"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Math.002"].inputs[0])
-    tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.004"].inputs[1])
-    tree_links.new(new_nodes["Math.004"].outputs[0], new_nodes["Math.005"].inputs[0])
-    tree_links.new(new_nodes["Math.023"].outputs[0], new_nodes["Math.003"].inputs[0])
-    tree_links.new(new_nodes["Math.022"].outputs[0], new_nodes["Math.003"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.006"].inputs[0])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.006"].inputs[1])
-    tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.007"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.008"].inputs[1])
-    tree_links.new(new_nodes["Math.007"].outputs[0], new_nodes["Math.008"].inputs[0])
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.010"].inputs[1])
-    tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math.011"].inputs[0])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.009"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.009"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.011"].inputs[1])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.013"].inputs[1])
-    tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.014"].inputs[0])
-    tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.012"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.012"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.014"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.015"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.015"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.018"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.018"].inputs[1])
-    tree_links.new(new_nodes["Math.018"].outputs[0], new_nodes["Math.019"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.019"].inputs[1])
-    tree_links.new(new_nodes["Math.019"].outputs[0], new_nodes["Math.020"].inputs[0])
-    tree_links.new(new_nodes["Math.020"].outputs[0], new_nodes["Math.021"].inputs[0])
-    tree_links.new(new_nodes["Math.019"].outputs[0], new_nodes["Math.021"].inputs[1])
-    tree_links.new(new_nodes["Math.021"].outputs[0], new_nodes["Math.002"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.017"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.017"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.016"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.016"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.024"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.023"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.022"].inputs[0])
-    tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Math.001"].inputs[0])
-    tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.004"].inputs[0])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.024"].inputs[1])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.023"].inputs[1])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.022"].inputs[1])
-    tree_links.new(new_nodes["Math.025"].outputs[0], new_nodes["Math.026"].inputs[1])
-    tree_links.new(new_nodes["Math.026"].outputs[0], new_nodes["Math.031"].inputs[0])
-    tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.028"].inputs[1])
-    tree_links.new(new_nodes["Math.028"].outputs[0], new_nodes["Math.032"].inputs[0])
-    tree_links.new(new_nodes["Math.029"].outputs[0], new_nodes["Math.030"].inputs[1])
-    tree_links.new(new_nodes["Math.030"].outputs[0], new_nodes["Math.033"].inputs[0])
-    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.025"].inputs[1])
-    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.027"].inputs[1])
-    tree_links.new(new_nodes["Math.005"].outputs[0], new_nodes["Math.029"].inputs[1])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.031"].inputs[1])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.032"].inputs[1])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.033"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.025"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.027"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.029"].inputs[0])
-    tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.035"].inputs[0])
-    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Math.036"].inputs[0])
-    tree_links.new(new_nodes["Math.036"].outputs[0], new_nodes["Math.037"].inputs[0])
-    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Math.037"].inputs[1])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.034"].inputs[0])
-    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.034"].inputs[1])
-    tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.035"].inputs[1])
-    tree_links.new(new_nodes["Math.037"].outputs[0], new_nodes["Math.005"].inputs[1])
-    tree_links.new(new_nodes["Math.031"].outputs[0], new_nodes["Group Output"].inputs[0])
-    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Group Output"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.037"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.034"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.025"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.037"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.034"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.025"].inputs[1])
+    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Group Output"].inputs[0])
+    tree_links.new(new_nodes["Math.036"].outputs[0], new_nodes["Group Output"].inputs[1])
     tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Group Output"].inputs[2])
+    tree_links.new(new_nodes["Math.023"].outputs[0], new_nodes["Math.024"].inputs[1])
+    tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.032"].inputs[0])
+    tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.023"].inputs[0])
+    tree_links.new(new_nodes["Math.025"].outputs[0], new_nodes["Math.023"].inputs[1])
+    tree_links.new(new_nodes["Math.037"].outputs[0], new_nodes["Math.024"].inputs[0])
+    tree_links.new(new_nodes["Math.028"].outputs[0], new_nodes["Math.031"].inputs[1])
+    tree_links.new(new_nodes["Math.031"].outputs[0], new_nodes["Math.035"].inputs[0])
+    tree_links.new(new_nodes["Math.026"].outputs[0], new_nodes["Math.029"].inputs[1])
+    tree_links.new(new_nodes["Math.029"].outputs[0], new_nodes["Math.036"].inputs[0])
+    tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.030"].inputs[1])
+    tree_links.new(new_nodes["Math.030"].outputs[0], new_nodes["Math.033"].inputs[0])
+    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.028"].inputs[1])
+    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.026"].inputs[1])
+    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.027"].inputs[1])
+    tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math.011"].inputs[0])
+    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.012"].inputs[0])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.013"].inputs[0])
+    tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.013"].inputs[1])
+    tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.032"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.010"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.010"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.011"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Math.035"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Math.036"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Math.033"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Math.027"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Math.026"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.028"].inputs[0])
 
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
 
     return new_node_group
 
-def create_mat_ng_combine_sample(num_samples):
+def create_mat_ng_combine_sample(sample_num):
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=COMBINE_SAMPLE3_MAT_NG_NAME, type='ShaderNodeTree')
-    for sn in range(num_samples):
+    new_node_group = bpy.data.node_groups.new(name=
+        COMBINE_SAMPLE_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END, type='ShaderNodeTree')
+    for sn in range(sample_num):
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Next "+str(sn+1))
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Prev "+str(sn+1))
         new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Cutoff "+str(sn+1))
@@ -1006,92 +1156,6 @@ def create_mat_ng_combine_sample(num_samples):
 
     return new_node_group
 
-def create_mat_ng_bias_cutoff_combine(num_samples):
-    # initialize variables
-    new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=BIAS_CUTOFF_COMBINE3_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U Map")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V Map")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="High Bias Factor")
-    for sn in range(num_samples):
-        new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Next "+str(sn+1))
-        new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Prev "+str(sn+1))
-
-    new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Height")
-    tree_nodes = new_node_group.nodes
-    # delete all nodes
-    tree_nodes.clear()
-
-    # create nodes
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = "ErrorSignBias3Grp.BCC"
-    node.location = (-270, 0)
-    node.node_tree = bpy.data.node_groups.get(ERROR_SIGN_BIAS3_MAT_NG_NAME)
-    new_nodes["ErrorSignBias3Grp.BCC"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = "HeightErrorCutoff3Grp.BCC"
-    node.location = (-90, 0)
-    node.node_tree = bpy.data.node_groups.get(HEIGHT_ERROR_CUTOFF3_MAT_NG_NAME)
-    for sn in range(num_samples):
-        node.inputs[2+sn*3].default_value = 1.000000
-    new_nodes["HeightErrorCutoff3Grp.BCC"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = "CombineSamples3Grp.BCC"
-    node.location = (90, 0)
-    node.node_tree = bpy.data.node_groups.get(COMBINE_SAMPLE3_MAT_NG_NAME)
-    new_nodes["CombineSamples3Grp.BCC"] = node
-
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = "CombinedSamplePOMGrp.BCC"
-    node.location = (270, 0)
-    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
-    new_nodes["CombinedSamplePOMGrp.BCC"] = node
-
-    node = tree_nodes.new(type="NodeGroupInput")
-    node.location = (-460, 0)
-    new_nodes["Group Input"] = node
-
-    node = tree_nodes.new(type="NodeGroupOutput")
-    node.location = (460, 0)
-    new_nodes["Group Output"] = node
-
-    # create links
-    tree_links = new_node_group.links
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["ErrorSignBias3Grp.BCC"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[2])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[3])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[4])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[5])
-    tree_links.new(new_nodes["CombineSamples3Grp.BCC"].outputs[0], new_nodes["CombinedSamplePOMGrp.BCC"].inputs[6])
-    tree_links.new(new_nodes["CombineSamples3Grp.BCC"].outputs[0], new_nodes["Group Output"].inputs[1])
-    tree_links.new(new_nodes["CombinedSamplePOMGrp.BCC"].outputs[0], new_nodes["Group Output"].inputs[0])
-    for sn in range(num_samples):
-        tree_links.new(new_nodes["Group Input"].outputs[7+sn*2], new_nodes["ErrorSignBias3Grp.BCC"].inputs[1+sn*2])
-        tree_links.new(new_nodes["Group Input"].outputs[8+sn*2], new_nodes["ErrorSignBias3Grp.BCC"].inputs[2+sn*2])
-
-        tree_links.new(new_nodes["Group Input"].outputs[7+sn*2], new_nodes["HeightErrorCutoff3Grp.BCC"].inputs[0+sn*3])
-        tree_links.new(new_nodes["ErrorSignBias3Grp.BCC"].outputs[sn],
-                       new_nodes["HeightErrorCutoff3Grp.BCC"].inputs[1+sn*3])
-
-        tree_links.new(new_nodes["Group Input"].outputs[7+sn*2], new_nodes["CombineSamples3Grp.BCC"].inputs[0+sn*3])
-        tree_links.new(new_nodes["Group Input"].outputs[8+sn*2], new_nodes["CombineSamples3Grp.BCC"].inputs[1+sn*3])
-        tree_links.new(new_nodes["HeightErrorCutoff3Grp.BCC"].outputs[sn],
-                       new_nodes["CombineSamples3Grp.BCC"].inputs[2+sn*3])
-
-    # deselect all new nodes
-    for n in new_nodes.values(): n.select = False
-
-    return new_node_group
-
 def create_mat_ng_sharpen_pom():
     # initialize variables
     new_nodes = {}
@@ -1168,15 +1232,17 @@ def create_mat_ng_sharpen_pom():
     return new_node_group
 
 def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index):
-    node = tree_nodes.new(type="ShaderNodeTexCoord")
-    node.location = (-1120, 260)
-    node.from_instancer = False
-    new_nodes[TEXTURE_COORD_INPUT_NODENAME] = node
     # use Texture Coordinate input node if no input UV coordinates are available
     if len(user_heightmap_node.inputs[user_input_index].links) < 1:
+        node = tree_nodes.new(type="ShaderNodeTexCoord")
+        node.label = TEXTURE_COORD_INPUT_NODENAME
+        node.location = (-1910, 260)
+        node.from_instancer = False
+        new_nodes[TEXTURE_COORD_INPUT_NODENAME] = node
         input_uv_link_socket = new_nodes[TEXTURE_COORD_INPUT_NODENAME].outputs[2]
     # otherwise use the current input socket of UV coordinates
     else:
+        new_nodes[TEXTURE_COORD_INPUT_NODENAME] = user_heightmap_node
         input_uv_link_socket = user_heightmap_node.inputs[user_input_index].links[0].from_socket
 
     # copy data needed to re-create input links
@@ -1199,7 +1265,7 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node,
     # create nodes
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = ASPECT_RATIO_INPUT_NODENAME
-    node.location = (-1120, 0)
+    node.location = (-1910, 0)
     node.inputs[0].default_value = 1.000000
     node.inputs[1].default_value = 1.000000
     node.inputs[2].default_value = 1.000000
@@ -1207,83 +1273,83 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node,
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
-    node.location = (-1120, -140)
+    node.location = (-1910, -140)
     node.direction_type = "UV_MAP"
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
-    node.location = (-1120, -240)
+    node.location = (-1910, -240)
     node.direction_type = "UV_MAP"
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
-    node.location = (-1120, -340)
+    node.location = (-1910, -340)
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SAMPLE_CENTER_INPUT_NODENAME
-    node.location = (-1120, -600)
+    node.location = (-1910, -600)
     node.outputs[0].default_value = -.05
     new_nodes[SAMPLE_CENTER_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SAMPLE_RADIUS_INPUT_NODENAME
-    node.location = (-1120, -700)
+    node.location = (-1910, -700)
     node.outputs[0].default_value = .05
     new_nodes[SAMPLE_RADIUS_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = HIGH_BIAS_FACTOR_INPUT_NODENAME
-    node.location = (-1120, -800)
+    node.location = (-1910, -800)
     node.outputs[0].default_value = 1.000000
     new_nodes[HIGH_BIAS_FACTOR_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SHARPEN_FACTOR_INPUT_NODENAME
-    node.location = (-1120, -900)
+    node.location = (-1910, -900)
     node.outputs[0].default_value = 0.500000
     new_nodes[SHARPEN_FACTOR_INPUT_NODENAME] = node
 
     # create reroute nodes
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, 160)
+    node.location = (-1730, 160)
     new_nodes[UV_TEX_COORD_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -40)
+    node.location = (-1730, -40)
     new_nodes[ASPECT_RATIO_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -180)
+    node.location = (-1730, -180)
     new_nodes[TANGENT_U_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -280)
+    node.location = (-1730, -280)
     new_nodes[TANGENT_V_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -400)
+    node.location = (-1730, -400)
     new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -480)
+    node.location = (-1730, -480)
     new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -640)
+    node.location = (-1730, -640)
     new_nodes[SAMPLE_CENTER_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -740)
+    node.location = (-1730, -740)
     new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -820)
+    node.location = (-1730, -820)
     new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-940, -920)
+    node.location = (-1730, -920)
     new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME] = node
 
     # create links to reroutes
@@ -1307,76 +1373,138 @@ def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_he
             node = user_heightmap_node
         else:
             node = duplicate_user_node(tree_nodes, user_heightmap_node)
-        node.label = SAMPLE_HEIGHTMAP_NODE_NAME_START + str(sn) + SAMPLE_HEIGHTMAP_NODE_NAME_END
-        node.location = (-880, 240-sn*(280+user_heightmap_node.height))
-        new_nodes[SAMPLE_HEIGHTMAP_NODE_NAME_START+str(sn)+SAMPLE_HEIGHTMAP_NODE_NAME_END] = node
+        name_sample_heightmap_node = SAMPLE_HEIGHTMAP_DYN_NODENAME + str(sn)
+        node.label = name_sample_heightmap_node
+        node.location = (-1650, 240-sn*(280+user_heightmap_node.height))
+        new_nodes[name_sample_heightmap_node] = node
 
+        name_sample_pom_node = SAMPLE_POM_DYN_NODENAME + str(sn)
         node = tree_nodes.new(type="ShaderNodeGroup")
-        node.label = SAMPLE_POM_NODE_NAME_START + str(sn) + SAMPLE_POM_NODE_NAME_END
-        node.location = (-880, 120-sn*(280+user_heightmap_node.height))
+        node.label = name_sample_pom_node
+        node.location = (-1650, 120-sn*(280+user_heightmap_node.height))
         node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
-        new_nodes[SAMPLE_POM_NODE_NAME_START+str(sn)+SAMPLE_POM_NODE_NAME_END] = node
+        new_nodes[name_sample_pom_node] = node
 
+    name_spread_sample_node = SPREAD_SAMPLE_DYN_NODENAME+str(sample_num)
+    name_spread_sample_group = SPREAD_SAMPLE_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END
-    node.location = (-880, -130-(sample_num-1)*(280+user_heightmap_node.height))
-    node.node_tree = bpy.data.node_groups.get(
-        SPREAD_SAMPLE3_MAT_NG_NAME_START+str(sample_num)+SPREAD_SAMPLE3_MAT_NG_NAME_END)
+    node.label = name_spread_sample_node
+    node.location = (-1650, -130-(sample_num-1)*(280+user_heightmap_node.height))
+    node.node_tree = bpy.data.node_groups.get(name_spread_sample_group)
     node.inputs[0].default_value = -0.050000
     node.inputs[1].default_value = 0.050000
-    new_nodes[SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END] = node
+    new_nodes[name_spread_sample_node] = node
 
     # create links
     for c in range(sample_num):
-        tree_links.new(new_nodes[SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END].outputs[c],
-                       new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[6])
-        tree_links.new(new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].outputs[0],
-                       new_nodes[SAMPLE_HEIGHTMAP_NODE_NAME_START+str(c)+SAMPLE_HEIGHTMAP_NODE_NAME_END].inputs[user_input_index])
+        name_sample_pom_node = SAMPLE_POM_DYN_NODENAME+str(c)
+        name_sample_heightmap_node = SAMPLE_HEIGHTMAP_DYN_NODENAME+str(c)
+        tree_links.new(new_nodes[name_spread_sample_node].outputs[c],
+                       new_nodes[name_sample_pom_node].inputs[6])
+        tree_links.new(new_nodes[name_sample_pom_node].outputs[0],
+                       new_nodes[name_sample_heightmap_node].inputs[user_input_index])
+
+def create_bcc_row(tree_nodes, tree_links, new_nodes, sample_num):
+    name_error_sign_bias = ERROR_SIGN_BIAS_DYN_NODENAME + str(sample_num)
+    name_error_cutoff_node = ERROR_CUTOFF_DYN_NODENAME + str(sample_num)
+    name_height_cutoff_node = HEIGHT_CUTOFF_DYN_NODENAME + str(sample_num)
+    name_combine_samples_node = COMBINE_SAMPLES_DYN_NODENAME + str(sample_num)
+
+    dyn_name_end = str(sample_num)+ALL_MAT_NG_NAME_END
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.label = name_error_sign_bias
+    node.location = (-1390, 0)
+    node.node_tree = bpy.data.node_groups.get(ERROR_SIGN_BIAS_MAT_NG_NAME_START+dyn_name_end)
+    new_nodes[name_error_sign_bias] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.label = name_error_cutoff_node
+    node.location = (-1190, 0)
+    node.node_tree = bpy.data.node_groups.get(ERROR_CUTOFF_MAT_NG_NAME_START+dyn_name_end)
+    node.inputs[1].default_value = 1.000000
+    node.inputs[3].default_value = 1.000000
+    node.inputs[5].default_value = 1.000000
+    new_nodes[name_error_cutoff_node] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.label = name_height_cutoff_node
+    node.location = (-990, 0)
+    node.node_tree = bpy.data.node_groups.get(HEIGHT_CUTOFF_MAT_NG_NAME_START+dyn_name_end)
+    new_nodes[name_height_cutoff_node] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.label = name_combine_samples_node
+    node.location = (-790, 0)
+    node.node_tree = bpy.data.node_groups.get(COMBINE_SAMPLE_MAT_NG_NAME_START+dyn_name_end)
+    new_nodes[name_combine_samples_node] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.label = COMBINED_SAMPLE_NODENAME
+    node.location = (-610, 0)
+    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    new_nodes[COMBINED_SAMPLE_NODENAME] = node
+
+    # create links
+    for sn in range(sample_num):
+        tree_links.new(new_nodes[name_error_sign_bias].outputs[sn], new_nodes[name_error_cutoff_node].inputs[sn*2])
+        tree_links.new(new_nodes[name_error_cutoff_node].outputs[sn], new_nodes[name_height_cutoff_node].inputs[1+sn*2])
+        tree_links.new(new_nodes[name_height_cutoff_node].outputs[sn], new_nodes[name_combine_samples_node].inputs[2+sn*3])
+
+#    tree_links.new(new_nodes[name_error_sign_bias].outputs[0], new_nodes[name_error_cutoff_node].inputs[0])
+#    tree_links.new(new_nodes[name_error_sign_bias].outputs[1], new_nodes[name_error_cutoff_node].inputs[2])
+#    tree_links.new(new_nodes[name_error_sign_bias].outputs[2], new_nodes[name_error_cutoff_node].inputs[4])
+
+#    tree_links.new(new_nodes[name_error_cutoff_node].outputs[0], new_nodes[name_height_cutoff_node].inputs[1])
+#    tree_links.new(new_nodes[name_error_cutoff_node].outputs[1], new_nodes[name_height_cutoff_node].inputs[3])
+#    tree_links.new(new_nodes[name_error_cutoff_node].outputs[2], new_nodes[name_height_cutoff_node].inputs[5])
+
+#    tree_links.new(new_nodes[name_height_cutoff_node].outputs[0], new_nodes[name_combine_samples_node].inputs[2])
+#    tree_links.new(new_nodes[name_height_cutoff_node].outputs[1], new_nodes[name_combine_samples_node].inputs[5])
+#    tree_links.new(new_nodes[name_height_cutoff_node].outputs[2], new_nodes[name_combine_samples_node].inputs[8])
+
+    tree_links.new(new_nodes[name_combine_samples_node].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[6])
 
 def create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node):
     # create nodes
     node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.label = SHARPEN_HEIGHTMAP_000_GRP_NODENAME
+    node.label = SHARPEN_HEIGHTMAP_DYN_NODENAME
     node.location = (-420, 0)
-    new_nodes[SHARPEN_HEIGHTMAP_000_GRP_NODENAME] = node
+    new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = SHARPEN_POM_000_GRP_NODENAME
-    node.location = (-180, 0)
+    node.label = SHARPEN_POM_DYN_NODENAME
+    node.location = (-200, 0)
     node.node_tree = bpy.data.node_groups.get(SHARPEN_POM_MAT_NG_NAME)
-    new_nodes[SHARPEN_POM_000_GRP_NODENAME] = node
+    new_nodes[SHARPEN_POM_DYN_NODENAME] = node
 
     # create links
-    tree_links.new(new_nodes[SHARPEN_HEIGHTMAP_000_GRP_NODENAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[7])
+    tree_links.new(new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[7])
 
-def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, user_output_index, sample_num):
+def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, user_output_index,
+                               sample_num):
     # initialize variables
     new_nodes = {}
 
     nodes_offset = (user_heightmap_node.location[0], user_heightmap_node.location[1])
 
     # create inputs column
-    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes,
-                                                                   user_heightmap_node, user_input_index)
+    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index)
     # create spread sample column and link it to the inputs column
-    create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index, sample_num)
+    create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index,
+                                      sample_num)
     link_input_column_to_sample_column(tree_links, new_nodes, sample_num)
 
-    # bias, cutoff, and combine group node
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END
-    node.location = (-620, 0)
-    node.node_tree = bpy.data.node_groups.get(BIAS_CUTOFF_COMBINE3_MAT_NG_NAME)
-    new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END] = node
-    # link inputs to above node
-    link_input_column_to_bcc_grp_node(tree_links, new_nodes, sample_num)
+    # create (Bias, Cutoff, Combine) row and links
+    create_bcc_row(tree_nodes, tree_links, new_nodes, sample_num)
+    link_input_column_to_bcc_row(tree_links, new_nodes, sample_num)
+    link_sample_column_to_bcc_row(tree_links, new_nodes, sample_num)
 
-    # sharpen row and input links
+    # create sharpen row and links
     create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node)
     link_input_column_to_sharpen_row(tree_links, new_nodes)
-
-    link_sample_column_to_bias_cutoff_combine_node(tree_links, new_nodes, sample_num)
-    link_bias_cutoff_combine_node_to_sharpen_row(tree_links, new_nodes, sample_num)
+    link_bcc_row_to_sharpen_row(tree_links, new_nodes, sample_num)
 
     # create final node, a duplicate that appears to be in the same place as the originally selected node
     node = duplicate_user_node(tree_nodes, user_heightmap_node)
@@ -1396,66 +1524,60 @@ def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user
     return new_nodes
 
 def link_input_column_to_sample_column(tree_links, new_nodes, sample_num):
+    name_spread_sample = SPREAD_SAMPLE_DYN_NODENAME+str(sample_num)
     # create links
-    tree_links.new(new_nodes[SAMPLE_CENTER_INPUT_RR_NAME].outputs[0],
-        new_nodes[SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END].inputs[0])
-    tree_links.new(new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME].outputs[0],
-        new_nodes[SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END].inputs[1])
+    tree_links.new(new_nodes[SAMPLE_CENTER_INPUT_RR_NAME].outputs[0], new_nodes[name_spread_sample].inputs[0])
+    tree_links.new(new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME].outputs[0], new_nodes[name_spread_sample].inputs[1])
     for c in range(sample_num):
-        tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[0])
-        tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[1])
-        tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[2])
-        tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[3])
-        tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[4])
-        tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0],
-            new_nodes[SAMPLE_POM_NODE_NAME_START+str(c)+SAMPLE_POM_NODE_NAME_END].inputs[5])
+        name_sample_pom = SAMPLE_POM_DYN_NODENAME+str(c)
+        tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[0])
+        tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[1])
+        tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[2])
+        tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[3])
+        tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[4])
+        tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0], new_nodes[name_sample_pom].inputs[5])
 
-def link_input_column_to_bcc_grp_node(tree_links, new_nodes, sample_num):
+# bcc = Bias Cutoff Combine
+def link_input_column_to_bcc_row(tree_links, new_nodes, sample_num):
+    name_error_sign_bias = ERROR_SIGN_BIAS_DYN_NODENAME + str(sample_num)
     # create links
-    tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[0])
-    tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[1])
-    tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[2])
-    tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[3])
-    tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[4])
-    tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[5])
-    tree_links.new(new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME].outputs[0],
-        new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[6])
+    tree_links.new(new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME].outputs[0], new_nodes[name_error_sign_bias].inputs[0])
+    tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[0])
+    tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[1])
+    tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[2])
+    tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[3])
+    tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[4])
+    tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[5])
+
+def link_sample_column_to_bcc_row(tree_links, new_nodes, sample_num):
+    name_error_sign_bias = ERROR_SIGN_BIAS_DYN_NODENAME + str(sample_num)
+    name_spread_sample = SPREAD_SAMPLE_DYN_NODENAME + str(sample_num)
+    name_height_cutoff_node = HEIGHT_CUTOFF_DYN_NODENAME + str(sample_num)
+    name_combine_samples_node = COMBINE_SAMPLES_DYN_NODENAME + str(sample_num)
+
+    # create links
+    for c in range(sample_num):
+        name_sample_heightmap_node = SAMPLE_HEIGHTMAP_DYN_NODENAME+str(c)
+        tree_links.new(new_nodes[name_sample_heightmap_node].outputs[0], new_nodes[name_error_sign_bias].inputs[1+c*2])
+        tree_links.new(new_nodes[name_spread_sample].outputs[c], new_nodes[name_error_sign_bias].inputs[2+c*2])
+        tree_links.new(new_nodes[name_sample_heightmap_node].outputs[0], new_nodes[name_combine_samples_node].inputs[c*3])
+        tree_links.new(new_nodes[name_spread_sample].outputs[c], new_nodes[name_combine_samples_node].inputs[1+c*3])
+        tree_links.new(new_nodes[name_sample_heightmap_node].outputs[0], new_nodes[name_height_cutoff_node].inputs[c*2])
 
 def link_input_column_to_sharpen_row(tree_links, new_nodes):
     # create links
-    tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[0])
-    tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[1])
-    tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[2])
-    tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[3])
-    tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[4])
-    tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[5])
-    tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[6])
+    tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[0])
+    tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[1])
+    tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[2])
+    tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[3])
+    tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[4])
+    tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[5])
+    tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[6])
 
-def link_sample_column_to_bias_cutoff_combine_node(tree_links, new_nodes, sample_num):
-    # create links
-    for c in range(sample_num):
-        tree_links.new(new_nodes[SPREAD_SAMPLE_NODE_NAME_START+str(sample_num)+SPREAD_SAMPLE_NODE_NAME_END].outputs[c],
-            new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[8+c*2])
-        tree_links.new(new_nodes[SAMPLE_HEIGHTMAP_NODE_NAME_START+str(c)+SAMPLE_HEIGHTMAP_NODE_NAME_END].outputs[0],
-            new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].inputs[7+c*2])
-
-def link_bias_cutoff_combine_node_to_sharpen_row(tree_links, new_nodes, sample_num):
-    # create links
-    tree_links.new(new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].outputs[0],
-        new_nodes[SHARPEN_HEIGHTMAP_000_GRP_NODENAME].inputs[0])
-    tree_links.new(new_nodes[BIAS_CUTOFF_COMBINE_GRP_NODENAME_START+str(sample_num)+BIAS_CUTOFF_COMBINE_GRP_NODENAME_END].outputs[1],
-        new_nodes[SHARPEN_POM_000_GRP_NODENAME].inputs[8])
+def link_bcc_row_to_sharpen_row(tree_links, new_nodes, sample_num):
+    name_combine_samples_node = COMBINE_SAMPLES_DYN_NODENAME + str(sample_num)
+    tree_links.new(new_nodes[name_combine_samples_node].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[8])
+    tree_links.new(new_nodes[COMBINED_SAMPLE_NODENAME].outputs[0], new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME].inputs[0])
 
 def duplicate_user_node(tree_nodes, user_heightmap_node):
     # de-select all nodes, ...
@@ -1473,7 +1595,7 @@ def duplicate_user_node(tree_nodes, user_heightmap_node):
     return None
 
 def relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_index):
-    tree_links.new(new_nodes[SHARPEN_POM_000_GRP_NODENAME].outputs[0],
+    tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME].outputs[0],
                    new_nodes[HEIGHTMAP_FINAL_NODENAME].inputs[user_input_index])
     # loop through outputs
     for c in range(len(output_to_sockets)):
@@ -1484,13 +1606,14 @@ def relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_
 
 def create_external_pomster_nodes(node_tree, override_create, user_heightmap_node, user_input_index, user_output_index,
                                 sample_num):
+    dyn_end_name = str(sample_num)+ALL_MAT_NG_NAME_END
     ensure_node_groups(override_create,
                        [ POMSTER_UV_MAT_NG_NAME,
-                         SPREAD_SAMPLE3_MAT_NG_NAME_START+str(sample_num)+SPREAD_SAMPLE3_MAT_NG_NAME_END,
-                         ERROR_SIGN_BIAS3_MAT_NG_NAME,
-                         HEIGHT_ERROR_CUTOFF3_MAT_NG_NAME,
-                         COMBINE_SAMPLE3_MAT_NG_NAME,
-                         BIAS_CUTOFF_COMBINE3_MAT_NG_NAME,
+                         SPREAD_SAMPLE_MAT_NG_NAME_START+dyn_end_name,
+                         ERROR_SIGN_BIAS_MAT_NG_NAME_START+dyn_end_name,
+                         ERROR_CUTOFF_MAT_NG_NAME_START+dyn_end_name,
+                         HEIGHT_CUTOFF_MAT_NG_NAME_START+dyn_end_name,
+                         COMBINE_SAMPLE_MAT_NG_NAME_START+dyn_end_name,
                          SHARPEN_POM_MAT_NG_NAME,
                         ],
                        'ShaderNodeTree', create_prereq_util_node_group, sample_num)
@@ -1545,5 +1668,6 @@ class POMSTER_AddPOMsterToSelectedNode(bpy.types.Operator):
             return {'CANCELLED'}
         # create the heightmap node setup in the current editor tree, with user_node as heightmap node
         create_external_pomster_nodes(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, user_node,
-                                      scn.POMSTER_UV_InputIndex-1, scn.POMSTER_HeightOutputIndex-1, 4)
+                                      scn.POMSTER_UV_InputIndex-1, scn.POMSTER_HeightOutputIndex-1,
+                                      scn.POMSTER_NumSamples)
         return {'FINISHED'}
