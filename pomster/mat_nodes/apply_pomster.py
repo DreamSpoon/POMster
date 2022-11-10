@@ -89,12 +89,12 @@ def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
     print("Unknown name passed to create_prereq_util_node_group: " + str(node_group_name))
     return None
 
-def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index):
+def create_inputs_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node, user_input_index):
     # use Texture Coordinate input node if no input UV coordinates are available
     if len(user_heightmap_node.inputs[user_input_index].links) < 1:
         node = tree_nodes.new(type="ShaderNodeTexCoord")
         node.label = TEXTURE_COORD_INPUT_NODENAME
-        node.location = (-1910, 260)
+        node.location = (-1910+node_sub_offset, 260)
         node.from_instancer = False
         new_nodes[TEXTURE_COORD_INPUT_NODENAME] = node
         input_uv_link_socket = new_nodes[TEXTURE_COORD_INPUT_NODENAME].outputs[2]
@@ -123,7 +123,7 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node,
     # create nodes
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = ASPECT_RATIO_INPUT_NODENAME
-    node.location = (-1910, 0)
+    node.location = (-1910+node_sub_offset, 0)
     node.inputs[0].default_value = 1.000000
     node.inputs[1].default_value = 1.000000
     node.inputs[2].default_value = 1.000000
@@ -131,83 +131,83 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node,
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
-    node.location = (-1910, -140)
+    node.location = (-1910+node_sub_offset, -140)
     node.direction_type = "UV_MAP"
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
-    node.location = (-1910, -240)
+    node.location = (-1910+node_sub_offset, -240)
     node.direction_type = "UV_MAP"
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
-    node.location = (-1910, -340)
+    node.location = (-1910+node_sub_offset, -340)
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SAMPLE_CENTER_INPUT_NODENAME
-    node.location = (-1910, -600)
+    node.location = (-1910+node_sub_offset, -600)
     node.outputs[0].default_value = -.05
     new_nodes[SAMPLE_CENTER_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SAMPLE_RADIUS_INPUT_NODENAME
-    node.location = (-1910, -700)
+    node.location = (-1910+node_sub_offset, -700)
     node.outputs[0].default_value = .05
     new_nodes[SAMPLE_RADIUS_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = HIGH_BIAS_FACTOR_INPUT_NODENAME
-    node.location = (-1910, -800)
+    node.location = (-1910+node_sub_offset, -800)
     node.outputs[0].default_value = 1.000000
     new_nodes[HIGH_BIAS_FACTOR_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SHARPEN_FACTOR_INPUT_NODENAME
-    node.location = (-1910, -900)
+    node.location = (-1910+node_sub_offset, -900)
     node.outputs[0].default_value = 0.500000
     new_nodes[SHARPEN_FACTOR_INPUT_NODENAME] = node
 
     # create reroute nodes
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, 160)
+    node.location = (-1730+node_sub_offset, 160)
     new_nodes[UV_TEX_COORD_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -40)
+    node.location = (-1730+node_sub_offset, -40)
     new_nodes[ASPECT_RATIO_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -180)
+    node.location = (-1730+node_sub_offset, -180)
     new_nodes[TANGENT_U_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -280)
+    node.location = (-1730+node_sub_offset, -280)
     new_nodes[TANGENT_V_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -400)
+    node.location = (-1730+node_sub_offset, -400)
     new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -480)
+    node.location = (-1730+node_sub_offset, -480)
     new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -640)
+    node.location = (-1730+node_sub_offset, -640)
     new_nodes[SAMPLE_CENTER_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -740)
+    node.location = (-1730+node_sub_offset, -740)
     new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -820)
+    node.location = (-1730+node_sub_offset, -820)
     new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME] = node
 
     node = tree_nodes.new(type="NodeReroute")
-    node.location = (-1730, -920)
+    node.location = (-1730+node_sub_offset, -920)
     new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME] = node
 
     # create links to reroutes
@@ -217,14 +217,19 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node,
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].inputs[0])
     tree_links.new(new_nodes[TANGENT_U_INPUT_NODENAME].outputs[0], new_nodes[TANGENT_U_INPUT_RR_NAME].inputs[0])
     tree_links.new(new_nodes[TANGENT_V_INPUT_NODENAME].outputs[0], new_nodes[TANGENT_V_INPUT_RR_NAME].inputs[0])
-    tree_links.new(new_nodes[SAMPLE_CENTER_INPUT_NODENAME].outputs[0], new_nodes[SAMPLE_CENTER_INPUT_RR_NAME].inputs[0])
-    tree_links.new(new_nodes[SAMPLE_RADIUS_INPUT_NODENAME].outputs[0], new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME].inputs[0])
-    tree_links.new(new_nodes[HIGH_BIAS_FACTOR_INPUT_NODENAME].outputs[0], new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME].inputs[0])
-    tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_NODENAME].outputs[0], new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].inputs[0])
+    tree_links.new(new_nodes[SAMPLE_CENTER_INPUT_NODENAME].outputs[0],
+                   new_nodes[SAMPLE_CENTER_INPUT_RR_NAME].inputs[0])
+    tree_links.new(new_nodes[SAMPLE_RADIUS_INPUT_NODENAME].outputs[0],
+                   new_nodes[SAMPLE_RADIUS_INPUT_RR_NAME].inputs[0])
+    tree_links.new(new_nodes[HIGH_BIAS_FACTOR_INPUT_NODENAME].outputs[0],
+                   new_nodes[HIGH_BIAS_FACTOR_INPUT_RR_NAME].inputs[0])
+    tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_NODENAME].outputs[0],
+                   new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].inputs[0])
 
     return output_to_sockets
 
-def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index, sample_num):
+def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node,
+                                      user_input_index, sample_num):
     # create nodes
     for sn in range(sample_num):
         if sn == 0:
@@ -233,13 +238,13 @@ def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_he
             node = duplicate_user_node(tree_nodes, user_heightmap_node)
         name_sample_heightmap_node = SAMPLE_HEIGHTMAP_DYN_NODENAME + str(sn)
         node.label = name_sample_heightmap_node
-        node.location = (-1650, 240-sn*(280+user_heightmap_node.height))
+        node.location = (-1650+node_sub_offset, 240-sn*(280+user_heightmap_node.height))
         new_nodes[name_sample_heightmap_node] = node
 
         name_sample_pom_node = SAMPLE_POM_DYN_NODENAME + str(sn)
         node = tree_nodes.new(type="ShaderNodeGroup")
         node.label = name_sample_pom_node
-        node.location = (-1650, 120-sn*(280+user_heightmap_node.height))
+        node.location = (-1650+node_sub_offset, 120-sn*(280+user_heightmap_node.height))
         node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
         new_nodes[name_sample_pom_node] = node
 
@@ -247,7 +252,7 @@ def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_he
     name_spread_sample_group = SPREAD_SAMPLE_MAT_NG_NAME_START+str(sample_num)+ALL_MAT_NG_NAME_END
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = name_spread_sample_node
-    node.location = (-1650, -130-(sample_num-1)*(280+user_heightmap_node.height))
+    node.location = (-1650+node_sub_offset, -130-(sample_num-1)*(280+user_heightmap_node.height))
     node.node_tree = bpy.data.node_groups.get(name_spread_sample_group)
     node.inputs[0].default_value = -0.050000
     node.inputs[1].default_value = 0.050000
@@ -262,9 +267,9 @@ def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_he
         tree_links.new(new_nodes[name_sample_pom_node].outputs[0],
                        new_nodes[name_sample_heightmap_node].inputs[user_input_index])
 
-def create_bcc_row(tree_nodes, tree_links, new_nodes, sample_num):
+def create_bcc_row(tree_nodes, tree_links, new_nodes, node_sub_offset, sample_num, error_cutoff_cycles):
     name_error_sign_bias = ERROR_SIGN_BIAS_DYN_NODENAME + str(sample_num)
-    name_error_cutoff_node = ERROR_CUTOFF_DYN_NODENAME + str(sample_num)
+#    name_error_cutoff_node = ERROR_CUTOFF_DYN_NODENAME + str(sample_num)
     name_height_cutoff_node = HEIGHT_CUTOFF_DYN_NODENAME + str(sample_num)
     name_combine_samples_node = COMBINE_SAMPLES_DYN_NODENAME + str(sample_num)
 
@@ -273,83 +278,107 @@ def create_bcc_row(tree_nodes, tree_links, new_nodes, sample_num):
     # create nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = name_error_sign_bias
-    node.location = (-1390, 0)
+    node.location = (-1390 + node_sub_offset - 200 * (error_cutoff_cycles - 1), 0)
     node.node_tree = bpy.data.node_groups.get(ERROR_SIGN_BIAS_MAT_NG_NAME_START+dyn_name_end)
     new_nodes[name_error_sign_bias] = node
 
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = name_error_cutoff_node
-    node.location = (-1190, 0)
-    node.node_tree = bpy.data.node_groups.get(ERROR_CUTOFF_MAT_NG_NAME_START+dyn_name_end)
-    node.inputs[1].default_value = 1.000000
-    node.inputs[3].default_value = 1.000000
-    node.inputs[5].default_value = 1.000000
-    new_nodes[name_error_cutoff_node] = node
+    for c in range(error_cutoff_cycles):
+        node = tree_nodes.new(type="ShaderNodeGroup")
+        node.location = (-1190 + node_sub_offset - 200 * (error_cutoff_cycles - 1 - c), 0)
+        node.node_tree = bpy.data.node_groups.get(ERROR_CUTOFF_MAT_NG_NAME_START+dyn_name_end)
+        # first cycle gets init values (1, 1, 1)
+        if c == 0:
+            node.inputs[1].default_value = 1.000000
+            node.inputs[3].default_value = 1.000000
+            node.inputs[5].default_value = 1.000000
+        new_nodes[ERROR_CUTOFF_DYN_NODENAME+str(c+1)] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = name_height_cutoff_node
-    node.location = (-990, 0)
+    node.location = (-990 + node_sub_offset, 0)
     node.node_tree = bpy.data.node_groups.get(HEIGHT_CUTOFF_MAT_NG_NAME_START+dyn_name_end)
     new_nodes[name_height_cutoff_node] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = name_combine_samples_node
-    node.location = (-790, 0)
+    node.location = (-790 + node_sub_offset, 0)
     node.node_tree = bpy.data.node_groups.get(COMBINE_SAMPLE_MAT_NG_NAME_START+dyn_name_end)
     new_nodes[name_combine_samples_node] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = COMBINED_SAMPLE_NODENAME
-    node.location = (-610, 0)
+    node.location = (-610 + node_sub_offset, 0)
     node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
     new_nodes[COMBINED_SAMPLE_NODENAME] = node
 
-    # create links
+    # create input links to first node and output links from last node
     for sn in range(sample_num):
-        tree_links.new(new_nodes[name_error_sign_bias].outputs[sn], new_nodes[name_error_cutoff_node].inputs[sn*2])
-        tree_links.new(new_nodes[name_error_cutoff_node].outputs[sn], new_nodes[name_height_cutoff_node].inputs[1+sn*2])
-        tree_links.new(new_nodes[name_height_cutoff_node].outputs[sn], new_nodes[name_combine_samples_node].inputs[2+sn*3])
+        tree_links.new(new_nodes[ERROR_CUTOFF_DYN_NODENAME+str(error_cutoff_cycles)].outputs[sn],
+                       new_nodes[name_height_cutoff_node].inputs[1+sn*2])
+        tree_links.new(new_nodes[name_height_cutoff_node].outputs[sn],
+                       new_nodes[name_combine_samples_node].inputs[2+sn*3])
+    # create links from error bias node to multiple (if needed) error cutoff nodes, and create links between nodes also
+    for c in range(error_cutoff_cycles):
+        for sn in range(sample_num):
+            tree_links.new(new_nodes[name_error_sign_bias].outputs[sn],
+                           new_nodes[ERROR_CUTOFF_DYN_NODENAME+str(c+1)].inputs[sn*2])
+        # if this is not the first error cutoff node, then link backwards to previous error cutoff node
+        if c > 0:
+            # link error cutoff values from previous node to this node
+            for sn in range(sample_num):
+                tree_links.new(new_nodes[ERROR_CUTOFF_DYN_NODENAME+str(c)].outputs[sn],
+                               new_nodes[ERROR_CUTOFF_DYN_NODENAME+str(c+1)].inputs[1+sn*2])
 
     tree_links.new(new_nodes[name_combine_samples_node].outputs[0], new_nodes[COMBINED_SAMPLE_NODENAME].inputs[6])
 
-def create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node):
-    # create nodes
-    node = duplicate_user_node(tree_nodes, user_heightmap_node)
-    node.label = SHARPEN_HEIGHTMAP_DYN_NODENAME
-    node.location = (-420, 0)
-    new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME] = node
+def create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node, sharpen_cycles):
+    for c in range(sharpen_cycles):
+        # create nodes
+        node = duplicate_user_node(tree_nodes, user_heightmap_node)
+        node.location = (-420 - 400 * (sharpen_cycles - c - 1), 0)
+        new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME+str(c+1)] = node
 
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.label = SHARPEN_POM_DYN_NODENAME
-    node.location = (-200, 0)
-    node.node_tree = bpy.data.node_groups.get(SHARPEN_POM_MAT_NG_NAME)
-    new_nodes[SHARPEN_POM_DYN_NODENAME] = node
+        node = tree_nodes.new(type="ShaderNodeGroup")
+        node.location = (-200 - 400 * (sharpen_cycles - c - 1), 0)
+        node.node_tree = bpy.data.node_groups.get(SHARPEN_POM_MAT_NG_NAME)
+        new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)] = node
 
-    # create links
-    tree_links.new(new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[7])
+        # create links
+        tree_links.new(new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME+str(c+1)].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[7])
+        # if this is not the first sharpen cycle, then get inputs from the previous sharpen cycle
+        if c > 0:
+            tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME+str(c)].outputs[0],
+                           new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME+str(c+1)].inputs[0])
+            tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME+str(c)].outputs[1],
+                           new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[8])
 
 def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, user_output_index,
-                               sample_num):
+                               sample_num, error_cutoff_cycles, sharpen_cycles):
     # initialize variables
     new_nodes = {}
 
-    nodes_offset = (user_heightmap_node.location[0], user_heightmap_node.location[1])
+    node_final_offset = (user_heightmap_node.location[0], user_heightmap_node.location[1])
+    node_sub_offset = -200 * (error_cutoff_cycles - 1) - 400 * (sharpen_cycles - 1)
 
     # create inputs column
-    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index)
+    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node,
+                                             user_input_index)
     # create spread sample column and link it to the inputs column
-    create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, user_heightmap_node, user_input_index,
-                                      sample_num)
+    create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node,
+                                      user_input_index, sample_num)
     link_input_column_to_sample_column(tree_links, new_nodes, sample_num)
 
+    node_sub_offset = -400 * (sharpen_cycles - 1)
+
     # create (Bias, Cutoff, Combine) row and links
-    create_bcc_row(tree_nodes, tree_links, new_nodes, sample_num)
+    create_bcc_row(tree_nodes, tree_links, new_nodes, node_sub_offset, sample_num, error_cutoff_cycles)
     link_input_column_to_bcc_row(tree_links, new_nodes, sample_num)
     link_sample_column_to_bcc_row(tree_links, new_nodes, sample_num)
 
     # create sharpen row and links
-    create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node)
-    link_input_column_to_sharpen_row(tree_links, new_nodes)
+    create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_node, sharpen_cycles)
+    link_input_column_to_sharpen_row(tree_links, new_nodes, sharpen_cycles)
     link_bcc_row_to_sharpen_row(tree_links, new_nodes, sample_num)
 
     # create final node, a duplicate that appears to be in the same place as the originally selected node
@@ -359,13 +388,13 @@ def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user
     new_nodes[HEIGHTMAP_FINAL_NODENAME] = node
 
     # fix output links to re-create original user node's output links, but use calculated height
-    relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_index)
+    relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_index, sharpen_cycles)
 
     # deselect and offset all new nodes
     for n in new_nodes.values():
         n.select = False
-        n.location[0] = n.location[0] + nodes_offset[0]
-        n.location[1] = n.location[1] + nodes_offset[1]
+        n.location[0] = n.location[0] + node_final_offset[0]
+        n.location[1] = n.location[1] + node_final_offset[1]
 
     return new_nodes
 
@@ -410,20 +439,30 @@ def link_sample_column_to_bcc_row(tree_links, new_nodes, sample_num):
         tree_links.new(new_nodes[name_spread_sample].outputs[c], new_nodes[name_combine_samples_node].inputs[1+c*3])
         tree_links.new(new_nodes[name_sample_heightmap_node].outputs[0], new_nodes[name_height_cutoff_node].inputs[c*2])
 
-def link_input_column_to_sharpen_row(tree_links, new_nodes):
+def link_input_column_to_sharpen_row(tree_links, new_nodes, sharpen_cycles):
     # create links
-    tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[0])
-    tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[1])
-    tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[2])
-    tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[3])
-    tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[4])
-    tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[5])
-    tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[6])
+    for c in range(sharpen_cycles):
+        tree_links.new(new_nodes[UV_TEX_COORD_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[0])
+        tree_links.new(new_nodes[ASPECT_RATIO_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[1])
+        tree_links.new(new_nodes[TANGENT_U_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[2])
+        tree_links.new(new_nodes[TANGENT_V_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[3])
+        tree_links.new(new_nodes[GEOMETRY_NORMAL_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[4])
+        tree_links.new(new_nodes[GEOMETRY_INCOMING_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[5])
+        tree_links.new(new_nodes[SHARPEN_FACTOR_INPUT_RR_NAME].outputs[0],
+                       new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[6])
 
 def link_bcc_row_to_sharpen_row(tree_links, new_nodes, sample_num):
     name_combine_samples_node = COMBINE_SAMPLES_DYN_NODENAME + str(sample_num)
-    tree_links.new(new_nodes[name_combine_samples_node].outputs[0], new_nodes[SHARPEN_POM_DYN_NODENAME].inputs[8])
-    tree_links.new(new_nodes[COMBINED_SAMPLE_NODENAME].outputs[0], new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME].inputs[0])
+    tree_links.new(new_nodes[name_combine_samples_node].outputs[0],
+                   new_nodes[SHARPEN_POM_DYN_NODENAME+"1"].inputs[8])
+    tree_links.new(new_nodes[COMBINED_SAMPLE_NODENAME].outputs[0],
+                   new_nodes[SHARPEN_HEIGHTMAP_DYN_NODENAME+"1"].inputs[0])
 
 def duplicate_user_node(tree_nodes, user_heightmap_node):
     # de-select all nodes, ...
@@ -440,8 +479,8 @@ def duplicate_user_node(tree_nodes, user_heightmap_node):
     # return error
     return None
 
-def relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_index):
-    tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME].outputs[0],
+def relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_index, sharpen_cycles):
+    tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME+str(sharpen_cycles)].outputs[0],
                    new_nodes[HEIGHTMAP_FINAL_NODENAME].inputs[user_input_index])
     # loop through outputs
     for c in range(len(output_to_sockets)):
@@ -451,7 +490,7 @@ def relink_final_user_node(tree_links, new_nodes, output_to_sockets, user_input_
             tree_links.new(new_nodes[HEIGHTMAP_FINAL_NODENAME].outputs[c], sock)
 
 def create_external_pomster_nodes(node_tree, override_create, user_heightmap_node, user_input_index, user_output_index,
-                                sample_num):
+                                sample_num, error_cutoff_cycles, sharpen_cycles):
     dyn_end_name = str(sample_num)+ALL_MAT_NG_NAME_END
     ensure_node_groups(override_create,
                        [ POMSTER_UV_MAT_NG_NAME,
@@ -465,7 +504,7 @@ def create_external_pomster_nodes(node_tree, override_create, user_heightmap_nod
                        'ShaderNodeTree', create_prereq_util_node_group, sample_num)
 
     create_pomster_apply_nodes(node_tree.nodes, node_tree.links, user_heightmap_node, user_input_index,
-                                 user_output_index, sample_num)
+                               user_output_index, sample_num, error_cutoff_cycles, sharpen_cycles)
 
 class POMSTER_AddPOMsterToSelectedNode(bpy.types.Operator):
     bl_description = "Using selected heightmap node as a basis, add nodes to create a Parallax Occlusion Map (POM) " \
@@ -515,5 +554,6 @@ class POMSTER_AddPOMsterToSelectedNode(bpy.types.Operator):
         # create the heightmap node setup in the current editor tree, with user_node as heightmap node
         create_external_pomster_nodes(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, user_node,
                                       scn.POMSTER_UV_InputIndex-1, scn.POMSTER_HeightOutputIndex-1,
-                                      scn.POMSTER_NumSamples)
+                                      scn.POMSTER_NumSamples, scn.POMSTER_NumErrorCutoffCycles,
+                                      scn.POMSTER_NumSharpenCycles)
         return {'FINISHED'}
