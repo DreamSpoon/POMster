@@ -31,7 +31,7 @@ import math
 
 import bpy
 
-from .heightmap_nodes import POMSTER_AddPOMsterToSelectedNode
+from .mat_nodes.apply_pomster import POMSTER_AddPOMsterToSelectedNode
 from .uv_vu_map import POMSTER_CreateVUMap
 
 class POMSTER_PT_Main(bpy.types.Panel):
@@ -48,15 +48,10 @@ class POMSTER_PT_Main(bpy.types.Panel):
         box = layout.box()
         box.label(text="Create POM Nodes")
         box.operator("pomster.create_pom_uv")
-        sub_box = box.box()
-        sub_box.prop(scn, "POMSTER_NumSamples")
-        sub_box.prop(scn, "POMSTER_SharpenCycles")
-        sub_box.prop(scn, "POMSTER_SharpenFactor")
-        sub_box = box.box()
-        box.label(text="Options")
-        sub_box.prop(scn, "POMSTER_UV_InputIndex")
-        sub_box.prop(scn, "POMSTER_HeightOutputIndex")
-        sub_box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn, "POMSTER_UV_InputIndex")
+        box.prop(scn, "POMSTER_HeightOutputIndex")
+        box.prop(scn, "POMSTER_NumSamples")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -87,8 +82,6 @@ def unregister():
         bpy.utils.unregister_class(cls)
     bts = bpy.types.Scene
 
-    del bts.POMSTER_SharpenFactor
-    del bts.POMSTER_SharpenCycles
     del bts.POMSTER_NumSamples
     del bts.POMSTER_HeightOutputIndex
     del bts.POMSTER_UV_InputIndex
@@ -101,17 +94,12 @@ def register_props():
     bts.POMSTER_NodesOverrideCreate = bp.BoolProperty(name="Override Create", description="Shader Nodes custom " +
         "Node Groups will be re-created if this option is enabled. When custom Node Groups are override created, " +
         "old Node Groups of the same name are renamed and deprecated", default=False)
-    bts.POMSTER_UV_InputIndex = bp.IntProperty(name="UV Input Number", description="Choose the input number " +
-        "number of the selected node that has the UV coordinates input - usually input #1", default=1, min=1)
-    bts.POMSTER_HeightOutputIndex = bp.IntProperty(name="Height Output Number", description="Choose the output " +
-        "number of the selected node that has the Height output - usually output #1", default=1, min=1)
-    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of spread samples used to " +
+    bts.POMSTER_UV_InputIndex = bp.IntProperty(name="UV Input Number", description="Input to use as UV coordinates " +
+        "input in POM node setup", default=1, min=1)
+    bts.POMSTER_HeightOutputIndex = bp.IntProperty(name="Height Output Number", description="Output to use as final " +
+        "height output of POM node setup", default=1, min=1)
+    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of samples (after jitter) to " +
         "calculate POM", default=3, min=3)
-    bts.POMSTER_SharpenCycles = bp.IntProperty(name="Sharpen Cycles", description="Number of repetitions of the " +
-        "Sharpen nodegroup to create to reduce error/warping in final result of POM", default=1, min=1)
-    bts.POMSTER_SharpenFactor = bp.FloatProperty(name="Sharpen Factor", description="Sharpen mix factor of new vs " +
-        "old sample. 1 is maximum sharpen, which uses only Sharpen POM values and ignores previous height sample " +
-        "values. 0 is minimum sharpen, which uses only previous height sample values", default=0.75, min=0.0, max=1.0)
 
 if __name__ == "__main__":
     register()

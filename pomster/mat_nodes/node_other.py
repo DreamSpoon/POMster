@@ -18,6 +18,7 @@
 
 import bpy
 
+ALL_MAT_NG_NAME_END = ".MatNG.POMSTER"
 MAT_NAME_SUFFIX = ".MatNG"
 GEO_NAME_SUFFIX = ".GeoNG"
 
