@@ -25,7 +25,7 @@ GEO_NAME_SUFFIX = ".GeoNG"
 def is_duo_node_group_name(node_group_name, base_name):
     return (node_group_name == base_name + MAT_NAME_SUFFIX or node_group_name == base_name + GEO_NAME_SUFFIX)
 
-def ensure_node_group(override_create, node_group_name, node_tree_type, create_group_func, custom_data):
+def ensure_node_group(override_create, node_group_name, node_tree_type, create_group_func, custom_data=None):
     # check if custom node group already exists, and create/override if necessary
     node_group = bpy.data.node_groups.get(node_group_name)
     if node_group is None or node_group.type != node_tree_type or override_create:
@@ -39,9 +39,9 @@ def ensure_node_group(override_create, node_group_name, node_tree_type, create_g
             node_group.name = node_group_name
     return node_group
 
-def ensure_node_groups(override_create, ng_name_list, ng_type, create_group_func, custom_data):
+def ensure_node_groups(override_create, ng_name_list, node_tree_type, create_group_func, custom_data=None):
     for ng_name in ng_name_list:
-        ensure_node_group(override_create, ng_name, ng_type, create_group_func, custom_data)
+        ensure_node_group(override_create, ng_name, node_tree_type, create_group_func, custom_data)
 
 def node_group_name_for_name_and_type(ng_name, ng_type):
     if ng_type in ['CompositorNodeTree', 'ShaderNodeTree', 'TextureNodeTree']:

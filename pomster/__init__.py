@@ -31,7 +31,8 @@ import math
 
 import bpy
 
-from .mat_nodes.apply_pomster import POMSTER_AddPOMsterToSelectedNode
+from .mat_nodes.pomster_basic import POMSTER_AddPOMsterBasic
+from .mat_nodes.pomster_heightmap import POMSTER_AddPOMsterToSelectedNode
 from .uv_vu_map import POMSTER_CreateVUMap
 
 class POMSTER_PT_Main(bpy.types.Panel):
@@ -46,18 +47,21 @@ class POMSTER_PT_Main(bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="Create POM Nodes")
-        box.operator("pomster.create_pom_uv")
+        box.label(text="Create Basic POM")
+        box.operator("pomster.create_basic_pom_uv")
+        box = layout.box()
+        box.label(text="Create Heightmap POM")
+        box.operator("pomster.create_heightmap_pom_uv")
         sub_box = box.box()
         sub_box.prop(scn, "POMSTER_NumSamples")
         sub_box.prop(scn, "POMSTER_NumErrorCutoffCycles")
         sub_box.prop(scn, "POMSTER_NumSharpenCycles")
-        sub_box.prop(scn, "POMSTER_SharpenFactor")
         sub_box = box.box()
-        box.label(text="Options")
+        sub_box.label(text="Options")
         sub_box.prop(scn, "POMSTER_UV_InputIndex")
         sub_box.prop(scn, "POMSTER_HeightOutputIndex")
         sub_box.prop(scn, "POMSTER_NodesOverrideCreate")
+        sub_box.prop(scn, "POMSTER_EncloseNicely")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -66,13 +70,21 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_category = "POMster"
 
     def draw(self, context):
+        scn = context.scene
+        obj_data = context.object.data
         layout = self.layout
         box = layout.box()
         box.label(text="Create VU Map from UV Map")
         box.operator("pomster.create_vu_from_uv")
+        box.label(text="Select UV Map")
+        box.prop(scn, "POMSTER_UVtoVUmapConvertAll")
+        row = box.row()
+        row.active = not scn.POMSTER_UVtoVUmapConvertAll
+        row.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index", rows=2)
 
 classes = [
     POMSTER_PT_Main,
+    POMSTER_AddPOMsterBasic,
     POMSTER_AddPOMsterToSelectedNode,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
@@ -111,9 +123,10 @@ def register_props():
         "samples)", default=1, min=1)
     bts.POMSTER_NumSharpenCycles = bp.IntProperty(name="Sharpen Cycles", description="Number of repetitions of the " +
         "Sharpen nodegroup to create to reduce error/warping in final result of POM", default=1, min=1)
-    bts.POMSTER_SharpenFactor = bp.FloatProperty(name="Sharpen Factor", description="Sharpen mix factor of new vs " +
-        "old sample. 1 is maximum sharpen, which uses only Sharpen POM values and ignores previous height sample " +
-        "values. 0 is minimum sharpen, which uses only previous height sample values", default=0.75, min=0.0, max=1.0)
+    bts.POMSTER_UVtoVUmapConvertAll = bp.BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps " +
+        "of selected object, instead of only selected UV Map", default=False)
+    bts.POMSTER_EncloseNicely = bp.BoolProperty(name="Enclose Nicely", description="Enclose the POM node setup in a " +
+        "nodegroup, to make it nicer to look at / easier to use", default=True)
 
 if __name__ == "__main__":
     register()
