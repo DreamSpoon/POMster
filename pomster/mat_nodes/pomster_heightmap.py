@@ -28,7 +28,6 @@ from .mat_ng_height_cutoff import (create_mat_ng_height_cutoff, HEIGHT_CUTOFF_MA
 from .mat_ng_combine_samples import (create_mat_ng_combine_samples, COMBINE_SAMPLE_MAT_NG_NAME_START)
 
 # node names
-HEIGHTMAP_ORIGINAL_NODENAME = "Heightmap.Original"
 HEIGHTMAP_FINAL_NODENAME = "Heightmap.Final"
 
 TEXTURE_COORD_INPUT_NODENAME = "UV_TextureCoordinateInput"
@@ -89,8 +88,13 @@ def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
     print("Unknown name passed to create_prereq_util_node_group: " + str(node_group_name))
     return None
 
-def create_inputs_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node, user_input_index):
+def create_inputs_column(tree_nodes, tree_links, new_nodes, node_final_offset, node_sub_offset, user_heightmap_node,
+                         user_input_index, enclose_nicely):
     separate_new_nodes = {}
+
+    old_node_sub_offset = node_sub_offset
+    if enclose_nicely:
+        node_sub_offset = node_final_offset[0] + 1400
 
     # use Texture Coordinate input node if no input UV coordinates are available
     if len(user_heightmap_node.inputs[user_input_index].links) < 1:
@@ -175,9 +179,11 @@ def create_inputs_column(tree_nodes, tree_links, new_nodes, node_sub_offset, use
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = SHARPEN_FACTOR_INPUT_NODENAME
     node.location = (-1910+node_sub_offset, -900)
-    node.outputs[0].default_value = 0.500000
+    node.outputs[0].default_value = 1.000000
     separate_new_nodes[SHARPEN_FACTOR_INPUT_NODENAME] = node
 
+    # return to old offset, before adding reroutes
+    node_sub_offset = old_node_sub_offset
     # create reroute nodes
     node = tree_nodes.new(type="NodeReroute")
     node.location = (-1730+node_sub_offset, 160)
@@ -276,6 +282,9 @@ def create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, node_su
         tree_links.new(new_nodes[name_sample_pom_node].outputs[0],
                        new_nodes[name_sample_heightmap_node].inputs[user_input_index])
 
+    # return spread sample node to be used later - so that Enclose Nicely will work (needs active node)
+    return new_nodes[name_spread_sample_node]
+
 def create_bcc_row(tree_nodes, tree_links, new_nodes, node_sub_offset, sample_num, error_cutoff_cycles):
     name_error_sign_bias = ERROR_SIGN_BIAS_DYN_NODENAME + str(sample_num)
 #    name_error_cutoff_node = ERROR_CUTOFF_DYN_NODENAME + str(sample_num)
@@ -362,20 +371,20 @@ def create_sharpen_pom_row(tree_nodes, tree_links, new_nodes, user_heightmap_nod
             tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME+str(c)].outputs[1],
                            new_nodes[SHARPEN_POM_DYN_NODENAME+str(c+1)].inputs[8])
 
-def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, user_output_index,
-                               sample_num, error_cutoff_cycles, sharpen_cycles, enclose_nicely):
+def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user_input_index, sample_num,
+                               error_cutoff_cycles, sharpen_cycles, enclose_nicely):
     # initialize variables
     new_nodes = {}
 
     node_final_offset = (user_heightmap_node.location[0], user_heightmap_node.location[1])
-    node_sub_offset = -200 * (error_cutoff_cycles - 1) - 400 * (sharpen_cycles - 1)
+    node_sub_offset = user_heightmap_node.location[0] -200 * (error_cutoff_cycles - 1) - 400 * (sharpen_cycles - 1)
 
     # create inputs column
-    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node,
-                                             user_input_index)
+    output_to_sockets = create_inputs_column(tree_nodes, tree_links, new_nodes, node_final_offset, node_sub_offset, user_heightmap_node,
+                                             user_input_index, enclose_nicely)
     # create spread sample column and link it to the inputs column
-    create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, node_sub_offset, user_heightmap_node,
-                                      user_input_index, sample_num)
+    spread_sample_node = create_spread_sample_nodes_column(tree_nodes, tree_links, new_nodes, node_sub_offset,
+                                                           user_heightmap_node, user_input_index, sample_num)
     link_input_column_to_sample_column(tree_links, new_nodes, sample_num)
 
     node_sub_offset = -400 * (sharpen_cycles - 1)
@@ -410,7 +419,17 @@ def create_pomster_apply_nodes(tree_nodes, tree_links, user_heightmap_node, user
     # enclose the whole setup, except for some of the input nodes (so that input links will be created correctly) 
     if enclose_nicely:
         new_nodes[HEIGHTMAP_FINAL_NODENAME].select = False
+        # ensure that at least one node is active, so that group_make will work
+        tree_nodes.active = spread_sample_node
         bpy.ops.node.group_make()
+        bpy.ops.node.group_edit(exit=True)
+
+        # ensure link exists, this link should exist, and should link to the new group node containing the POM
+        if len(new_nodes[HEIGHTMAP_FINAL_NODENAME].inputs[user_input_index].links) > 0:
+            # follow the input's link backwards to the "from node", which is the new group node containing the POM
+            prev_node = new_nodes[HEIGHTMAP_FINAL_NODENAME].inputs[user_input_index].links[0].from_socket.node
+            prev_node.location = (new_nodes[HEIGHTMAP_FINAL_NODENAME].location[0] - 200,
+                                  new_nodes[HEIGHTMAP_FINAL_NODENAME].location[1])
 
     return new_nodes
 
@@ -498,22 +517,10 @@ def duplicate_user_node(tree_nodes, user_heightmap_node):
 def relink_final_user_node(tree_nodes, tree_links, new_nodes, output_to_sockets, user_input_index, sharpen_cycles):
     tree_links.new(new_nodes[SHARPEN_POM_DYN_NODENAME+str(sharpen_cycles)].outputs[0],
                    new_nodes[HEIGHTMAP_FINAL_NODENAME].inputs[user_input_index])
-    heightmap_node_loc = new_nodes[HEIGHTMAP_FINAL_NODENAME].location
-    # loop through outputs
+    # loop through connected sockets (links to other nodes) of current output, fixing links
     for c in range(len(output_to_sockets)):
-        # if this output had no links then skip it
-        if len(output_to_sockets[c]) < 1:
-            continue
-        # create reroute
-        node = tree_nodes.new(type="NodeReroute")
-        node.location = (heightmap_node_loc[0]+200, heightmap_node_loc[1] - 20 - c * 20)
-        new_nodes["Out_RR"+str(c)] = node
-        # link final heightmap output to reroute
-        tree_links.new(new_nodes[HEIGHTMAP_FINAL_NODENAME].outputs[c], node.inputs[0])
-        # loop through connected sockets (links to other nodes) of current output, linking current reroute to other
-        # node sockets
         for sock in output_to_sockets[c]:
-            tree_links.new(node.outputs[0], sock)
+            tree_links.new(new_nodes[HEIGHTMAP_FINAL_NODENAME].outputs[c], sock)
 
 def create_external_pomster_nodes(node_tree, override_create, user_heightmap_node, user_input_index, user_output_index,
                                 sample_num, error_cutoff_cycles, sharpen_cycles, enclose_nicely):
@@ -530,7 +537,7 @@ def create_external_pomster_nodes(node_tree, override_create, user_heightmap_nod
                        'ShaderNodeTree', create_prereq_util_node_group, sample_num)
 
     create_pomster_apply_nodes(node_tree.nodes, node_tree.links, user_heightmap_node, user_input_index,
-                               user_output_index, sample_num, error_cutoff_cycles, sharpen_cycles, enclose_nicely)
+                               sample_num, error_cutoff_cycles, sharpen_cycles, enclose_nicely)
 
 class POMSTER_AddPOMsterToSelectedNode(bpy.types.Operator):
     bl_description = "Using selected heightmap node as a basis, add nodes to create a Parallax Occlusion Map (POM) " \

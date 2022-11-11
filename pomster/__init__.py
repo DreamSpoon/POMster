@@ -31,7 +31,7 @@ import math
 
 import bpy
 
-from .mat_nodes.pomster_basic import POMSTER_AddPOMsterBasic
+from .mat_nodes.pomster_basic import (POMSTER_AddPOMsterBasic, POMSTER_AddPOMsterUtilOrthoTangents)
 from .mat_nodes.pomster_heightmap import POMSTER_AddPOMsterToSelectedNode
 from .uv_vu_map import POMSTER_CreateVUMap
 
@@ -62,6 +62,9 @@ class POMSTER_PT_Main(bpy.types.Panel):
         sub_box.prop(scn, "POMSTER_HeightOutputIndex")
         sub_box.prop(scn, "POMSTER_NodesOverrideCreate")
         sub_box.prop(scn, "POMSTER_EncloseNicely")
+        box = layout.box()
+        box.label(text="Utility")
+        box.operator("pomster.create_util_orthographic_tangents")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -85,6 +88,7 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 classes = [
     POMSTER_PT_Main,
     POMSTER_AddPOMsterBasic,
+    POMSTER_AddPOMsterUtilOrthoTangents,
     POMSTER_AddPOMsterToSelectedNode,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
