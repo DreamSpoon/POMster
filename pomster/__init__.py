@@ -32,7 +32,7 @@ import math
 import bpy
 
 from .mat_nodes.parallax_map import POMSTER_AddParallaxMap
-from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangents, POMSTER_AddUtilOptimumDistance)
+from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangents, POMSTER_AddUtilOptimumDistance, POMSTER_DepthAngleFix)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM
 from .uv_vu_map import POMSTER_CreateVUMap
 
@@ -66,6 +66,7 @@ class POMSTER_PT_Main(bpy.types.Panel):
         box.label(text="Create Utility Nodes")
         box.operator("pomster.create_util_orthographic_tangents_nodes")
         box.operator("pomster.create_util_optimum_distance_nodes")
+        box.operator("pomster.create_util_depth_angle_fix_nodes")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -93,6 +94,7 @@ classes = [
     POMSTER_AddOCPOM,
     POMSTER_AddUtilOrthoTangents,
     POMSTER_AddUtilOptimumDistance,
+    POMSTER_DepthAngleFix,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
 ]
@@ -107,6 +109,7 @@ def unregister():
         bpy.utils.unregister_class(cls)
     bts = bpy.types.Scene
 
+    del bts.POMSTER_UVtoVUmapConvertAll
     del bts.POMSTER_ConeOffsetOutputIndex
     del bts.POMSTER_ConeRatioOutputIndex
     del bts.POMSTER_DepthOutputIndex

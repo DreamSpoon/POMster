@@ -21,7 +21,7 @@ import math
 import bpy
 
 from .node_other import (ensure_node_groups, MAT_NG_NAME_SUFFIX)
-from .mat_ng_pomster import (create_mat_ng_pomster, PARALLAX_MAP_MAT_NG_NAME)
+from .parallax_map import (create_mat_ng_parallax_map, PARALLAX_MAP_MAT_NG_NAME)
 
 OFFSET_CONESTEP_POM_MAT_NG_NAME = "OffsetConestepPOM" + MAT_NG_NAME_SUFFIX
 ITERATE_MAT_NG_NAME = "_iterate" + MAT_NG_NAME_SUFFIX
@@ -36,7 +36,7 @@ DEPTH_STEP_INPUT_NODENAME = "Depth Step"
 def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
         if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
-            return create_mat_ng_pomster()
+            return create_mat_ng_parallax_map()
         elif node_group_name == ITERATE_MAT_NG_NAME:
             return create_mat_ng_iterate(custom_data)
         elif node_group_name == OFFSET_CONESTEP_POM_MAT_NG_NAME:
@@ -738,16 +738,17 @@ def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num,
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
     node.node_tree = bpy.data.node_groups.get(OFFSET_CONESTEP_POM_MAT_NG_NAME)
-    node.inputs[1].default_value = (1.0, 1.0, 1.0)
-    node.inputs[2].default_value = (1.0, 0.0, 0.0)
-    node.inputs[3].default_value = (0.0, 1.0, 0.0)
-    node.inputs[4].default_value = (0.0, 0.0, 1.0)
+    node.inputs[1].default_value = (1, 1, 1)
+    node.inputs[2].default_value = (1, 0, 0)
+    node.inputs[3].default_value = (0, 1, 0)
+    node.inputs[4].default_value = (0, 0, 1)
     node.inputs[6].default_value = 0.003
     node.inputs[7].default_value = 0.003
     # set this OCPOM node to be the active node
     node_tree.nodes.active = node
     new_nodes[OCPOM_NODENAME] = node
 
+    # create nodes for OCPOM input
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-100)
@@ -767,7 +768,7 @@ def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num,
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = DEPTH_STEP_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-540)
-    node.outputs[0].default_value = 0.006
+    node.outputs[0].default_value = 0.003
     new_nodes[DEPTH_STEP_INPUT_NODENAME] = node
 
     # create links
@@ -811,9 +812,9 @@ def create_blank_node_group():
 
     node = tree_nodes.new(type="NodeGroupOutput")
     node.location = (540, 0)
-    node.inputs[0].default_value = 0.100000
+    node.inputs[0].default_value = 0.050000
     node.inputs[1].default_value = 0.700000
-    node.inputs[2].default_value = 0.002000
+    node.inputs[2].default_value = 0.001000
     new_nodes["Group Output"] = node
 
     # deselect all new nodes
