@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 2, 1),
+    "version": (0, 2, 2),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -56,7 +56,7 @@ class POMSTER_PT_Main(bpy.types.Panel):
         sub_box = box.box()
         sub_box.label(text="Group Node Input/Output")
         sub_box.prop(scn, "POMSTER_UV_InputIndex")
-        sub_box.prop(scn, "POMSTER_HeightOutputIndex")
+        sub_box.prop(scn, "POMSTER_DepthOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeRatioOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeOffsetOutputIndex")
         sub_box.label(text="Options")
@@ -106,7 +106,7 @@ def unregister():
 
     del bts.POMSTER_ConeOffsetOutputIndex
     del bts.POMSTER_ConeRatioOutputIndex
-    del bts.POMSTER_HeightOutputIndex
+    del bts.POMSTER_DepthOutputIndex
     del bts.POMSTER_UV_InputIndex
     del bts.POMSTER_NodesOverrideCreate
     del bts.POMSTER_NumSamples
@@ -116,13 +116,13 @@ def register_props():
     bp = bpy.props
 
     bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of spread samples used to " +
-        "calculate POM", default=1, min=1)
+        "calculate POM", default=8, min=1)
     bts.POMSTER_NodesOverrideCreate = bp.BoolProperty(name="Override Create", description="Shader Nodes custom " +
         "Node Groups will be re-created if this option is enabled. When custom Node Groups are override created, " +
         "old Node Groups of the same name are renamed and deprecated", default=False)
     bts.POMSTER_UV_InputIndex = bp.IntProperty(name="UV Input Number", description="Choose the input number " +
         "number of the selected node that has the UV coordinates input - usually input #1", default=1, min=1)
-    bts.POMSTER_HeightOutputIndex = bp.IntProperty(name="Depth Output Number", description="Choose the output " +
+    bts.POMSTER_DepthOutputIndex = bp.IntProperty(name="Depth Output Number", description="Choose the output " +
         "number of the active node that has the Depth output - usually output #1", default=1, min=1)
     bts.POMSTER_ConeRatioOutputIndex = bp.IntProperty(name="Cone Ratio Output Number",
         description="Choose output number of active node for Cone Ratio output - usually output #2. Value range is " +

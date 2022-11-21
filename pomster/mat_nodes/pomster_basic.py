@@ -71,7 +71,7 @@ class POMSTER_AddPOMsterBasic(bpy.types.Operator):
         return {'FINISHED'}
 
 def create_util_ortho_tangents(node_tree):
-    offset = node_tree.view_center
+    offset = (node_tree.view_center[0]/2.5, node_tree.view_center[1]/2.5)
 
     # initialize
     new_nodes = {}

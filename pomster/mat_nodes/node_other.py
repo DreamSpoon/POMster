@@ -18,12 +18,7 @@
 
 import bpy
 
-ALL_MAT_NG_NAME_END = ".MatNG.POMS"
-MAT_NAME_SUFFIX = ".MatNG"
-GEO_NAME_SUFFIX = ".GeoNG"
-
-def is_duo_node_group_name(node_group_name, base_name):
-    return (node_group_name == base_name + MAT_NAME_SUFFIX or node_group_name == base_name + GEO_NAME_SUFFIX)
+MAT_NG_NAME_SUFFIX = ".POMS"
 
 def ensure_node_group(override_create, node_group_name, node_tree_type, create_group_func, custom_data=None):
     # check if custom node group already exists, and create/override if necessary
@@ -42,13 +37,6 @@ def ensure_node_group(override_create, node_group_name, node_tree_type, create_g
 def ensure_node_groups(override_create, ng_name_list, node_tree_type, create_group_func, custom_data=None):
     for ng_name in ng_name_list:
         ensure_node_group(override_create, ng_name, node_tree_type, create_group_func, custom_data)
-
-def node_group_name_for_name_and_type(ng_name, ng_type):
-    if ng_type in ['CompositorNodeTree', 'ShaderNodeTree', 'TextureNodeTree']:
-        return ng_name + MAT_NAME_SUFFIX
-    elif ng_type == 'GeometryNodeTree':
-        return ng_name + GEO_NAME_SUFFIX
-    return None
 
 def get_node_group_for_type(ng_type):
     if ng_type in ['CompositorNodeTree', 'ShaderNodeTree', 'TextureNodeTree']:

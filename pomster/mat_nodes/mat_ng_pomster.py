@@ -17,9 +17,9 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from .node_other import ALL_MAT_NG_NAME_END
+from .node_other import MAT_NG_NAME_SUFFIX
 
-POMSTER_UV_MAT_NG_NAME = "POMsterUV" + ALL_MAT_NG_NAME_END
+POMSTER_UV_MAT_NG_NAME = "ParallaxMap" + MAT_NG_NAME_SUFFIX
 
 def create_mat_ng_pomster():
     # initialize variables
@@ -31,7 +31,7 @@ def create_mat_ng_pomster():
     new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
     new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
     new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Depth")
     new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
     tree_nodes = new_node_group.nodes
     # delete all nodes
