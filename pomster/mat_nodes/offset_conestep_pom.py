@@ -21,7 +21,7 @@ import math
 import bpy
 
 from .node_other import (ensure_node_groups, MAT_NG_NAME_SUFFIX)
-from .mat_ng_pomster import (create_mat_ng_pomster, POMSTER_UV_MAT_NG_NAME)
+from .mat_ng_pomster import (create_mat_ng_pomster, PARALLAX_MAP_MAT_NG_NAME)
 
 OFFSET_CONESTEP_POM_MAT_NG_NAME = "OffsetConestepPOM" + MAT_NG_NAME_SUFFIX
 ITERATE_MAT_NG_NAME = "_iterate" + MAT_NG_NAME_SUFFIX
@@ -35,7 +35,7 @@ DEPTH_STEP_INPUT_NODENAME = "Depth Step"
 
 def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
-        if node_group_name == POMSTER_UV_MAT_NG_NAME:
+        if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
             return create_mat_ng_pomster()
         elif node_group_name == ITERATE_MAT_NG_NAME:
             return create_mat_ng_iterate(custom_data)
@@ -79,13 +79,13 @@ def create_mat_ng_iterate(custom_data):
     # create nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (-980, -800)
-    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    node.node_tree = bpy.data.node_groups.get(PARALLAX_MAP_MAT_NG_NAME)
     new_nodes["Group.001"] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = "Next texel"
     node.location = (-720, -800)
-    node.node_tree = bpy.data.node_groups.get(custom_data["user_group_name"])
+    node.node_tree = custom_data["custom_group_node"].node_tree
     new_nodes["Group"] = node
 
     node = tree_nodes.new(type="NodeFrame")
@@ -622,7 +622,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (-1580, -120)
-    node.node_tree = bpy.data.node_groups.get(custom_data["user_group_name"])
+    node.node_tree = custom_data["custom_group_node"].node_tree
     new_nodes["SampleOuterGroup"] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
@@ -642,7 +642,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (-920 + custom_data["sample_num"] * 200, 40)
-    node.node_tree = bpy.data.node_groups.get(POMSTER_UV_MAT_NG_NAME)
+    node.node_tree = bpy.data.node_groups.get(PARALLAX_MAP_MAT_NG_NAME)
     new_nodes["FinalPOM_Group"] = node
 
     # create links
@@ -696,7 +696,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     # create link from final iteration node to the depth output
     tree_links.new(prev_node.outputs[2], new_nodes["Group Output"].inputs[1])
 
-    # hmmmmm
+    # create links for OCPOM UV output
     tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["FinalPOM_Group"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["FinalPOM_Group"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["FinalPOM_Group"].inputs[2])
@@ -714,15 +714,15 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     return new_node_group
 
-def create_ocpom_node(node_tree, override_create, user_group_node, sample_num, uv_input_index, depth_output_index,
+def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num, uv_input_index, depth_output_index,
                  cone_ratio_output_index, cone_offset_output_index):
     ensure_node_groups(override_create,
-                       [ POMSTER_UV_MAT_NG_NAME,
+                       [ PARALLAX_MAP_MAT_NG_NAME,
                         ITERATE_MAT_NG_NAME,
                         OFFSET_CONESTEP_POM_MAT_NG_NAME ],
                        'ShaderNodeTree', create_prereq_node_group,
                        {
-                           "user_group_name": user_group_node.node_tree.name,
+                           "custom_group_node": custom_group_node,
                            "sample_num": sample_num,
                            "uv_input_index": uv_input_index,
                            "depth_output_index": depth_output_index,
@@ -823,7 +823,7 @@ def create_blank_node_group():
 
 class POMSTER_AddOCPOM(bpy.types.Operator):
     bl_description = "With active node as input, create Offset Conestep Parallax Occlusion Map (OCPOM) node. Active node needs at least 1 vector input (UV) and 3 float outputs (depth, cone ratio, cone offset). Creates blank OCPOM input if zero nodes selected"
-    bl_idname = "pomster.create_offset_conestep_pom"
+    bl_idname = "pomster.create_offset_conestep_pom_nodes"
     bl_label = "Offset Conestep POM"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -843,51 +843,60 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
         active_node = context.space_data.edit_tree.nodes.active
         # if zero nodes selected then create a default node group with input/output but no nodes inside
         test_nodes = context.space_data.edit_tree.nodes
+        use_blank_ocpom_input = False
         if len([sel_node for sel_node in test_nodes if sel_node.select]) == 0:
             # use the newly created blank node instead of the actual active node
             active_node = create_blank_ocpom_input_node(context.space_data.edit_tree)
+            use_blank_ocpom_input = True
         # at least one node selected, so check if active node is available and is correct type
-        else:
-            if active_node == None:
-                self.report({'ERROR'}, "Cannot get active node in node editor, cannot create Offset Conestep " +
-                            "Parallax Occlusion Map.")
-                return {'CANCELLED'}
+        if active_node == None:
+            self.report({'ERROR'}, "Cannot get active node in node editor, cannot create Offset Conestep " +
+                        "Parallax Occlusion Map.")
+            return {'CANCELLED'}
+        # check custom node's type, inputs, outputs, and report errors to user
+        if not use_blank_ocpom_input:
             # ensure that active node's type is node group
             if active_node.bl_idname != 'ShaderNodeGroup':
                 self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
                             "node's type is not 'node group'.")
                 return {'CANCELLED'}
-        # check user selected node to ensure minimum amount of inputs
-        if len(active_node.inputs) < scn.POMSTER_UV_InputIndex:
-            self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
-                        "group node does not have enough inputs to get input number " +
-                        str(scn.POMSTER_UV_InputIndex) + " .")
-            return {'CANCELLED'}
-        # check user selected node to ensure minimum amount of outputs for depth output
-        if len(active_node.outputs) < scn.POMSTER_DepthOutputIndex:
-            self.report({'ERROR'}, "Cannot get Depth output, cannot create Offset Conestep Parallax Occlusion Map " +
-                        "with output number " +
-                        str(scn.POMSTER_DepthOutputIndex) + " .")
-            return {'CANCELLED'}
-        # check user selected node to ensure minimum amount of outputs for cone ratio output
-        if len(active_node.outputs) < scn.POMSTER_ConeRatioOutputIndex:
-            self.report({'ERROR'}, "Cannot get Cone Ratio output, cannot create Offset Conestep Parallax Occlusion " +
-                        "Map with output number " + str(scn.POMSTER_ConeRatioOutputIndex) + " .")
-            return {'CANCELLED'}
-        # check user selected node to ensure minimum amount of outputs for cone offset output
-        if len(active_node.outputs) < scn.POMSTER_ConeOffsetOutputIndex:
-            self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
-                        "Occlusion Map with output number " + str(scn.POMSTER_ConeOffsetOutputIndex) + " .")
-            return {'CANCELLED'}
-        # check user selected node to ensure correct type of inputs
-        if not hasattr(active_node.inputs[scn.POMSTER_UV_InputIndex-1], 'default_value') or \
-            not hasattr(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value, '__len__') or \
-            len(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value) != 3 or \
-            not isinstance(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value[0], float):
-            self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
-                        "group node's input number " + str(scn.POMSTER_UV_InputIndex) + " is not a Vector type.")
-            return {'CANCELLED'}
-        create_ocpom_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
-            scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
-            scn.POMSTER_ConeRatioOutputIndex-1, scn.POMSTER_ConeOffsetOutputIndex-1)
+            # check user selected node to ensure minimum amount of inputs
+            if len(active_node.inputs) < scn.POMSTER_UV_InputIndex:
+                self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
+                            "group node does not have enough inputs to get input number " +
+                            str(scn.POMSTER_UV_InputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for depth output
+            if len(active_node.outputs) < scn.POMSTER_DepthOutputIndex:
+                self.report({'ERROR'}, "Cannot get Depth output, cannot create Offset Conestep Parallax Occlusion Map " +
+                            "with output number " +
+                            str(scn.POMSTER_DepthOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for cone ratio output
+            if len(active_node.outputs) < scn.POMSTER_ConeRatioOutputIndex:
+                self.report({'ERROR'}, "Cannot get Cone Ratio output, cannot create Offset Conestep Parallax Occlusion " +
+                            "Map with output number " + str(scn.POMSTER_ConeRatioOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for cone offset output
+            if len(active_node.outputs) < scn.POMSTER_ConeOffsetOutputIndex:
+                self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
+                            "Occlusion Map with output number " + str(scn.POMSTER_ConeOffsetOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure correct type of inputs
+            if not hasattr(active_node.inputs[scn.POMSTER_UV_InputIndex-1], 'default_value') or \
+                not hasattr(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value, '__len__') or \
+                len(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value) != 3 or \
+                not isinstance(active_node.inputs[scn.POMSTER_UV_InputIndex-1].default_value[0], float):
+                self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
+                            "group node's input number " + str(scn.POMSTER_UV_InputIndex) + " is not a Vector type.")
+                return {'CANCELLED'}
+        # if a blank OCPOM input node was created then get the default input/output indexes
+        if use_blank_ocpom_input:
+            create_ocpom_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
+                scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, 0, 1, 2)
+        # otherwise, get the UI panel properties for index numbers
+        else:
+            create_ocpom_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
+                scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
+                scn.POMSTER_ConeRatioOutputIndex-1, scn.POMSTER_ConeOffsetOutputIndex-1)
         return {'FINISHED'}

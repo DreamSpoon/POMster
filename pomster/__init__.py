@@ -31,7 +31,8 @@ import math
 
 import bpy
 
-from .mat_nodes.pomster_basic import (POMSTER_AddPOMsterBasic, POMSTER_AddPOMsterUtilOrthoTangents)
+from .mat_nodes.parallax_map import POMSTER_AddParallaxMap
+from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangents, POMSTER_AddUtilOptimumDistance)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM
 from .uv_vu_map import POMSTER_CreateVUMap
 
@@ -47,11 +48,11 @@ class POMSTER_PT_Main(bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="Create Basic POM")
-        box.operator("pomster.create_basic_pom_uv")
+        box.label(text="Create Parallax Map")
+        box.operator("pomster.create_parallax_map_node")
         box = layout.box()
         box.label(text="Create Offset Conestep POM")
-        box.operator("pomster.create_offset_conestep_pom")
+        box.operator("pomster.create_offset_conestep_pom_nodes")
         box.prop(scn, "POMSTER_NumSamples")
         sub_box = box.box()
         sub_box.label(text="Group Node Input/Output")
@@ -62,8 +63,9 @@ class POMSTER_PT_Main(bpy.types.Panel):
         sub_box.label(text="Options")
         sub_box.prop(scn, "POMSTER_NodesOverrideCreate")
         box = layout.box()
-        box.label(text="Utility")
-        box.operator("pomster.create_util_orthographic_tangents")
+        box.label(text="Create Utility Nodes")
+        box.operator("pomster.create_util_orthographic_tangents_nodes")
+        box.operator("pomster.create_util_optimum_distance_nodes")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -87,9 +89,10 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 
 classes = [
     POMSTER_PT_Main,
-    POMSTER_AddPOMsterBasic,
+    POMSTER_AddParallaxMap,
     POMSTER_AddOCPOM,
-    POMSTER_AddPOMsterUtilOrthoTangents,
+    POMSTER_AddUtilOrthoTangents,
+    POMSTER_AddUtilOptimumDistance,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
 ]

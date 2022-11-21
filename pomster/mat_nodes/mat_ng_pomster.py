@@ -19,12 +19,12 @@
 import bpy
 from .node_other import MAT_NG_NAME_SUFFIX
 
-POMSTER_UV_MAT_NG_NAME = "ParallaxMap" + MAT_NG_NAME_SUFFIX
+PARALLAX_MAP_MAT_NG_NAME = "ParallaxMap" + MAT_NG_NAME_SUFFIX
 
 def create_mat_ng_pomster():
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=POMSTER_UV_MAT_NG_NAME, type='ShaderNodeTree')
+    new_node_group = bpy.data.node_groups.new(name=PARALLAX_MAP_MAT_NG_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
     new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
     new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
