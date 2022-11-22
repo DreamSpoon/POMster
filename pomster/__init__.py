@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 2, 2),
+    "version": (0, 3, 0),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -32,13 +32,14 @@ import math
 import bpy
 
 from .mat_nodes.parallax_map import POMSTER_AddParallaxMap
-from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangents, POMSTER_AddUtilOptimumDistance, POMSTER_DepthAngleFix)
+from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_CreateUtilOptimumRayTypeNode,
+    POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM
 from .uv_vu_map import POMSTER_CreateVUMap
 
-class POMSTER_PT_Main(bpy.types.Panel):
-    bl_idname = "POMSTER_PT_Main"
-    bl_label = "Main"
+class POMSTER_PT_General(bpy.types.Panel):
+    bl_idname = "POMSTER_PT_General"
+    bl_label = "General"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "POMster"
@@ -48,25 +49,49 @@ class POMSTER_PT_Main(bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="Create Parallax Map")
-        box.operator("pomster.create_parallax_map_node")
+        box.label(text="Create Nodes")
+        sub_box = box.box()
+        sub_box.operator("pomster.create_parallax_map_node")
+        sub_box = box.box()
+        sub_box.label(text="Utility")
+        sub_box.operator("pomster.create_util_orthographic_tangent_nodes")
+        sub_box = box.box()
+        sub_box.label(text="Reduce Cycles Render Time")
+        sub_box.operator("pomster.create_util_optimum_ray_type_node")
+        sub_box.operator("pomster.create_util_optimum_ray_length_node")
+        sub_box = box.box()
+        sub_box.label(text="Reduce Texture Warp")
+        sub_box.operator("pomster.create_util_optimum_ray_angle_node")
+        sub_box = box.box()
+        sub_box.label(text="Combine Optimum")
+        sub_box.operator("pomster.create_util_optimum_combine_tla")
         box = layout.box()
-        box.label(text="Create Offset Conestep POM")
-        box.operator("pomster.create_offset_conestep_pom_nodes")
-        box.prop(scn, "POMSTER_NumSamples")
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
+
+class POMSTER_PT_Main(bpy.types.Panel):
+    bl_idname = "POMSTER_PT_Main"
+    bl_label = "OCPOM"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        box = layout.box()
+        box.label(text="Create Nodes")
+        sub_box = box.box()
+        sub_box.operator("pomster.create_offset_conestep_pom_nodes")
+        sub_box.prop(scn, "POMSTER_NumSamples")
         sub_box = box.box()
         sub_box.label(text="Group Node Input/Output")
         sub_box.prop(scn, "POMSTER_UV_InputIndex")
         sub_box.prop(scn, "POMSTER_DepthOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeRatioOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeOffsetOutputIndex")
-        sub_box.label(text="Options")
-        sub_box.prop(scn, "POMSTER_NodesOverrideCreate")
         box = layout.box()
-        box.label(text="Create Utility Nodes")
-        box.operator("pomster.create_util_orthographic_tangents_nodes")
-        box.operator("pomster.create_util_optimum_distance_nodes")
-        box.operator("pomster.create_util_depth_angle_fix_nodes")
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
 
 class POMSTER_PT_FlipUV(bpy.types.Panel):
     bl_label = "Flip UV"
@@ -89,12 +114,15 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
                           rows=2)
 
 classes = [
-    POMSTER_PT_Main,
+    POMSTER_PT_General,
     POMSTER_AddParallaxMap,
+    POMSTER_AddUtilOrthoTangentNodes,
+    POMSTER_CreateUtilOptimumRayTypeNode,
+    POMSTER_AddUtilOptimumRayLengthNode,
+    POMSTER_AddUtilOptimumRayAngleNode,
+    POMSTER_AddUtilCombineOptimumTLA_Node,
+    POMSTER_PT_Main,
     POMSTER_AddOCPOM,
-    POMSTER_AddUtilOrthoTangents,
-    POMSTER_AddUtilOptimumDistance,
-    POMSTER_DepthAngleFix,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
 ]

@@ -20,7 +20,7 @@
 import math
 import bpy
 
-from .node_other import (ensure_node_groups, MAT_NG_NAME_SUFFIX)
+from .node_other import (ensure_node_group, ensure_node_groups, MAT_NG_NAME_SUFFIX)
 from .parallax_map import (create_mat_ng_parallax_map, PARALLAX_MAP_MAT_NG_NAME)
 
 OFFSET_CONESTEP_POM_MAT_NG_NAME = "OffsetConestepPOM" + MAT_NG_NAME_SUFFIX
@@ -37,10 +37,6 @@ def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
         if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
             return create_mat_ng_parallax_map()
-        elif node_group_name == ITERATE_MAT_NG_NAME:
-            return create_mat_ng_iterate(custom_data)
-        elif node_group_name == OFFSET_CONESTEP_POM_MAT_NG_NAME:
-            return create_mat_ng_offset_conestep_pom(custom_data)
 
     # error
     print("Unknown name passed to create_prereq_util_node_group: " + str(node_group_name))
@@ -627,7 +623,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (-980, 40)
-    node.node_tree = bpy.data.node_groups.get(ITERATE_MAT_NG_NAME)
+    node.node_tree = custom_data["iterate_mat_ng"]
     node.inputs[7].default_value = 0.000000
     node.inputs[11].default_value = 1.000000
     node.inputs[12].default_value = custom_data["sample_num"]
@@ -637,7 +633,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     for c in range(custom_data["sample_num"]-1):
         node = tree_nodes.new(type="ShaderNodeGroup")
         node.location = (-760 + c * 200, 40)
-        node.node_tree = bpy.data.node_groups.get(ITERATE_MAT_NG_NAME)
+        node.node_tree = custom_data["iterate_mat_ng"]
         new_nodes["IterateGroup." + str(c+1)] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
@@ -716,20 +712,19 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
 def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num, uv_input_index, depth_output_index,
                  cone_ratio_output_index, cone_offset_output_index):
-    ensure_node_groups(override_create,
-                       [ PARALLAX_MAP_MAT_NG_NAME,
-                        ITERATE_MAT_NG_NAME,
-                        OFFSET_CONESTEP_POM_MAT_NG_NAME ],
-                       'ShaderNodeTree', create_prereq_node_group,
-                       {
-                           "custom_group_node": custom_group_node,
-                           "sample_num": sample_num,
-                           "uv_input_index": uv_input_index,
-                           "depth_output_index": depth_output_index,
-                           "cone_ratio_output_index": cone_ratio_output_index,
-                           "cone_offset_output_index": cone_offset_output_index,
-                        }
-                       )
+    ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
+    # these node groups need to be re-created every time, because they use the custom group node
+    custom_data = {
+        "custom_group_node": custom_group_node,
+        "sample_num": sample_num,
+        "uv_input_index": uv_input_index,
+        "depth_output_index": depth_output_index,
+        "cone_ratio_output_index": cone_ratio_output_index,
+        "cone_offset_output_index": cone_offset_output_index,
+        }
+    iterate_mat_ng = create_mat_ng_iterate(custom_data)
+    custom_data["iterate_mat_ng"] = iterate_mat_ng
+    ocpom_mat_ng = create_mat_ng_offset_conestep_pom(custom_data)
 
     # create nodes
     new_nodes = {}
@@ -737,7 +732,7 @@ def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num,
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
-    node.node_tree = bpy.data.node_groups.get(OFFSET_CONESTEP_POM_MAT_NG_NAME)
+    node.node_tree = ocpom_mat_ng
     node.inputs[1].default_value = (1, 1, 1)
     node.inputs[2].default_value = (1, 0, 0)
     node.inputs[3].default_value = (0, 1, 0)
