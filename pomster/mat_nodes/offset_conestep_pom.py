@@ -28,6 +28,7 @@ ITERATE_MAT_NG_NAME = "_iterate" + MAT_NG_NAME_SUFFIX
 BLANK_NODE_GROUP_NAME = "InputOCPOM" + MAT_NG_NAME_SUFFIX
 
 OCPOM_NODENAME = "OCPOM Node"
+UV_INPUT_NODENAME = "UV Input"
 TANGENT_U_INPUT_NODENAME = "Tangent U"
 TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
@@ -243,7 +244,7 @@ def create_mat_ng_iterate(custom_data):
     node.location = (-720, -640)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    node.inputs[1].default_value = 0.785398
+    node.inputs[1].default_value = math.pi / 2.0
     new_nodes["Math.009"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -590,7 +591,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     node.location = (-1580, 40)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    node.inputs[1].default_value = math.pi / 4.0
+    node.inputs[1].default_value = math.pi / 2.0
     new_nodes["Math.009"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -710,7 +711,21 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     return new_node_group
 
-def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num, uv_input_index, depth_output_index,
+# get the UVMap to be used as either tangent U or tangent V,
+# with tangent_type = either "U" or "V"
+def get_tangent_map_name(tangent_type, active_obj):
+    # check all UV layers (UV maps) by name for either:
+    #     a '(U, V) Map' to use as Tangent U vector, or
+    #     a '(V, U) Map' to use as Tangent V vector
+    # else:
+    #     return error # graceful fail
+    for uv_layer in active_obj.data.uv_layers:
+        if (uv_layer.name.lower().startswith("uvmap") and tangent_type == "U") or \
+            (uv_layer.name.lower().startswith("vumap") and tangent_type == "V"): return uv_layer.name
+    # graceful fail will not cause errors later, return error
+    return ""
+
+def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node, sample_num, uv_input_index, depth_output_index,
                  cone_ratio_output_index, cone_offset_output_index):
     ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
     # these node groups need to be re-created every time, because they use the custom group node
@@ -744,16 +759,22 @@ def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num,
     new_nodes[OCPOM_NODENAME] = node
 
     # create nodes for OCPOM input
+    node = tree_nodes.new(type="ShaderNodeTexCoord")
+    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)+160)
+    new_nodes[UV_INPUT_NODENAME] = node
+
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-100)
     node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("U", active_obj)
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-200)
     node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("V", active_obj)
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
@@ -768,6 +789,7 @@ def create_ocpom_node(node_tree, override_create, custom_group_node, sample_num,
 
     # create links
     tree_links = node_tree.links
+    tree_links.new(new_nodes[UV_INPUT_NODENAME].outputs[2], new_nodes[OCPOM_NODENAME].inputs[0])
     tree_links.new(new_nodes[TANGENT_U_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[2])
     tree_links.new(new_nodes[TANGENT_V_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[3])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[OCPOM_NODENAME].inputs[4])
@@ -830,6 +852,11 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
 
     def execute(self, context):
         scn = context.scene
+        active_obj = context.active_object
+        if active_obj is None:
+            self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because there is " +
+                        "no active object, select an object to make it active and try again.")
+            return {'CANCELLED'}
         # check that the material has a nodes tree
         if context.space_data.edit_tree.nodes is None:
             self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because current " +
@@ -888,11 +915,11 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
                 return {'CANCELLED'}
         # if a blank OCPOM input node was created then get the default input/output indexes
         if use_blank_ocpom_input:
-            create_ocpom_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
+            create_ocpom_node(active_obj, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
                 scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, 0, 1, 2)
         # otherwise, get the UI panel properties for index numbers
         else:
-            create_ocpom_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
+            create_ocpom_node(active_obj, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
                 scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
                 scn.POMSTER_ConeRatioOutputIndex-1, scn.POMSTER_ConeOffsetOutputIndex-1)
         return {'FINISHED'}

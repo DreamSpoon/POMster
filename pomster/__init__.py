@@ -149,7 +149,7 @@ def register_props():
     bts = bpy.types.Scene
     bp = bpy.props
 
-    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of spread samples used to " +
+    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of samples used to " +
         "calculate POM", default=8, min=1)
     bts.POMSTER_NodesOverrideCreate = bp.BoolProperty(name="Override Create", description="Shader Nodes custom " +
         "Node Groups will be re-created if this option is enabled. When custom Node Groups are override created, " +

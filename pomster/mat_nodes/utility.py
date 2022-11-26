@@ -313,7 +313,7 @@ def create_mat_ng_optimum_ray_angle():
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (0, 200)
     node.operation = "MULTIPLY"
-    node.use_clamp = False
+    node.use_clamp = True
     new_nodes["Math.005"] = node
 
     node = tree_nodes.new(type="ShaderNodeVectorMath")
@@ -360,8 +360,8 @@ def create_util_optimum_ray_angle(node_tree, override_create):
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
     node.node_tree = bpy.data.node_groups.get(OPTIMUM_RAY_ANGLE_MAT_NG_NAME)
-    node.inputs[0].default_value = 2.0
-    node.inputs[1].default_value = 0.0
+    node.inputs[0].default_value = 0.0
+    node.inputs[1].default_value = 2.0
 
     # make new node the active node
     node_tree.nodes.active = node
