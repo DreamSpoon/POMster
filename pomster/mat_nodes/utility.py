@@ -481,7 +481,6 @@ def create_mat_ng_combine_optimum_tla():
     return new_node_group
 
 def create_util_combine_optimum_tla(node_tree, override_create):
-    OPTIMUM_RAY_TYPE_MAT_NG_NAME
     ensure_node_groups(override_create, [ OPTIMUM_RAY_TYPE_MAT_NG_NAME,
                                          OPTIMUM_RAY_LENGTH_MAT_NG_NAME,
                                          OPTIMUM_RAY_ANGLE_MAT_NG_NAME,

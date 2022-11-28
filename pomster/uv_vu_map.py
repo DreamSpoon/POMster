@@ -43,8 +43,9 @@ def create_vu_from_uv_map(obj, convert_all):
             new_uv_map.data[loop.index].uv = (uv_coords[1], uv_coords[0])
 
 class POMSTER_CreateVUMap(bpy.types.Operator):
-    bl_description = "Copy the given UV map to a second map, with the U and V values switched, so that second map " \
-        "is a VU map"
+    bl_description = "Create second copy of given UV Map, with second Map's U and V values switched, so that " \
+        "second Map is VU Map. Use this before creating Parallax Map or POM nodes. Alternatively, create XY " \
+        "Ortho Tangents shader nodes for Tangent U/V input"
     bl_idname = "pomster.create_vu_from_uv"
     bl_label = "U-V Map to V-U Map"
     bl_options = {'REGISTER', 'UNDO'}

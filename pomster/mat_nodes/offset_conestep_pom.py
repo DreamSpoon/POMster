@@ -20,7 +20,7 @@
 import math
 import bpy
 
-from .node_other import (ensure_node_group, ensure_node_groups, MAT_NG_NAME_SUFFIX)
+from .node_other import (get_tangent_map_name, ensure_node_group, MAT_NG_NAME_SUFFIX)
 from .parallax_map import (create_mat_ng_parallax_map, PARALLAX_MAP_MAT_NG_NAME)
 
 OFFSET_CONESTEP_POM_MAT_NG_NAME = "OffsetConestepPOM" + MAT_NG_NAME_SUFFIX
@@ -83,7 +83,7 @@ def create_mat_ng_iterate(custom_data):
     node.label = "Next texel"
     node.location = (-720, -800)
     node.node_tree = custom_data["custom_group_node"].node_tree
-    new_nodes["Group"] = node
+    new_nodes["SampleInnerGroup"] = node
 
     node = tree_nodes.new(type="NodeFrame")
     node.label = "Offset Cone Step next"
@@ -251,7 +251,13 @@ def create_mat_ng_iterate(custom_data):
     node.location = (-540, -640)
     node.operation = "TANGENT"
     node.use_clamp = False
-    new_nodes["Math.008"] = node
+    new_nodes["InnerMathTangent"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-360, -640)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    new_nodes["InnerMathConeRatioDivide"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (880, -680)
@@ -465,14 +471,34 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Group.001"].inputs[3])
     tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Group.001"].inputs[4])
     tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Group.001"].inputs[5])
-    tree_links.new(new_nodes["Group.001"].outputs[0], new_nodes["Group"].inputs[0])
+
+    tree_links.new(new_nodes["Group.001"].outputs[0],
+                   new_nodes["SampleInnerGroup"].inputs[custom_data["uv_input_index"]])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["depth_output_index"]],
+                   new_nodes["Math.002"].inputs[1])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["cone_offset_output_index"]],
+                   new_nodes["Group Output"].inputs[4])
+
     tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Group Output"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Group"].outputs[0], new_nodes["Math.002"].inputs[1])
     tree_links.new(new_nodes["Math.002"].outputs[0], new_nodes["Math.010"].inputs[1])
     tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math"].inputs[1])
-    tree_links.new(new_nodes["Group"].outputs[2], new_nodes["Group Output"].inputs[4])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Group Output"].inputs[3])
+    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["InnerMathTangent"].inputs[0])
+
+    tree_links.new(new_nodes["InnerMathTangent"].outputs[0], new_nodes["InnerMathConeRatioDivide"].inputs[0])
+    tree_links.new(new_nodes["InnerMathConeRatioDivide"].outputs[0], new_nodes["Group Output"].inputs[3])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["cone_ratio_divisor_output_index"]],
+                   new_nodes["InnerMathConeRatioDivide"].inputs[1])
+
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["depth_output_index"]],
+                   new_nodes["Math.037"].inputs[0])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["depth_output_index"]],
+                   new_nodes["Math.023"].inputs[1])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["depth_output_index"]],
+                   new_nodes["Math.031"].inputs[1])
+    tree_links.new(new_nodes["SampleInnerGroup"].outputs[custom_data["cone_ratio_angle_output_index"]],
+                   new_nodes["Math.009"].inputs[0])
+
     tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.003"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[11], new_nodes["Math.001"].inputs[0])
     tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Group Output"].inputs[5])
@@ -490,8 +516,6 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Math.003"].outputs[0], new_nodes["Math.006"].inputs[1])
     tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Group.001"].inputs[6])
     tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.002"].inputs[0])
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.008"].inputs[0])
-    tree_links.new(new_nodes["Group"].outputs[1], new_nodes["Math.009"].inputs[0])
     tree_links.new(new_nodes["Vector Math"].outputs[1], new_nodes["Combine XYZ"].inputs[0])
     tree_links.new(new_nodes["Vector Math.001"].outputs[1], new_nodes["Combine XYZ"].inputs[1])
     tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.016"].inputs[1])
@@ -538,11 +562,9 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Math.023"].outputs[0], new_nodes["Math.027"].inputs[0])
     tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.028"].inputs[0])
     tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.023"].inputs[0])
-    tree_links.new(new_nodes["Group"].outputs[0], new_nodes["Math.023"].inputs[1])
     tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.027"].inputs[1])
     tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.022"].inputs[1])
     tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.031"].inputs[2])
-    tree_links.new(new_nodes["Group"].outputs[0], new_nodes["Math.031"].inputs[1])
     tree_links.new(new_nodes["Math.031"].outputs[0], new_nodes["Math.026"].inputs[1])
     tree_links.new(new_nodes["Math.023"].outputs[0], new_nodes["Math.031"].inputs[0])
     tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.032"].inputs[0])
@@ -554,7 +576,6 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Math.036"].inputs[1])
     tree_links.new(new_nodes["Math.036"].outputs[0], new_nodes["Math.035"].inputs[2])
     tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.035"].inputs[1])
-    tree_links.new(new_nodes["Group"].outputs[0], new_nodes["Math.037"].inputs[0])
     tree_links.new(new_nodes["Math.006"].outputs[0], new_nodes["Math.037"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.029"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.029"].inputs[0])
@@ -598,7 +619,13 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     node.location = (-1400, 40)
     node.operation = "TANGENT"
     node.use_clamp = False
-    new_nodes["Math.008"] = node
+    new_nodes["OuterMathTangent"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1220, 40)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    new_nodes["OuterMathConeRatioDivide"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "If begin finished"
@@ -644,13 +671,13 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     # create links
     tree_links = new_node_group.links
-    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.008"].inputs[0])
+    tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["OuterMathTangent"].inputs[0])
 
     tree_links.new(new_nodes["Group Input"].outputs[0],
                    new_nodes["SampleOuterGroup"].inputs[custom_data["uv_input_index"]])
     tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["depth_output_index"]],
                    new_nodes["Math.010"].inputs[0])
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_output_index"]],
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_angle_output_index"]],
                    new_nodes["Math.009"].inputs[0])
 
     tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["depth_output_index"]],
@@ -665,7 +692,12 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["IterateGroup.0"].inputs[4])
     tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["IterateGroup.0"].inputs[5])
     tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["IterateGroup.0"].inputs[6])
-    tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["IterateGroup.0"].inputs[9])
+
+    tree_links.new(new_nodes["OuterMathTangent"].outputs[0], new_nodes["OuterMathConeRatioDivide"].inputs[0])
+    tree_links.new(new_nodes["OuterMathConeRatioDivide"].outputs[0], new_nodes["IterateGroup.0"].inputs[9])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_divisor_output_index"]],
+                   new_nodes["OuterMathConeRatioDivide"].inputs[1])
+
     tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["IterateGroup.0"].inputs[13])
     tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["IterateGroup.0"].inputs[14])
 
@@ -711,22 +743,9 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     return new_node_group
 
-# get the UVMap to be used as either tangent U or tangent V,
-# with tangent_type = either "U" or "V"
-def get_tangent_map_name(tangent_type, active_obj):
-    # check all UV layers (UV maps) by name for either:
-    #     a '(U, V) Map' to use as Tangent U vector, or
-    #     a '(V, U) Map' to use as Tangent V vector
-    # else:
-    #     return error # graceful fail
-    for uv_layer in active_obj.data.uv_layers:
-        if (uv_layer.name.lower().startswith("uvmap") and tangent_type == "U") or \
-            (uv_layer.name.lower().startswith("vumap") and tangent_type == "V"): return uv_layer.name
-    # graceful fail will not cause errors later, return error
-    return ""
-
-def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node, sample_num, uv_input_index, depth_output_index,
-                 cone_ratio_output_index, cone_offset_output_index):
+def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node, sample_num, uv_input_index,
+                      depth_output_index, cone_ratio_angle_output_index, cone_ratio_divisor_output_index,
+                      cone_offset_output_index):
     ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
     # these node groups need to be re-created every time, because they use the custom group node
     custom_data = {
@@ -734,9 +753,11 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
         "sample_num": sample_num,
         "uv_input_index": uv_input_index,
         "depth_output_index": depth_output_index,
-        "cone_ratio_output_index": cone_ratio_output_index,
+        "cone_ratio_angle_output_index": cone_ratio_angle_output_index,
+        "cone_ratio_divisor_output_index": cone_ratio_divisor_output_index,
         "cone_offset_output_index": cone_offset_output_index,
-        }
+    }
+
     iterate_mat_ng = create_mat_ng_iterate(custom_data)
     custom_data["iterate_mat_ng"] = iterate_mat_ng
     ocpom_mat_ng = create_mat_ng_offset_conestep_pom(custom_data)
@@ -797,26 +818,14 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     tree_links.new(new_nodes[DEPTH_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
     tree_links.new(new_nodes[DEPTH_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[7])
 
-def create_blank_ocpom_input_node(node_tree):
-    new_blank_node_group = create_blank_node_group()
-    if new_blank_node_group is None:
-        print("ERROR: Create new blank node group failed.")
-        return  # TODO proper error handling
-    # create a node group type node with group set to the new blank group
-    tree_nodes = node_tree.nodes
-    node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = node_tree.view_center[0] / 2.5, (250 + node_tree.view_center[1] / 2.5)
-    node.node_tree = bpy.data.node_groups.get(new_blank_node_group.name)
-
-    return node
-
 def create_blank_node_group():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=BLANK_NODE_GROUP_NAME, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Depth")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio")
+    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Angle")
+    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Divisor")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Offset")
     tree_nodes = new_node_group.nodes
     # delete all nodes
@@ -829,15 +838,29 @@ def create_blank_node_group():
 
     node = tree_nodes.new(type="NodeGroupOutput")
     node.location = (540, 0)
-    node.inputs[0].default_value = 0.050000
-    node.inputs[1].default_value = 0.700000
-    node.inputs[2].default_value = 0.001000
+    node.inputs[0].default_value = 0.05
+    node.inputs[1].default_value = 0.7
+    node.inputs[2].default_value = 1.0
+    node.inputs[3].default_value = 0.001
     new_nodes["Group Output"] = node
 
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
 
     return new_node_group
+
+def create_blank_ocpom_input_node(node_tree):
+    new_blank_node_group = create_blank_node_group()
+    if new_blank_node_group is None:
+        print("ERROR: Create new blank node group failed.")
+        return None
+    # create a node group type node with group set to the new blank group
+    tree_nodes = node_tree.nodes
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = node_tree.view_center[0] / 2.5, (250 + node_tree.view_center[1] / 2.5)
+    node.node_tree = bpy.data.node_groups.get(new_blank_node_group.name)
+
+    return node
 
 class POMSTER_AddOCPOM(bpy.types.Operator):
     bl_description = "With active node as input, create Offset Conestep Parallax Occlusion Map (OCPOM) node. Active node needs at least 1 vector input (UV) and 3 float outputs (depth, cone ratio, cone offset). Creates blank OCPOM input if zero nodes selected"
@@ -852,11 +875,6 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
 
     def execute(self, context):
         scn = context.scene
-        active_obj = context.active_object
-        if active_obj is None:
-            self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because there is " +
-                        "no active object, select an object to make it active and try again.")
-            return {'CANCELLED'}
         # check that the material has a nodes tree
         if context.space_data.edit_tree.nodes is None:
             self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because current " +
@@ -864,46 +882,19 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
             return {'CANCELLED'}
         # get active node before adding nodes and/or changing node tree
         active_node = context.space_data.edit_tree.nodes.active
-        # if zero nodes selected then create a default node group with input/output but no nodes inside
-        test_nodes = context.space_data.edit_tree.nodes
-        use_blank_ocpom_input = False
-        if len([sel_node for sel_node in test_nodes if sel_node.select]) == 0:
-            # use the newly created blank node instead of the actual active node
-            active_node = create_blank_ocpom_input_node(context.space_data.edit_tree)
-            use_blank_ocpom_input = True
-        # at least one node selected, so check if active node is available and is correct type
-        if active_node == None:
-            self.report({'ERROR'}, "Cannot get active node in node editor, cannot create Offset Conestep " +
-                        "Parallax Occlusion Map.")
-            return {'CANCELLED'}
-        # check custom node's type, inputs, outputs, and report errors to user
-        if not use_blank_ocpom_input:
-            # ensure that active node's type is node group
-            if active_node.bl_idname != 'ShaderNodeGroup':
-                self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
-                            "node's type is not 'node group'.")
-                return {'CANCELLED'}
+        # create a blank node if active node is not available or if active node is wrong type
+        if active_node is None or active_node.bl_idname != 'ShaderNodeGroup':
+            blank_node = create_blank_ocpom_input_node(context.space_data.edit_tree)
+            # blank OCPOM input node was created, so use default input/output indexes to create OCPOM Node Group node
+            create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate,
+                blank_node, scn.POMSTER_NumSamples, 0, 0, 1, 2, 3)
+        else:
+            # check custom node's type, inputs and report any errors to user
             # check user selected node to ensure minimum amount of inputs
             if len(active_node.inputs) < scn.POMSTER_UV_InputIndex:
                 self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
                             "group node does not have enough inputs to get input number " +
                             str(scn.POMSTER_UV_InputIndex) + " .")
-                return {'CANCELLED'}
-            # check user selected node to ensure minimum amount of outputs for depth output
-            if len(active_node.outputs) < scn.POMSTER_DepthOutputIndex:
-                self.report({'ERROR'}, "Cannot get Depth output, cannot create Offset Conestep Parallax Occlusion Map " +
-                            "with output number " +
-                            str(scn.POMSTER_DepthOutputIndex) + " .")
-                return {'CANCELLED'}
-            # check user selected node to ensure minimum amount of outputs for cone ratio output
-            if len(active_node.outputs) < scn.POMSTER_ConeRatioOutputIndex:
-                self.report({'ERROR'}, "Cannot get Cone Ratio output, cannot create Offset Conestep Parallax Occlusion " +
-                            "Map with output number " + str(scn.POMSTER_ConeRatioOutputIndex) + " .")
-                return {'CANCELLED'}
-            # check user selected node to ensure minimum amount of outputs for cone offset output
-            if len(active_node.outputs) < scn.POMSTER_ConeOffsetOutputIndex:
-                self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
-                            "Occlusion Map with output number " + str(scn.POMSTER_ConeOffsetOutputIndex) + " .")
                 return {'CANCELLED'}
             # check user selected node to ensure correct type of inputs
             if not hasattr(active_node.inputs[scn.POMSTER_UV_InputIndex-1], 'default_value') or \
@@ -913,13 +904,37 @@ class POMSTER_AddOCPOM(bpy.types.Operator):
                 self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
                             "group node's input number " + str(scn.POMSTER_UV_InputIndex) + " is not a Vector type.")
                 return {'CANCELLED'}
-        # if a blank OCPOM input node was created then get the default input/output indexes
-        if use_blank_ocpom_input:
-            create_ocpom_node(active_obj, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
-                scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, 0, 1, 2)
-        # otherwise, get the UI panel properties for index numbers
-        else:
-            create_ocpom_node(active_obj, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, active_node,
-                scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
-                scn.POMSTER_ConeRatioOutputIndex-1, scn.POMSTER_ConeOffsetOutputIndex-1)
+
+            # check custom node's type outputs, and report any errors to user
+            # check user selected node to ensure minimum amount of outputs for depth output
+            num_outputs = len(active_node.outputs)
+            if num_outputs < scn.POMSTER_DepthOutputIndex or \
+                    not isinstance(active_node.outputs[scn.POMSTER_DepthOutputIndex-1].default_value, float):
+                self.report({'ERROR'}, "Cannot get Depth output, cannot create Offset Conestep Parallax Occlusion Map " +
+                            "with output number " +
+                            str(scn.POMSTER_DepthOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for cone ratio angle output
+            if num_outputs < scn.POMSTER_ConeRatioAngleOutputIndex or \
+                    not isinstance(active_node.outputs[scn.POMSTER_ConeRatioAngleOutputIndex-1].default_value, float):
+                self.report({'ERROR'}, "Cannot get Cone Ratio Angle output, cannot create Offset Conestep Parallax " +
+                            "Occlusion Map with output number " + str(scn.POMSTER_ConeRatioAngleOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for cone ratio divisor output
+            if num_outputs < scn.POMSTER_ConeRatioDivisorOutputIndex or \
+                    not isinstance(active_node.outputs[scn.POMSTER_ConeRatioDivisorOutputIndex-1].default_value, float):
+                self.report({'ERROR'}, "Cannot get Cone Ratio Divisor output, cannot create Offset Conestep Parallax "+
+                            "Occlusion Map with output number " + str(scn.POMSTER_ConeRatioDivisorOutputIndex) + " .")
+                return {'CANCELLED'}
+            # check user selected node to ensure minimum amount of outputs for cone offset output
+            if num_outputs < scn.POMSTER_ConeOffsetOutputIndex or \
+                    not isinstance(active_node.outputs[scn.POMSTER_ConeOffsetOutputIndex-1].default_value, float):
+                self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
+                            "Occlusion Map with output number " + str(scn.POMSTER_ConeOffsetOutputIndex) + " .")
+                return {'CANCELLED'}
+            # get the UI panel properties for index numbers and use them to create OCPOM Node Group node
+            create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate,
+                active_node, scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
+                scn.POMSTER_ConeRatioAngleOutputIndex-1, scn.POMSTER_ConeRatioDivisorOutputIndex-1,
+                scn.POMSTER_ConeOffsetOutputIndex-1)
         return {'FINISHED'}

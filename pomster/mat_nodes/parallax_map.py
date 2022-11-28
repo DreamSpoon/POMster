@@ -18,11 +18,12 @@
 
 import bpy
 
-from .node_other import (ensure_node_group, MAT_NG_NAME_SUFFIX)
+from .node_other import (get_tangent_map_name, ensure_node_group, MAT_NG_NAME_SUFFIX)
 
 PARALLAX_MAP_MAT_NG_NAME = "ParallaxMap" + MAT_NG_NAME_SUFFIX
 
 PARALLAX_MAP_NODENAME = "ParallaxMapGrp"
+UV_INPUT_NODENAME = "UV Input"
 TANGENT_U_INPUT_NODENAME = "Tangent U"
 TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
@@ -143,7 +144,7 @@ def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
         if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
             return create_mat_ng_parallax_map()
 
-def create_parallax_map_nodes(node_tree, override_create):
+def create_parallax_map_nodes(active_obj, node_tree, override_create):
     ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_util_node_group)
 
     tree_nodes = node_tree.nodes
@@ -170,16 +171,22 @@ def create_parallax_map_nodes(node_tree, override_create):
     new_nodes[PARALLAX_MAP_NODENAME] = node
 
     # create nodes for OCPOM input
+    node = tree_nodes.new(type="ShaderNodeTexCoord")
+    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)+160)
+    new_nodes[UV_INPUT_NODENAME] = node
+
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-100)
     node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("U", active_obj)
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-200)
     node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("V", active_obj)
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
@@ -188,6 +195,7 @@ def create_parallax_map_nodes(node_tree, override_create):
 
     # create links
     tree_links = node_tree.links
+    tree_links.new(new_nodes[UV_INPUT_NODENAME].outputs[2], new_nodes[PARALLAX_MAP_NODENAME].inputs[0])
     tree_links.new(new_nodes[TANGENT_U_INPUT_NODENAME].outputs[0], new_nodes[PARALLAX_MAP_NODENAME].inputs[2])
     tree_links.new(new_nodes[TANGENT_V_INPUT_NODENAME].outputs[0], new_nodes[PARALLAX_MAP_NODENAME].inputs[3])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[PARALLAX_MAP_NODENAME].inputs[4])
@@ -211,5 +219,5 @@ class POMSTER_AddParallaxMap(bpy.types.Operator):
             self.report({'ERROR'}, "Unable to create Parallax Occlusion Map node because current material " +
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
-        create_parallax_map_nodes(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_parallax_map_nodes(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
         return {'FINISHED'}

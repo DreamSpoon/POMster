@@ -88,7 +88,8 @@ class POMSTER_PT_Main(bpy.types.Panel):
         sub_box.label(text="Group Node Input/Output")
         sub_box.prop(scn, "POMSTER_UV_InputIndex")
         sub_box.prop(scn, "POMSTER_DepthOutputIndex")
-        sub_box.prop(scn, "POMSTER_ConeRatioOutputIndex")
+        sub_box.prop(scn, "POMSTER_ConeRatioAngleOutputIndex")
+        sub_box.prop(scn, "POMSTER_ConeRatioDivisorOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeOffsetOutputIndex")
         box = layout.box()
         box.prop(scn, "POMSTER_NodesOverrideCreate")
@@ -158,13 +159,16 @@ def register_props():
         "number of the selected node that has the UV coordinates input - usually input #1", default=1, min=1)
     bts.POMSTER_DepthOutputIndex = bp.IntProperty(name="Depth Output Number", description="Choose the output " +
         "number of the active node that has the Depth output - usually output #1", default=1, min=1)
-    bts.POMSTER_ConeRatioOutputIndex = bp.IntProperty(name="Cone Ratio Output Number",
-        description="Choose output number of active node for Cone Ratio output - usually output #2. Value range is " +
-        "0 to 1 inclusive, re: 0 to 90 degrees angle. Value of 0 is zero conestep, value of 1 is full conestep",
+    bts.POMSTER_ConeRatioAngleOutputIndex = bp.IntProperty(name="Cone Ratio Angle Output Number",
+        description="Choose output number of active node for Cone Ratio Angle output - usually output #2. Value range"+
+        " is 0 to 1 inclusive, re: 0 to 90 degrees angle. Value of 0 is zero conestep, value of 1 is full conestep",
         default=2, min=1)
+    bts.POMSTER_ConeRatioDivisorOutputIndex = bp.IntProperty(name="Cone Ratio Divisor Output Number",
+        description="Choose output number of active node for Cone Ratio Divisor output - usually output #3",
+        default=3, min=1)
     bts.POMSTER_ConeOffsetOutputIndex = bp.IntProperty(name="Cone Offset Output Number",
-        description="Choose output number of active node for Cone Offset output - usually output #3. Value range " +
-        "is same as Depth output", default=3, min=1)
+        description="Choose output number of active node for Cone Offset output - usually output #4. Value range " +
+        "is same as Depth output", default=4, min=1)
     bts.POMSTER_UVtoVUmapConvertAll = bp.BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps " +
         "of selected object, instead of only selected UV Map", default=False)
 
