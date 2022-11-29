@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 3, 0),
+    "version": (0, 4, 0),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -36,6 +36,11 @@ from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_Create
     POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM
 from .uv_vu_map import POMSTER_CreateVUMap
+
+UV_ORTHO_AXES_ENUM_ITEMS = [("XY", "XY", ""),
+            ("XZ", "XZ", ""),
+            ("YZ", "YZ", ""),
+]
 
 class POMSTER_PT_General(bpy.types.Panel):
     bl_idname = "POMSTER_PT_General"
@@ -53,8 +58,9 @@ class POMSTER_PT_General(bpy.types.Panel):
         sub_box = box.box()
         sub_box.operator("pomster.create_parallax_map_node")
         sub_box = box.box()
-        sub_box.label(text="Utility")
+        sub_box.label(text="Landscape / Procedural Tangent")
         sub_box.operator("pomster.create_util_orthographic_tangent_nodes")
+        sub_box.prop(scn, "POMSTER_UV_Axes")
         sub_box = box.box()
         sub_box.label(text="Reduce Cycles Render Time")
         sub_box.operator("pomster.create_util_optimum_ray_type_node")
@@ -85,8 +91,9 @@ class POMSTER_PT_Main(bpy.types.Panel):
         sub_box.operator("pomster.create_offset_conestep_pom_nodes")
         sub_box.prop(scn, "POMSTER_NumSamples")
         sub_box = box.box()
-        sub_box.label(text="Group Node Input/Output")
+        sub_box.label(text="Custom Node Input")
         sub_box.prop(scn, "POMSTER_UV_InputIndex")
+        sub_box.label(text="Custom Node Output")
         sub_box.prop(scn, "POMSTER_DepthOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeRatioAngleOutputIndex")
         sub_box.prop(scn, "POMSTER_ConeRatioDivisorOutputIndex")
@@ -138,9 +145,11 @@ def unregister():
         bpy.utils.unregister_class(cls)
     bts = bpy.types.Scene
 
+    del bts.POMSTER_UV_Axes
     del bts.POMSTER_UVtoVUmapConvertAll
     del bts.POMSTER_ConeOffsetOutputIndex
-    del bts.POMSTER_ConeRatioOutputIndex
+    del bts.POMSTER_ConeRatioDivisorOutputIndex
+    del bts.POMSTER_ConeRatioAngleOutputIndex
     del bts.POMSTER_DepthOutputIndex
     del bts.POMSTER_UV_InputIndex
     del bts.POMSTER_NodesOverrideCreate
@@ -171,6 +180,8 @@ def register_props():
         "is same as Depth output", default=4, min=1)
     bts.POMSTER_UVtoVUmapConvertAll = bp.BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps " +
         "of selected object, instead of only selected UV Map", default=False)
+    bts.POMSTER_UV_Axes = bpy.props.EnumProperty(name= "UV axes", description= "Axes to use for UV input",
+        items=UV_ORTHO_AXES_ENUM_ITEMS)
 
 if __name__ == "__main__":
     register()

@@ -863,7 +863,8 @@ def create_blank_ocpom_input_node(node_tree):
     return node
 
 class POMSTER_AddOCPOM(bpy.types.Operator):
-    bl_description = "With active node as input, create Offset Conestep Parallax Occlusion Map (OCPOM) node. Active node needs at least 1 vector input (UV) and 3 float outputs (depth, cone ratio, cone offset). Creates blank OCPOM input if zero nodes selected"
+    bl_description = "With active node as input, create Offset Conestep Parallax Occlusion Map (OCPOM) node. " \
+        "Active node needs at least 1 vector input and 4 float outputs. Creates blank OCPOM input if needed"
     bl_idname = "pomster.create_offset_conestep_pom_nodes"
     bl_label = "Offset Conestep POM"
     bl_options = {'REGISTER', 'UNDO'}
