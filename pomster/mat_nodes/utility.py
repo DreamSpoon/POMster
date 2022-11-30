@@ -27,11 +27,15 @@ OPTIMUM_RAY_LENGTH_MAT_NG_NAME = "OptimumRayLength" + MAT_NG_NAME_SUFFIX
 OPTIMUM_RAY_ANGLE_MAT_NG_NAME = "OptimumRayAngle" + MAT_NG_NAME_SUFFIX
 COMBINE_OPTIMUM_TLA_MAT_NG_NAME = "CombineOptimumTLA" + MAT_NG_NAME_SUFFIX
 
-UTIL_ORTHO_TANGENT_NODE_GROUP_NAME = "UtilOrthoTangent"
+ORTHO_TANGENT_NODE_GROUP_NAME = "OrthoTangent"
 
 def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
-        uv_axes_str = custom_data["uv_axes_str"]
+        if custom_data is None:
+            uv_axes_str = None
+        else:
+            uv_axes_str = custom_data.get("uv_axes_str")
+
         if node_group_name == OPTIMUM_RAY_TYPE_MAT_NG_NAME:
             return create_mat_ng_optimum_ray_type()
         elif node_group_name == OPTIMUM_RAY_LENGTH_MAT_NG_NAME:
@@ -41,7 +45,7 @@ def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
         elif node_group_name == COMBINE_OPTIMUM_TLA_MAT_NG_NAME:
             return create_mat_ng_combine_optimum_tla()
         elif uv_axes_str != None and node_group_name == \
-                UTIL_ORTHO_TANGENT_NODE_GROUP_NAME + uv_axes_str + MAT_NG_NAME_SUFFIX:
+                ORTHO_TANGENT_NODE_GROUP_NAME + uv_axes_str + MAT_NG_NAME_SUFFIX:
             return create_mat_ng_util_ortho_tangent(custom_data)
 
     # error
@@ -51,7 +55,7 @@ def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
 def create_mat_ng_util_ortho_tangent(custom_data):
     # initialize variables
     new_nodes = {}
-    new_node_group = bpy.data.node_groups.new(name=UTIL_ORTHO_TANGENT_NODE_GROUP_NAME+
+    new_node_group = bpy.data.node_groups.new(name=ORTHO_TANGENT_NODE_GROUP_NAME+
         custom_data["uv_axes_str"]+MAT_NG_NAME_SUFFIX, type='ShaderNodeTree')
     new_node_group.inputs.new(type='NodeSocketVector', name="Position")
     new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
@@ -168,7 +172,7 @@ def create_mat_ng_util_ortho_tangent(custom_data):
     return new_node_group
 
 def create_util_ortho_tangents(node_tree, override_create, uv_axes_str):
-    node_grp_name = UTIL_ORTHO_TANGENT_NODE_GROUP_NAME + uv_axes_str + MAT_NG_NAME_SUFFIX
+    node_grp_name = ORTHO_TANGENT_NODE_GROUP_NAME + uv_axes_str + MAT_NG_NAME_SUFFIX
     ensure_node_group(override_create, node_grp_name, "ShaderNodeTree", create_prereq_node_group,
                       {"uv_axes_str": uv_axes_str} )
     rotate_axis_letter = ""
@@ -214,23 +218,12 @@ def create_util_ortho_tangents(node_tree, override_create, uv_axes_str):
     node.outputs[0].default_value = 0.0
     new_nodes["Value.001"] = node
 
-    node = tree_nodes.new(type="ShaderNodeVectorRotate")
-    node.label = "Rotate Normal Map " + rotate_axis_letter
-    node.location = (offset[0]+360, offset[1]-280)
-    node.invert = False
-    node.rotation_type = "AXIS_ANGLE"
-    node.inputs[1].default_value = (0.0, 0.0, 0.0)
-    node.inputs[4].default_value = (0.0, 0.0, 0.0)
-    new_nodes["Vector Rotate.001"] = node
-
     # create links
     tree_links = node_tree.links
     tree_links.new(new_nodes["Geometry.002"].outputs[0], new_nodes["Group.002"].inputs[0])
     tree_links.new(new_nodes["Geometry.002"].outputs[1], new_nodes["Group.002"].inputs[1])
     tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Group.002"].inputs[3])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Vector Rotate.001"].inputs[3])
     tree_links.new(new_nodes["Value.001"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Geometry.002"].outputs[1], new_nodes["Vector Rotate.001"].inputs[2])
 
 class POMSTER_AddUtilOrthoTangentNodes(bpy.types.Operator):
     bl_description = "Add nodes to get U / V tangents based on orthographic texture projection. Use this to " \

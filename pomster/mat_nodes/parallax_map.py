@@ -29,6 +29,11 @@ TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
 DEPTH_STEP_INPUT_NODENAME = "Depth Step"
 
+def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
+    if node_tree_type == 'ShaderNodeTree':
+        if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
+            return create_mat_ng_parallax_map()
+
 def create_mat_ng_parallax_map():
     # initialize variables
     new_nodes = {}
@@ -139,11 +144,6 @@ def create_mat_ng_parallax_map():
 
     return new_node_group
 
-def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
-    if node_tree_type == 'ShaderNodeTree':
-        if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
-            return create_mat_ng_parallax_map()
-
 def create_parallax_map_nodes(active_obj, node_tree, override_create):
     ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_util_node_group)
 
@@ -201,7 +201,7 @@ def create_parallax_map_nodes(active_obj, node_tree, override_create):
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[PARALLAX_MAP_NODENAME].inputs[4])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[PARALLAX_MAP_NODENAME].inputs[5])
 
-class POMSTER_AddParallaxMap(bpy.types.Operator):
+class POMSTER_AddParallaxMapNode(bpy.types.Operator):
     bl_description = "Add a Parallax Map node, which can be used to add 'depth' effect to materials"
     bl_idname = "pomster.create_parallax_map_node"
     bl_label = "Parallax Map"

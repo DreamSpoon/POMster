@@ -31,20 +31,22 @@ import math
 
 import bpy
 
-from .mat_nodes.parallax_map import POMSTER_AddParallaxMap
+from .mat_nodes.parallax_map import POMSTER_AddParallaxMapNode
 from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_CreateUtilOptimumRayTypeNode,
     POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
-from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM
+from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM_Node
+from .mat_nodes.shader_mask import (POMSTER_AddCubeMask, POMSTER_AddSphereMask)
 from .uv_vu_map import POMSTER_CreateVUMap
 
-UV_ORTHO_AXES_ENUM_ITEMS = [("XY", "XY", ""),
-            ("XZ", "XZ", ""),
-            ("YZ", "YZ", ""),
+UV_ORTHO_AXES_ENUM_ITEMS = [
+    ("XY", "XY", ""),
+    ("XZ", "XZ", ""),
+    ("YZ", "YZ", ""),
 ]
 
 class POMSTER_PT_General(bpy.types.Panel):
-    bl_idname = "POMSTER_PT_General"
-    bl_label = "General"
+#    bl_idname = "POMSTER_PT_General"
+    bl_label = "Parallax Map"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "POMster"
@@ -54,13 +56,45 @@ class POMSTER_PT_General(bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="Create Nodes")
         sub_box = box.box()
         sub_box.operator("pomster.create_parallax_map_node")
         sub_box = box.box()
         sub_box.label(text="Landscape / Procedural Tangent")
         sub_box.operator("pomster.create_util_orthographic_tangent_nodes")
         sub_box.prop(scn, "POMSTER_UV_Axes")
+        box = layout.box()
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
+
+class POMSTER_PT_ShaderMask(bpy.types.Panel):
+#    bl_idname = "POMSTER_PT_ShaderMask"
+    bl_label = "Shader Mask"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        box = layout.box()
+        box.operator("pomster.create_cube_shader_mask_node")
+        box.operator("pomster.create_sphere_shader_mask_node")
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
+
+class POMSTER_PT_Optimize(bpy.types.Panel):
+#    bl_idname = "POMSTER_PT_Optimize"
+    bl_label = "Optimize"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        box = layout.box()
         sub_box = box.box()
         sub_box.label(text="Reduce Cycles Render Time")
         sub_box.operator("pomster.create_util_optimum_ray_type_node")
@@ -74,12 +108,13 @@ class POMSTER_PT_General(bpy.types.Panel):
         box = layout.box()
         box.prop(scn, "POMSTER_NodesOverrideCreate")
 
-class POMSTER_PT_Main(bpy.types.Panel):
-    bl_idname = "POMSTER_PT_Main"
+class POMSTER_PT_OCPOM(bpy.types.Panel):
+#    bl_idname = "POMSTER_PT_OCPOM"
     bl_label = "OCPOM"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         scn = context.scene
@@ -123,14 +158,18 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 
 classes = [
     POMSTER_PT_General,
-    POMSTER_AddParallaxMap,
+    POMSTER_AddParallaxMapNode,
     POMSTER_AddUtilOrthoTangentNodes,
+    POMSTER_PT_ShaderMask,
+    POMSTER_AddCubeMask,
+    POMSTER_AddSphereMask,
+    POMSTER_PT_Optimize,
     POMSTER_CreateUtilOptimumRayTypeNode,
     POMSTER_AddUtilOptimumRayLengthNode,
     POMSTER_AddUtilOptimumRayAngleNode,
     POMSTER_AddUtilCombineOptimumTLA_Node,
-    POMSTER_PT_Main,
-    POMSTER_AddOCPOM,
+    POMSTER_PT_OCPOM,
+    POMSTER_AddOCPOM_Node,
     POMSTER_PT_FlipUV,
     POMSTER_CreateVUMap,
 ]

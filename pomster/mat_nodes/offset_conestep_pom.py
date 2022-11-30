@@ -40,7 +40,7 @@ def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
             return create_mat_ng_parallax_map()
 
     # error
-    print("Unknown name passed to create_prereq_util_node_group: " + str(node_group_name))
+    print("Unknown name passed to create_prereq_node_group: " + str(node_group_name))
     return None
 
 def create_mat_ng_iterate(custom_data):
@@ -762,10 +762,14 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     custom_data["iterate_mat_ng"] = iterate_mat_ng
     ocpom_mat_ng = create_mat_ng_offset_conestep_pom(custom_data)
 
+    tree_nodes = node_tree.nodes
+
+    # deselect all nodes
+    for n in tree_nodes: n.select = False
+
     # create nodes
     new_nodes = {}
 
-    tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
     node.node_tree = ocpom_mat_ng
@@ -775,7 +779,7 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     node.inputs[4].default_value = (0, 0, 1)
     node.inputs[6].default_value = 0.003
     node.inputs[7].default_value = 0.003
-    # set this OCPOM node to be the active node
+    # set this OCPOM node to be active node
     node_tree.nodes.active = node
     new_nodes[OCPOM_NODENAME] = node
 
@@ -862,7 +866,7 @@ def create_blank_ocpom_input_node(node_tree):
 
     return node
 
-class POMSTER_AddOCPOM(bpy.types.Operator):
+class POMSTER_AddOCPOM_Node(bpy.types.Operator):
     bl_description = "With active node as input, create Offset Conestep Parallax Occlusion Map (OCPOM) node. " \
         "Active node needs at least 1 vector input and 4 float outputs. Creates blank OCPOM input if needed"
     bl_idname = "pomster.create_offset_conestep_pom_nodes"
