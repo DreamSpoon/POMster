@@ -35,7 +35,7 @@ from .mat_nodes.parallax_map import POMSTER_AddParallaxMapNode
 from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_CreateUtilOptimumRayTypeNode,
     POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM_Node
-from .mat_nodes.shader_mask import (POMSTER_AddCubeMask, POMSTER_AddSphereMask)
+from .mat_nodes.shader_mask import (POMSTER_AddCubeMask, POMSTER_AddSphereMask, POMSTER_AddMaskObjLocRotSclNodes)
 from .uv_vu_map import POMSTER_CreateVUMap
 
 UV_ORTHO_AXES_ENUM_ITEMS = [
@@ -44,8 +44,26 @@ UV_ORTHO_AXES_ENUM_ITEMS = [
     ("YZ", "YZ", ""),
 ]
 
+class POMSTER_PT_FlipUV(bpy.types.Panel):
+    bl_label = "Flip UV"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+
+    def draw(self, context):
+        scn = context.scene
+        obj_data = context.object.data
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Create VU Map from UV Map")
+        box.operator("pomster.create_vu_from_uv")
+        box.label(text="Select UV Map")
+        box.prop(scn, "POMSTER_UVtoVUmapConvertAll")
+        r = box.row()
+        r.active = not scn.POMSTER_UVtoVUmapConvertAll
+        r.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index", rows=2)
+
 class POMSTER_PT_General(bpy.types.Panel):
-#    bl_idname = "POMSTER_PT_General"
     bl_label = "Parallax Map"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
@@ -65,51 +83,7 @@ class POMSTER_PT_General(bpy.types.Panel):
         box = layout.box()
         box.prop(scn, "POMSTER_NodesOverrideCreate")
 
-class POMSTER_PT_ShaderMask(bpy.types.Panel):
-#    bl_idname = "POMSTER_PT_ShaderMask"
-    bl_label = "Shader Mask"
-    bl_space_type = "NODE_EDITOR"
-    bl_region_type = "UI"
-    bl_category = "POMster"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        box = layout.box()
-        box.operator("pomster.create_cube_shader_mask_node")
-        box.operator("pomster.create_sphere_shader_mask_node")
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
-
-class POMSTER_PT_Optimize(bpy.types.Panel):
-#    bl_idname = "POMSTER_PT_Optimize"
-    bl_label = "Optimize"
-    bl_space_type = "NODE_EDITOR"
-    bl_region_type = "UI"
-    bl_category = "POMster"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        box = layout.box()
-        sub_box = box.box()
-        sub_box.label(text="Reduce Cycles Render Time")
-        sub_box.operator("pomster.create_util_optimum_ray_type_node")
-        sub_box.operator("pomster.create_util_optimum_ray_length_node")
-        sub_box = box.box()
-        sub_box.label(text="Reduce Texture Warp")
-        sub_box.operator("pomster.create_util_optimum_ray_angle_node")
-        sub_box = box.box()
-        sub_box.label(text="Combine Optimum")
-        sub_box.operator("pomster.create_util_optimum_combine_tla")
-        box = layout.box()
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
-
 class POMSTER_PT_OCPOM(bpy.types.Panel):
-#    bl_idname = "POMSTER_PT_OCPOM"
     bl_label = "OCPOM"
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
@@ -136,42 +110,70 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         box = layout.box()
         box.prop(scn, "POMSTER_NodesOverrideCreate")
 
-class POMSTER_PT_FlipUV(bpy.types.Panel):
-    bl_label = "Flip UV"
-    bl_space_type = "VIEW_3D"
+class POMSTER_PT_Optimize(bpy.types.Panel):
+    bl_label = "Optimize"
+    bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         scn = context.scene
-        obj_data = context.object.data
         layout = self.layout
+
         box = layout.box()
-        box.label(text="Create VU Map from UV Map")
-        box.operator("pomster.create_vu_from_uv")
-        box.label(text="Select UV Map")
-        box.prop(scn, "POMSTER_UVtoVUmapConvertAll")
-        row = box.row()
-        row.active = not scn.POMSTER_UVtoVUmapConvertAll
-        row.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index",
-                          rows=2)
+        sub_box = box.box()
+        sub_box.label(text="Reduce Cycles Render Time")
+        sub_box.operator("pomster.create_util_optimum_ray_type_node")
+        sub_box.operator("pomster.create_util_optimum_ray_length_node")
+        sub_box = box.box()
+        sub_box.label(text="Reduce Texture Warp")
+        sub_box.operator("pomster.create_util_optimum_ray_angle_node")
+        sub_box = box.box()
+        sub_box.label(text="Combine Optimum")
+        sub_box.operator("pomster.create_util_optimum_combine_tla")
+        box = layout.box()
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
+
+class POMSTER_PT_ShaderMask(bpy.types.Panel):
+    bl_label = "Shader Mask"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        box = layout.box()
+        box.label(text="Mask")
+        box.operator("pomster.create_cube_shader_mask_node")
+        box.operator("pomster.create_sphere_shader_mask_node")
+        box = layout.box()
+        box.label(text="Object Loc, Rot, Scl")
+        box.operator("pomster.create_mask_object_loc_rot_scl_nodes")
+        box.prop(scn, "POMSTER_MaskInputObject")
+        box = layout.box()
+        box.prop(scn, "POMSTER_NodesOverrideCreate")
 
 classes = [
+    POMSTER_PT_FlipUV,
+    POMSTER_CreateVUMap,
     POMSTER_PT_General,
     POMSTER_AddParallaxMapNode,
     POMSTER_AddUtilOrthoTangentNodes,
-    POMSTER_PT_ShaderMask,
-    POMSTER_AddCubeMask,
-    POMSTER_AddSphereMask,
+    POMSTER_PT_OCPOM,
+    POMSTER_AddOCPOM_Node,
     POMSTER_PT_Optimize,
     POMSTER_CreateUtilOptimumRayTypeNode,
     POMSTER_AddUtilOptimumRayLengthNode,
     POMSTER_AddUtilOptimumRayAngleNode,
     POMSTER_AddUtilCombineOptimumTLA_Node,
-    POMSTER_PT_OCPOM,
-    POMSTER_AddOCPOM_Node,
-    POMSTER_PT_FlipUV,
-    POMSTER_CreateVUMap,
+    POMSTER_PT_ShaderMask,
+    POMSTER_AddCubeMask,
+    POMSTER_AddSphereMask,
+    POMSTER_AddMaskObjLocRotSclNodes,
 ]
 
 def register():
@@ -184,6 +186,7 @@ def unregister():
         bpy.utils.unregister_class(cls)
     bts = bpy.types.Scene
 
+    del bts.POMSTER_MaskInputObject
     del bts.POMSTER_UV_Axes
     del bts.POMSTER_UVtoVUmapConvertAll
     del bts.POMSTER_ConeOffsetOutputIndex
@@ -219,8 +222,10 @@ def register_props():
         "is same as Depth output", default=4, min=1)
     bts.POMSTER_UVtoVUmapConvertAll = bp.BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps " +
         "of selected object, instead of only selected UV Map", default=False)
-    bts.POMSTER_UV_Axes = bpy.props.EnumProperty(name= "UV axes", description= "Axes to use for UV input",
+    bts.POMSTER_UV_Axes = bp.EnumProperty(name= "UV axes", description= "Axes to use for UV input",
         items=UV_ORTHO_AXES_ENUM_ITEMS)
+    bts.POMSTER_MaskInputObject = bp.PointerProperty(name="Object", description="Input nodes for location, " +
+        "rotation, scale will get their values from this Object", type=bpy.types.Object)
 
 if __name__ == "__main__":
     register()

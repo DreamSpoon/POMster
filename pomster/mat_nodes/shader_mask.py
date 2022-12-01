@@ -193,7 +193,7 @@ class POMSTER_AddCubeMask(bpy.types.Operator):
         # check that the material has a nodes tree
         if context.space_data.edit_tree.nodes is None:
             self.report({'ERROR'}, "Unable to create Cube Shader Mask nodebecause current material doesn't use " +
-                        "nodes.  Enable material 'Use Nodes' to continue")
+                        "nodes.  Enable material 'Use Nodes' to continue.")
             return {'CANCELLED'}
         create_cube_shader_mask_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
         return {'FINISHED'}
@@ -290,7 +290,162 @@ class POMSTER_AddSphereMask(bpy.types.Operator):
         # check that the material has a nodes tree
         if context.space_data.edit_tree.nodes is None:
             self.report({'ERROR'}, "Unable to create Sphere Shader Mask nodebecause current material doesn't use " +
-                        "nodes.  Enable material 'Use Nodes' to continue")
+                        "nodes.  Enable material 'Use Nodes' to continue.")
             return {'CANCELLED'}
         create_sphere_shader_mask_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        return {'FINISHED'}
+
+def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
+    tree_nodes = node_tree.nodes
+    new_nodes = {}
+
+    # deselect all nodes
+    for n in tree_nodes: n.select = False
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeCombineXYZ")
+    node.label = "Loc_"
+    node.location = (node_tree.view_center[0] / 2.5, 140 + (node_tree.view_center[1] / 2.5))
+    node.inputs[0].default_value = 0.000000
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 0.000000
+    # set this node to be active node
+    node_tree.nodes.active = node
+
+    # add driver to get location X
+    drv_loc_x = node.inputs[0].driver_add('default_value').driver
+    v_loc_x = drv_loc_x.variables.new()
+    v_loc_x.type = 'TRANSFORMS'
+    v_loc_x.name = "var"
+    v_loc_x.targets[0].id = input_object
+    v_loc_x.targets[0].transform_type = 'LOC_X'
+    v_loc_x.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_loc_x.targets[0].data_path = "location.x"
+    drv_loc_x.expression = v_loc_x.name
+    # add driver to get location Y
+    drv_loc_y = node.inputs[1].driver_add('default_value').driver
+    v_loc_y = drv_loc_y.variables.new()
+    v_loc_y.type = 'TRANSFORMS'
+    v_loc_y.name = "var"
+    v_loc_y.targets[0].id = input_object
+    v_loc_y.targets[0].transform_type = 'LOC_Y'
+    v_loc_y.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_loc_y.targets[0].data_path = "location.y"
+    drv_loc_y.expression = v_loc_y.name
+    # add driver to get location Z
+    drv_loc_z = node.inputs[2].driver_add('default_value').driver
+    v_loc_z = drv_loc_z.variables.new()
+    v_loc_z.type = 'TRANSFORMS'
+    v_loc_z.name = "var"
+    v_loc_z.targets[0].id = input_object
+    v_loc_z.targets[0].transform_type = 'LOC_Z'
+    v_loc_z.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_loc_z.targets[0].data_path = "location.z"
+    drv_loc_z.expression = v_loc_z.name
+
+    new_nodes["Loc_Combine XYZ"] = node
+
+    node = tree_nodes.new(type="ShaderNodeCombineXYZ")
+    node.label = "Rot_"
+    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.inputs[0].default_value = 0.000000
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 0.000000
+
+    # add driver to get rotation X
+    drv_rot_x = node.inputs[0].driver_add('default_value').driver
+    v_rot_x = drv_rot_x.variables.new()
+    v_rot_x.type = 'TRANSFORMS'
+    v_rot_x.name = "var"
+    v_rot_x.targets[0].id = input_object
+    v_rot_x.targets[0].transform_type = 'ROT_X'
+    v_rot_x.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_rot_x.targets[0].data_path = "rotation.x"
+    drv_rot_x.expression = v_rot_x.name
+    # add driver to get rotation Y
+    drv_rot_y = node.inputs[1].driver_add('default_value').driver
+    v_rot_y = drv_rot_y.variables.new()
+    v_rot_y.type = 'TRANSFORMS'
+    v_rot_y.name = "var"
+    v_rot_y.targets[0].id = input_object
+    v_rot_y.targets[0].transform_type = 'ROT_Y'
+    v_rot_y.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_rot_y.targets[0].data_path = "rotation.y"
+    drv_rot_y.expression = v_rot_y.name
+    # add driver to get rotation Z
+    drv_rot_z = node.inputs[2].driver_add('default_value').driver
+    v_rot_z = drv_rot_z.variables.new()
+    v_rot_z.type = 'TRANSFORMS'
+    v_rot_z.name = "var"
+    v_rot_z.targets[0].id = input_object
+    v_rot_z.targets[0].transform_type = 'ROT_Z'
+    v_rot_z.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_rot_z.targets[0].data_path = "rotation.z"
+    drv_rot_z.expression = v_rot_z.name
+
+    new_nodes["Rot_Combine XYZ"] = node
+
+    node = tree_nodes.new(type="ShaderNodeCombineXYZ")
+    node.label = "Scl_"
+    node.location = (node_tree.view_center[0] / 2.5, -140 + (node_tree.view_center[1] / 2.5))
+    node.inputs[0].default_value = 1.000000
+    node.inputs[1].default_value = 1.000000
+    node.inputs[2].default_value = 1.000000
+
+    # add driver to get scale X
+    drv_scl_x = node.inputs[0].driver_add('default_value').driver
+    v_scl_x = drv_scl_x.variables.new()
+    v_scl_x.type = 'TRANSFORMS'
+    v_scl_x.name = "var"
+    v_scl_x.targets[0].id = input_object
+    v_scl_x.targets[0].transform_type = 'SCALE_X'
+    v_scl_x.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_scl_x.targets[0].data_path = "scale.x"
+    drv_scl_x.expression = v_scl_x.name
+    # add driver to get scale Y
+    drv_scl_y = node.inputs[1].driver_add('default_value').driver
+    v_scl_y = drv_scl_y.variables.new()
+    v_scl_y.type = 'TRANSFORMS'
+    v_scl_y.name = "var"
+    v_scl_y.targets[0].id = input_object
+    v_scl_y.targets[0].transform_type = 'SCALE_Y'
+    v_scl_y.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_scl_y.targets[0].data_path = "scale.y"
+    drv_scl_y.expression = v_scl_y.name
+    # add driver to get scale Z
+    drv_scl_z = node.inputs[2].driver_add('default_value').driver
+    v_scl_z = drv_scl_z.variables.new()
+    v_scl_z.type = 'TRANSFORMS'
+    v_scl_z.name = "var"
+    v_scl_z.targets[0].id = input_object
+    v_scl_z.targets[0].transform_type = 'SCALE_Z'
+    v_scl_z.targets[0].transform_space = 'TRANSFORM_SPACE'
+    v_scl_z.targets[0].data_path = "scale.z"
+    drv_scl_z.expression = v_scl_z.name
+
+    new_nodes["Scl_Combine XYZ"] = node
+
+class POMSTER_AddMaskObjLocRotSclNodes(bpy.types.Operator):
+    bl_description = "Add nodes to give object location, rotation, scale - automatically updated (using drivers)"
+    bl_idname = "pomster.create_mask_object_loc_rot_scl_nodes"
+    bl_label = "Object Loc, Rot, Scl"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        s = context.space_data
+        return s.type == 'NODE_EDITOR' and s.node_tree != None and s.tree_type == 'ShaderNodeTree'
+
+    def execute(self, context):
+        scn = context.scene
+        # check that the material has a nodes tree
+        if context.space_data.edit_tree.nodes is None:
+            self.report({'ERROR'}, "Unable to create Object Loc, Rot, Scl nodes because current material doesn't " +
+                        "use nodes.  Enable material 'Use Nodes' to continue.")
+            return {'CANCELLED'}
+        if scn.POMSTER_MaskInputObject is None:
+            self.report({'ERROR'}, "Unable to create Object Loc, Rot, Scl nodes because Object is blank. Select " +
+                        "Object and try again.")
+            return {'CANCELLED'}
+        create_mask_obj_loc_rot_scl_nodes(context.space_data.edit_tree, scn.POMSTER_MaskInputObject)
         return {'FINISHED'}

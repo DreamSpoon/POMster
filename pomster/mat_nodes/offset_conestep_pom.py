@@ -809,7 +809,7 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = DEPTH_STEP_INPUT_NODENAME
     node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-540)
-    node.outputs[0].default_value = 0.003
+    node.outputs[0].default_value = 0.002
     new_nodes[DEPTH_STEP_INPUT_NODENAME] = node
 
     # create links
@@ -843,7 +843,7 @@ def create_blank_node_group():
     node = tree_nodes.new(type="NodeGroupOutput")
     node.location = (540, 0)
     node.inputs[0].default_value = 0.05
-    node.inputs[1].default_value = 0.7
+    node.inputs[1].default_value = 0.9
     node.inputs[2].default_value = 1.0
     node.inputs[3].default_value = 0.001
     new_nodes["Group Output"] = node
@@ -861,7 +861,7 @@ def create_blank_ocpom_input_node(node_tree):
     # create a node group type node with group set to the new blank group
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = node_tree.view_center[0] / 2.5, (250 + node_tree.view_center[1] / 2.5)
+    node.location = (-40+(node_tree.view_center[0] / 2.5), -540 + (node_tree.view_center[1] / 2.5))
     node.node_tree = bpy.data.node_groups.get(new_blank_node_group.name)
 
     return node
