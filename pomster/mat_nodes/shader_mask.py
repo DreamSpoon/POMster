@@ -304,7 +304,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
 
     # create nodes
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
-    node.label = "Loc_"
+    node.label = "Loc_" + input_object.name
     node.location = (node_tree.view_center[0] / 2.5, 140 + (node_tree.view_center[1] / 2.5))
     node.inputs[0].default_value = 0.000000
     node.inputs[1].default_value = 0.000000
@@ -346,7 +346,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
     new_nodes["Loc_Combine XYZ"] = node
 
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
-    node.label = "Rot_"
+    node.label = "Rot_" + input_object.name
     node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
     node.inputs[0].default_value = 0.000000
     node.inputs[1].default_value = 0.000000
@@ -386,7 +386,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
     new_nodes["Rot_Combine XYZ"] = node
 
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
-    node.label = "Scl_"
+    node.label = "Scl_" + input_object.name
     node.location = (node_tree.view_center[0] / 2.5, -140 + (node_tree.view_center[1] / 2.5))
     node.inputs[0].default_value = 1.000000
     node.inputs[1].default_value = 1.000000

@@ -36,6 +36,7 @@ from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_Create
     POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM_Node
 from .mat_nodes.shader_mask import (POMSTER_AddCubeMask, POMSTER_AddSphereMask, POMSTER_AddMaskObjLocRotSclNodes)
+from .obj_grid_snap import (POMSTER_AddObjGridSnap, GRID_SIZE_CPROP_NAME)
 from .uv_vu_map import POMSTER_CreateVUMap
 
 UV_ORTHO_AXES_ENUM_ITEMS = [
@@ -52,16 +53,39 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 
     def draw(self, context):
         scn = context.scene
-        obj_data = context.object.data
+        obj_data = None
+        if context.object != None:
+            obj_data = context.object.data
         layout = self.layout
         box = layout.box()
-        box.label(text="Create VU Map from UV Map")
-        box.operator("pomster.create_vu_from_uv")
-        box.label(text="Select UV Map")
-        box.prop(scn, "POMSTER_UVtoVUmapConvertAll")
-        r = box.row()
-        r.active = not scn.POMSTER_UVtoVUmapConvertAll
-        r.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index", rows=2)
+        col = box.column()
+        col.active = obj_data != None
+        col.label(text="Create VU Map from UV Map")
+        col.operator("pomster.create_vu_from_uv")
+        col.label(text="Select UV Map")
+        col.prop(scn, "POMSTER_UVtoVUmapConvertAll")
+        if obj_data != None and hasattr(obj_data, "uv_layers"):
+            r = col.row()
+            r.active = not scn.POMSTER_UVtoVUmapConvertAll
+            r.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index",
+                            rows=2)
+
+class POMSTER_PT_ObjectGridSnap(bpy.types.Panel):
+    bl_label = "ObjectGridSnap"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Snap Object Location to Grid")
+        box.operator("pomster.add_object_grid_snap")
+        if context.active_object != None:
+            grid_size_cprop = context.active_object.get(GRID_SIZE_CPROP_NAME)
+            if grid_size_cprop != None:
+                box.label(text="Active Object's Grid Snap")
+                box.prop(context.active_object, "[\""+GRID_SIZE_CPROP_NAME+"\"]", text="")
 
 class POMSTER_PT_General(bpy.types.Panel):
     bl_label = "Parallax Map"
@@ -159,6 +183,8 @@ class POMSTER_PT_ShaderMask(bpy.types.Panel):
 
 classes = [
     POMSTER_PT_FlipUV,
+    POMSTER_PT_ObjectGridSnap,
+    POMSTER_AddObjGridSnap,
     POMSTER_CreateVUMap,
     POMSTER_PT_General,
     POMSTER_AddParallaxMapNode,

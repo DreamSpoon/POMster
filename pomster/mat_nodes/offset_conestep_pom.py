@@ -764,9 +764,6 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
 
     tree_nodes = node_tree.nodes
 
-    # deselect all nodes
-    for n in tree_nodes: n.select = False
-
     # create nodes
     new_nodes = {}
 
@@ -808,7 +805,7 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = DEPTH_STEP_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-540)
+    node.location = ((node_tree.view_center[0] / 2.5), (node_tree.view_center[1] / 2.5)-360)
     node.outputs[0].default_value = 0.002
     new_nodes[DEPTH_STEP_INPUT_NODENAME] = node
 
@@ -861,7 +858,7 @@ def create_blank_ocpom_input_node(node_tree):
     # create a node group type node with group set to the new blank group
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (-40+(node_tree.view_center[0] / 2.5), -540 + (node_tree.view_center[1] / 2.5))
+    node.location = ((node_tree.view_center[0] / 2.5), -460 + (node_tree.view_center[1] / 2.5))
     node.node_tree = bpy.data.node_groups.get(new_blank_node_group.name)
 
     return node
@@ -880,15 +877,19 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
 
     def execute(self, context):
         scn = context.scene
+        tree_nodes = context.space_data.edit_tree.nodes
         # check that the material has a nodes tree
-        if context.space_data.edit_tree.nodes is None:
+        if tree_nodes is None:
             self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because current " +
                         "material doesn't use nodes. Enable material's 'Use Nodes' option to continue.")
             return {'CANCELLED'}
         # get active node before adding nodes and/or changing node tree
-        active_node = context.space_data.edit_tree.nodes.active
+        active_node = tree_nodes.active
         # create a blank node if active node is not available or if active node is wrong type
         if active_node is None or active_node.bl_idname != 'ShaderNodeGroup':
+            # deselect all nodes
+            for n in tree_nodes: n.select = False
+
             blank_node = create_blank_ocpom_input_node(context.space_data.edit_tree)
             # blank OCPOM input node was created, so use default input/output indexes to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate,
@@ -937,6 +938,10 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
                 self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
                             "Occlusion Map with output number " + str(scn.POMSTER_ConeOffsetOutputIndex) + " .")
                 return {'CANCELLED'}
+
+            # deselect all nodes
+            for n in tree_nodes: n.select = False
+
             # get the UI panel properties for index numbers and use them to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate,
                 active_node, scn.POMSTER_NumSamples, scn.POMSTER_UV_InputIndex-1, scn.POMSTER_DepthOutputIndex-1,
