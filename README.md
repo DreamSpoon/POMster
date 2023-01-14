@@ -31,9 +31,9 @@ Each of these places has a *POMster* tab for access to POMster functions.
 
 # Usage
 
-## [Material Shader Nodes] (docs/MAT_SHADER_NODES.md)
+## [Material Shader Nodes](docs/MAT_SHADER_NODES.md)
 
-## [Geometry Nodes] (docs/GEOMETRY_NODES.md)
+## [Geometry Nodes](docs/GEOMETRY_NODES.md)
 
 # See Also
 Parallax Mapping at LearnOpenGL
