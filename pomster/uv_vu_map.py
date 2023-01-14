@@ -56,5 +56,5 @@ class POMSTER_CreateVUMap(bpy.types.Operator):
 
     def execute(self, context):
         scn = context.scene
-        create_vu_from_uv_map(context.active_object, scn.POMSTER_UVtoVUmapConvertAll)
+        create_vu_from_uv_map(context.active_object, scn.POMster.uv_to_vu_map_convert_all)
         return {'FINISHED'}

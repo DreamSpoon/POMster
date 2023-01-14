@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 4, 0),
+    "version": (0, 5, 0),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -30,14 +30,19 @@ bl_info = {
 import math
 
 import bpy
+from bpy.types import PropertyGroup
+from bpy.props import (BoolProperty, EnumProperty, IntProperty, PointerProperty)
 
 from .mat_nodes.parallax_map import POMSTER_AddParallaxMapNode
 from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_CreateUtilOptimumRayTypeNode,
     POMSTER_AddUtilOptimumRayLengthNode, POMSTER_AddUtilOptimumRayAngleNode, POMSTER_AddUtilCombineOptimumTLA_Node)
 from .mat_nodes.offset_conestep_pom import POMSTER_AddOCPOM_Node
 from .mat_nodes.shader_mask import (POMSTER_AddCubeMask, POMSTER_AddSphereMask, POMSTER_AddMaskObjLocRotSclNodes)
-from .obj_grid_snap import (POMSTER_AddObjGridSnap, GRID_SIZE_CPROP_NAME)
+from .geo_nodes.shell_fringe import (POMSTER_AddShellArrayNode, POMSTER_AddFringeExtrudeNode)
+from .mat_nodes.shell_fringe_blend import POMSTER_AddShellFringeBlendNode
 from .uv_vu_map import POMSTER_CreateVUMap
+from .obj_grid_snap import (POMSTER_AddObjGridSnap, GRID_SIZE_CPROP_NAME)
+from .obj_shell_fringe import POMSTER_CreateObjModShellFringe
 
 UV_ORTHO_AXES_ENUM_ITEMS = [
     ("XY", "XY", ""),
@@ -53,25 +58,24 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
 
     def draw(self, context):
         scn = context.scene
-        obj_data = None
+        o_data = None
         if context.object != None:
-            obj_data = context.object.data
+            o_data = context.object.data
         layout = self.layout
         box = layout.box()
         col = box.column()
-        col.active = obj_data != None
+        col.active = o_data != None
         col.label(text="Create VU Map from UV Map")
         col.operator("pomster.create_vu_from_uv")
         col.label(text="Select UV Map")
-        col.prop(scn, "POMSTER_UVtoVUmapConvertAll")
-        if obj_data != None and hasattr(obj_data, "uv_layers"):
+        col.prop(scn.POMster, "uv_to_vu_map_convert_all")
+        if o_data != None and hasattr(o_data, "uv_layers"):
             r = col.row()
-            r.active = not scn.POMSTER_UVtoVUmapConvertAll
-            r.template_list("MESH_UL_uvmaps", "uvmaps", obj_data, "uv_layers", obj_data.uv_layers, "active_index",
-                            rows=2)
+            r.active = not scn.POMster.uv_to_vu_map_convert_all
+            r.template_list("MESH_UL_uvmaps", "uvmaps", o_data, "uv_layers", o_data.uv_layers, "active_index", rows=2)
 
 class POMSTER_PT_ObjectGridSnap(bpy.types.Panel):
-    bl_label = "ObjectGridSnap"
+    bl_label = "Object Grid Snap"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "POMster"
@@ -86,6 +90,18 @@ class POMSTER_PT_ObjectGridSnap(bpy.types.Panel):
             if grid_size_cprop != None:
                 box.label(text="Active Object's Grid Snap")
                 box.prop(context.active_object, "[\""+GRID_SIZE_CPROP_NAME+"\"]", text="")
+
+class POMSTER_PT_ObjectShellFringe(bpy.types.Panel):
+    bl_label = "Shells and Fringe"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Parallax Shells and Fringe")
+        box.operator("pomster.add_object_shell_fringe")
 
 class POMSTER_PT_General(bpy.types.Panel):
     bl_label = "Parallax Map"
@@ -103,9 +119,9 @@ class POMSTER_PT_General(bpy.types.Panel):
         sub_box = box.box()
         sub_box.label(text="Landscape / Procedural Tangent")
         sub_box.operator("pomster.create_util_orthographic_tangent_nodes")
-        sub_box.prop(scn, "POMSTER_UV_Axes")
+        sub_box.prop(scn.POMster, "uv_axes")
         box = layout.box()
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn.POMster, "nodes_override_create")
 
 class POMSTER_PT_OCPOM(bpy.types.Panel):
     bl_label = "OCPOM"
@@ -122,17 +138,17 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         box.label(text="Create Nodes")
         sub_box = box.box()
         sub_box.operator("pomster.create_offset_conestep_pom_nodes")
-        sub_box.prop(scn, "POMSTER_NumSamples")
+        sub_box.prop(scn.POMster, "num_samples")
         sub_box = box.box()
         sub_box.label(text="Custom Node Input")
-        sub_box.prop(scn, "POMSTER_UV_InputIndex")
+        sub_box.prop(scn.POMster, "uv_input_index")
         sub_box.label(text="Custom Node Output")
-        sub_box.prop(scn, "POMSTER_DepthOutputIndex")
-        sub_box.prop(scn, "POMSTER_ConeRatioAngleOutputIndex")
-        sub_box.prop(scn, "POMSTER_ConeRatioDivisorOutputIndex")
-        sub_box.prop(scn, "POMSTER_ConeOffsetOutputIndex")
+        sub_box.prop(scn.POMster, "height_output_index")
+        sub_box.prop(scn.POMster, "cone_ratio_angle_output_index")
+        sub_box.prop(scn.POMster, "cone_ratio_divisor_output_index")
+        sub_box.prop(scn.POMster, "cone_offset_output_index")
         box = layout.box()
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn.POMster, "nodes_override_create")
 
 class POMSTER_PT_Optimize(bpy.types.Panel):
     bl_label = "Optimize"
@@ -157,7 +173,7 @@ class POMSTER_PT_Optimize(bpy.types.Panel):
         sub_box.label(text="Combine Optimum")
         sub_box.operator("pomster.create_util_optimum_combine_tla")
         box = layout.box()
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn.POMster, "nodes_override_create")
 
 class POMSTER_PT_ShaderMask(bpy.types.Panel):
     bl_label = "Shader Mask"
@@ -177,15 +193,74 @@ class POMSTER_PT_ShaderMask(bpy.types.Panel):
         box = layout.box()
         box.label(text="Object Loc, Rot, Scl")
         box.operator("pomster.create_mask_object_loc_rot_scl_nodes")
-        box.prop(scn, "POMSTER_MaskInputObject")
+        box.prop(scn.POMster, "mask_input_object")
         box = layout.box()
-        box.prop(scn, "POMSTER_NodesOverrideCreate")
+        box.prop(scn.POMster, "nodes_override_create")
+
+class POMSTER_PT_NodeShellFringe(bpy.types.Panel):
+    bl_label = "Shell and Fringe"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "POMster"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        box = layout.box()
+        box.label(text="Geometry Nodes")
+        box.operator("pomster.create_shell_array_node")
+        box.operator("pomster.create_fringe_extrude_node")
+        box.label(text="Shader Nodes")
+        box.operator("pomster.create_shell_fringe_blend_node")
+        box.prop(scn.POMster, "add_shell_fringe_inputs")
+        col = box.column()
+        col.active = scn.POMster.add_shell_fringe_inputs
+        col.prop(scn.POMster, "base_color_img_input")
+        col.prop(scn.POMster, "normal_img_input")
+        col.prop(scn.POMster, "height_img_input")
+        box = layout.box()
+        box.prop(scn.POMster, "nodes_override_create")
+
+class POMsterPropGrp(PropertyGroup):
+    num_samples: IntProperty(name="Samples", description="Number of samples used to calculate POM", default=8, min=1)
+    nodes_override_create: BoolProperty(name="Override Create", description="Shader Nodes custom Node Groups will " +
+        "be re-created if this option is enabled. When custom Node Groups are override created, old Node Groups of " +
+        "the same name are renamed and deprecated", default=False)
+    uv_input_index: IntProperty(name="UV Input Number", description="Choose the input number number of the " +
+        "selected node that has the UV coordinates input - usually input #1", default=1, min=1)
+    height_output_index: IntProperty(name="Height Output Number", description="Choose the output number of the " +
+        "active node that has the Height output - usually output #1", default=1, min=1)
+    cone_ratio_angle_output_index: IntProperty(name="Cone Ratio Angle Output Number", description="Choose output " +
+        "number of active node for Cone Ratio Angle output - usually output #2. Value range is 0 to 1 inclusive, " +
+        "re: 0 to 90 degrees angle. Value of 0 is zero conestep, value of 1 is full conestep", default=2, min=1)
+    cone_ratio_divisor_output_index: IntProperty(name="Cone Ratio Divisor Output Number", description="Choose " +
+        "output number of active node for Cone Ratio Divisor output - usually output #3", default=3, min=1)
+    cone_offset_output_index: IntProperty(name="Cone Offset Output Number", description="Choose output number of " +
+        "active node for Cone Offset output - usually output #4. Value range is same as Height output", default=4,
+        min=1)
+    uv_to_vu_map_convert_all: BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps of " +
+        "selected object, instead of only selected UV Map", default=False)
+    uv_axes: EnumProperty(name= "UV axes", description= "Axes to use for UV input", items=UV_ORTHO_AXES_ENUM_ITEMS)
+    mask_input_object: PointerProperty(name="Object", description="Input nodes for location, rotation, scale will " +
+        "get their values from this Object", type=bpy.types.Object)
+    add_shell_fringe_inputs: BoolProperty(name="Add Shell Fringe Inputs", description="When Shell Fringe Blend " +
+        "node is created, add input nodes create a simple default setup", default=True)
+    base_color_img_input: PointerProperty(name="Base Color", description="Image texture for base color (albedo)",
+        type=bpy.types.Image)
+    normal_img_input: PointerProperty(name="Normal", description="Image texture for surface normal",
+        type=bpy.types.Image)
+    height_img_input: PointerProperty(name="Height", description="Image texture for height (displacement)",
+        type=bpy.types.Image)
 
 classes = [
     POMSTER_PT_FlipUV,
+    POMSTER_CreateVUMap,
     POMSTER_PT_ObjectGridSnap,
     POMSTER_AddObjGridSnap,
-    POMSTER_CreateVUMap,
+    POMSTER_PT_ObjectShellFringe,
+    POMSTER_CreateObjModShellFringe,
     POMSTER_PT_General,
     POMSTER_AddParallaxMapNode,
     POMSTER_AddUtilOrthoTangentNodes,
@@ -200,6 +275,11 @@ classes = [
     POMSTER_AddCubeMask,
     POMSTER_AddSphereMask,
     POMSTER_AddMaskObjLocRotSclNodes,
+    POMSTER_PT_NodeShellFringe,
+    POMSTER_AddShellArrayNode,
+    POMSTER_AddFringeExtrudeNode,
+    POMSTER_AddShellFringeBlendNode,
+    POMsterPropGrp,
 ]
 
 def register():
@@ -210,48 +290,10 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    bts = bpy.types.Scene
-
-    del bts.POMSTER_MaskInputObject
-    del bts.POMSTER_UV_Axes
-    del bts.POMSTER_UVtoVUmapConvertAll
-    del bts.POMSTER_ConeOffsetOutputIndex
-    del bts.POMSTER_ConeRatioDivisorOutputIndex
-    del bts.POMSTER_ConeRatioAngleOutputIndex
-    del bts.POMSTER_DepthOutputIndex
-    del bts.POMSTER_UV_InputIndex
-    del bts.POMSTER_NodesOverrideCreate
-    del bts.POMSTER_NumSamples
+    del bpy.types.Scene.POMster
 
 def register_props():
-    bts = bpy.types.Scene
-    bp = bpy.props
-
-    bts.POMSTER_NumSamples = bp.IntProperty(name="Samples", description="Number of samples used to " +
-        "calculate POM", default=8, min=1)
-    bts.POMSTER_NodesOverrideCreate = bp.BoolProperty(name="Override Create", description="Shader Nodes custom " +
-        "Node Groups will be re-created if this option is enabled. When custom Node Groups are override created, " +
-        "old Node Groups of the same name are renamed and deprecated", default=False)
-    bts.POMSTER_UV_InputIndex = bp.IntProperty(name="UV Input Number", description="Choose the input number " +
-        "number of the selected node that has the UV coordinates input - usually input #1", default=1, min=1)
-    bts.POMSTER_DepthOutputIndex = bp.IntProperty(name="Depth Output Number", description="Choose the output " +
-        "number of the active node that has the Depth output - usually output #1", default=1, min=1)
-    bts.POMSTER_ConeRatioAngleOutputIndex = bp.IntProperty(name="Cone Ratio Angle Output Number",
-        description="Choose output number of active node for Cone Ratio Angle output - usually output #2. Value range"+
-        " is 0 to 1 inclusive, re: 0 to 90 degrees angle. Value of 0 is zero conestep, value of 1 is full conestep",
-        default=2, min=1)
-    bts.POMSTER_ConeRatioDivisorOutputIndex = bp.IntProperty(name="Cone Ratio Divisor Output Number",
-        description="Choose output number of active node for Cone Ratio Divisor output - usually output #3",
-        default=3, min=1)
-    bts.POMSTER_ConeOffsetOutputIndex = bp.IntProperty(name="Cone Offset Output Number",
-        description="Choose output number of active node for Cone Offset output - usually output #4. Value range " +
-        "is same as Depth output", default=4, min=1)
-    bts.POMSTER_UVtoVUmapConvertAll = bp.BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps " +
-        "of selected object, instead of only selected UV Map", default=False)
-    bts.POMSTER_UV_Axes = bp.EnumProperty(name= "UV axes", description= "Axes to use for UV input",
-        items=UV_ORTHO_AXES_ENUM_ITEMS)
-    bts.POMSTER_MaskInputObject = bp.PointerProperty(name="Object", description="Input nodes for location, " +
-        "rotation, scale will get their values from this Object", type=bpy.types.Object)
+    bpy.types.Scene.POMster = PointerProperty(type=POMsterPropGrp)
 
 if __name__ == "__main__":
     register()

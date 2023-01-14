@@ -18,7 +18,7 @@
 
 import bpy
 
-from .node_other import (ensure_node_group, MAT_NG_NAME_SUFFIX)
+from ..node_other import (ensure_node_group, MAT_NG_NAME_SUFFIX)
 
 CUBE_MASK_MAT_NG_NAME = "CubeMask" + MAT_NG_NAME_SUFFIX
 SPHERE_MASK_MAT_NG_NAME = "SphereMask" + MAT_NG_NAME_SUFFIX
@@ -195,7 +195,7 @@ class POMSTER_AddCubeMask(bpy.types.Operator):
             self.report({'ERROR'}, "Unable to create Cube Shader Mask nodebecause current material doesn't use " +
                         "nodes.  Enable material 'Use Nodes' to continue.")
             return {'CANCELLED'}
-        create_cube_shader_mask_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_cube_shader_mask_node(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}
 
 def create_mat_ng_sphere_mask():
@@ -292,7 +292,7 @@ class POMSTER_AddSphereMask(bpy.types.Operator):
             self.report({'ERROR'}, "Unable to create Sphere Shader Mask nodebecause current material doesn't use " +
                         "nodes.  Enable material 'Use Nodes' to continue.")
             return {'CANCELLED'}
-        create_sphere_shader_mask_node(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_sphere_shader_mask_node(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}
 
 def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
@@ -443,9 +443,9 @@ class POMSTER_AddMaskObjLocRotSclNodes(bpy.types.Operator):
             self.report({'ERROR'}, "Unable to create Object Loc, Rot, Scl nodes because current material doesn't " +
                         "use nodes.  Enable material 'Use Nodes' to continue.")
             return {'CANCELLED'}
-        if scn.POMSTER_MaskInputObject is None:
+        if scn.POMster.mask_input_object is None:
             self.report({'ERROR'}, "Unable to create Object Loc, Rot, Scl nodes because Object is blank. Select " +
                         "Object and try again.")
             return {'CANCELLED'}
-        create_mask_obj_loc_rot_scl_nodes(context.space_data.edit_tree, scn.POMSTER_MaskInputObject)
+        create_mask_obj_loc_rot_scl_nodes(context.space_data.edit_tree, scn.POMster.mask_input_object)
         return {'FINISHED'}

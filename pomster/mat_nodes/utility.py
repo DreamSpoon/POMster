@@ -20,7 +20,7 @@ import math
 
 import bpy
 
-from .node_other import (ensure_node_group, ensure_node_groups, MAT_NG_NAME_SUFFIX)
+from ..node_other import (ensure_node_group, ensure_node_groups, MAT_NG_NAME_SUFFIX)
 
 OPTIMUM_RAY_TYPE_MAT_NG_NAME = "OptimumRayType" + MAT_NG_NAME_SUFFIX
 OPTIMUM_RAY_LENGTH_MAT_NG_NAME = "OptimumRayLength" + MAT_NG_NAME_SUFFIX
@@ -245,7 +245,7 @@ class POMSTER_AddUtilOrthoTangentNodes(bpy.types.Operator):
                         "material doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
         scn = context.scene
-        create_util_ortho_tangents(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate, scn.POMSTER_UV_Axes)
+        create_util_ortho_tangents(context.space_data.edit_tree, scn.POMster.nodes_override_create, scn.POMster.uv_axes)
         return {'FINISHED'}
 
 def create_mat_ng_optimum_ray_type():
@@ -337,7 +337,7 @@ class POMSTER_CreateUtilOptimumRayTypeNode(bpy.types.Operator):
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
         scn = context.scene
-        create_util_optimum_ray_type(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_util_optimum_ray_type(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}
 
 def create_mat_ng_optimum_ray_length():
@@ -433,7 +433,7 @@ class POMSTER_AddUtilOptimumRayLengthNode(bpy.types.Operator):
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
         scn = context.scene
-        create_util_optimum_ray_length(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_util_optimum_ray_length(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}
 
 def create_mat_ng_optimum_ray_angle():
@@ -536,7 +536,7 @@ class POMSTER_AddUtilOptimumRayAngleNode(bpy.types.Operator):
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
         scn = context.scene
-        create_util_optimum_ray_angle(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_util_optimum_ray_angle(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}
 
 def create_mat_ng_combine_optimum_tla():
@@ -682,5 +682,5 @@ class POMSTER_AddUtilCombineOptimumTLA_Node(bpy.types.Operator):
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
         scn = context.scene
-        create_util_combine_optimum_tla(context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_util_combine_optimum_tla(context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}

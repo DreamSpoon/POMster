@@ -18,7 +18,7 @@
 
 import bpy
 
-from .node_other import (get_tangent_map_name, ensure_node_group, MAT_NG_NAME_SUFFIX)
+from ..node_other import (get_tangent_map_name, ensure_node_group, MAT_NG_NAME_SUFFIX)
 
 PARALLAX_MAP_MAT_NG_NAME = "ParallaxMap" + MAT_NG_NAME_SUFFIX
 
@@ -27,9 +27,8 @@ UV_INPUT_NODENAME = "UV Input"
 TANGENT_U_INPUT_NODENAME = "Tangent U"
 TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
-DEPTH_STEP_INPUT_NODENAME = "Depth Step"
 
-def create_prereq_util_node_group(node_group_name, node_tree_type, custom_data):
+def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
         if node_group_name == PARALLAX_MAP_MAT_NG_NAME:
             return create_mat_ng_parallax_map()
@@ -44,7 +43,7 @@ def create_mat_ng_parallax_map():
     new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
     new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
     new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Depth")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
     new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
     tree_nodes = new_node_group.nodes
     # delete all nodes
@@ -63,7 +62,7 @@ def create_mat_ng_parallax_map():
 
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.location = (500, 200)
-    node.operation = "SUBTRACT"
+    node.operation = "ADD"
     new_nodes["Vector Math.002"] = node
 
     node = tree_nodes.new(type="ShaderNodeVectorMath")
@@ -145,7 +144,7 @@ def create_mat_ng_parallax_map():
     return new_node_group
 
 def create_parallax_map_nodes(active_obj, node_tree, override_create):
-    ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_util_node_group)
+    ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
 
     tree_nodes = node_tree.nodes
     # deselect all nodes in tree before creating new node
@@ -219,5 +218,5 @@ class POMSTER_AddParallaxMapNode(bpy.types.Operator):
             self.report({'ERROR'}, "Unable to create Parallax Occlusion Map node because current material " +
                         "doesn't use nodes. Enable material 'Use Nodes' to continue")
             return {'CANCELLED'}
-        create_parallax_map_nodes(context.active_object, context.space_data.edit_tree, scn.POMSTER_NodesOverrideCreate)
+        create_parallax_map_nodes(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create)
         return {'FINISHED'}

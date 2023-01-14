@@ -3,12 +3,11 @@ Parallax Occlusion Map (POM) addon for Blender
 Create the effect of millions of geometry faces with only one face, using a parallax depth effect combined with occlusion culling.
 Ray tracing inside a material, to complement ray-tracing outside the material.
 
-# Summary
-The addon's node groups use Conestep Parallax Occlusion Mapping with a modification: Cone Offset
-Cones are Offset "upwards" so that cone steps can be much wider (very "relaxed" cones), and allow the "viewer ray" to travel farther with fewer samples.
-For great explanations of Cone Stepping and Parallax mapping, see these resources at bottom of this text:
-  - Parallax Mapping at LearnOpenGL
-  - Relaxed Cone Stepping Relief Mapping at NVidia
+# Material Shader Parallax Mapping
+A simple Parallax Map node can be added to a material to give the effect of a depth to a flat material.
+An OCPOM node can be added to to a material to give the effect of depth to a bumpy material.
+
+# Geometry Nodes Shell and Fringe with Parallax mapping
 
 # Utility
 There are some utility node creation buttons to help use Parallax Mapping / OCPOM:
@@ -48,6 +47,13 @@ The following utility nodes can be used in EEVEE or Cycles, but any reduction in
   - using the node will cause the texture to look flat (no POM effect) when view rays are close to parallel with geometry
 5) Combined Optimum
   - use this function to get a quick Mix Shader setup that combines all three of the above Optimum nodes
+
+# Offset Conestep Parallax Occlusion Mapping (OCPOM)
+The addon's material shader node groups use Conestep Parallax Occlusion Mapping with a modification: Cone Offset
+Cones are Offset "upwards" so that cone steps can be much wider (very "relaxed" cones), and allow the "viewer ray" to travel farther with fewer samples.
+For great explanations of Cone Stepping and Parallax mapping, see these resources at bottom of this text:
+  - Parallax Mapping at LearnOpenGL
+  - Relaxed Cone Stepping Relief Mapping at NVidia
 
 # Parallax Mapping Resources
 Parallax Mapping at LearnOpenGL
