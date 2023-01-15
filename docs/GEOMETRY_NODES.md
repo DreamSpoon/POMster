@@ -10,7 +10,7 @@ Plane mesh with Shell and Fringe geometry nodes combined with material shader no
 1. Create Plane, including UV map
 3DView -> Add menu -> Mesh -> Plane
 
-(assets/parallax_map/create_plane.png)
+![picture](assets/parallax_map/create_plane.png)
 
 2. Create VU Map from UV Map
 3DView -> Tools -> POMster -> Flip UV -> U-V Map to V-U Map
@@ -19,21 +19,21 @@ Create VU Map from the default UV Map with the Flip UV panel.
 The VU Map is needed for V Tangent of texture coordinates, for use with Parallax Map node.
 If UV Map is not available then other sources of Tangent U/V might be available, e.g. see "Ortho Tangents" button in the POMster node editor panel.
 
-(assets/parallax_map/flip_uv.png)
+![picture](assets/parallax_map/flip_uv.png)
 
 3. Add Object Shell and Fringe Geometry Nodes
 3DView -> Tools -> POMster -> Shell and Fringe -> Shell and Fringe
 
-(assets/shell_fringe/obj_shell_fringe.png)
+![picture](assets/shell_fringe/obj_shell_fringe.png)
 
 Switch to Wireframe mode in 3DView, and zoom the view in to the edges of the plane, to see the shells and fringe created by the geometry nodes.
 
-(assets/shell_fringe/obj_shell_fringe_applied.png)
+![picture](assets/shell_fringe/obj_shell_fringe_applied.png)
 
 After the Shell and Fringe geometry nodes are applied, go to the Modifier Properties tab to see the default values input to Shell and Fringe.
 These values are control how many shells are created, total depth of shells, etc.
 
-(assets/shell_fringe/see_min_max_height.png)
+![picture](assets/shell_fringe/see_min_max_height.png)
 
 The Min Height and Max Height values are important because they will be used to determine transparency of Shell and Fringe geometry - to make the 'bumpy' depth effect.
 
@@ -53,7 +53,7 @@ In the Shader Editor, create 3 Image Texture nodes:
 
 The example uses a Coast Sand texture that can be downloaded from PolyHaven.com - although any texture can be used.
 
-(assets/shell_fringe/mat_before_shell_fringe.png)
+![picture](assets/shell_fringe/mat_before_shell_fringe.png)
 
 4. Add Material Shell Fringe Blend Shader Nodes
 Before pressing button to add nodes, ensure the "Add Shell Fringe Inputs" option is enabled.
@@ -67,20 +67,20 @@ Setting these image options before is faster than manually selecting/setting nod
 Finally, before pressing the Shell Fringe Blend button, delete all nodes in the current material shader.
 Pressing the Shell Fringe Blend button will create all nodes, including Material Output, needed to add the Shell and Fringe effect.
 
-(assets/shell_fringe/mat_shell_fringe_blend_button.png)
+![picture](assets/shell_fringe/mat_shell_fringe_blend_button.png)
 
 The material node setup should look like this:
 
-(assets/shell_fringe/after_pressing_button.png)
+![picture](assets/shell_fringe/after_pressing_button.png)
 
 Inside the CustomSF_Shader node is the shader (e.g. Principled BDSF) that is used to create the colors, heights, etc. of the material.
 
-(assets/shell_fringe/see_custom_group.png)
+![picture](assets/shell_fringe/see_custom_group.png)
 
 Changes that need to be made to the shader setup should be done mostly inside this node group - e.g. changing to Emission / Glass shaders.
 Inside this node group is where any extra nodes for creating the material shader should be added.
 
-(assets/shell_fringe/inside_custom_group.png)
+![picture](assets/shell_fringe/inside_custom_group.png)
 
 Outside the node group are support nodes needed to make the Shell and Fringe Blend work, and these nodes can be used to control how much the effect is applied - e.g. Opaque / Shell blend by viewing angle.
 
@@ -95,7 +95,7 @@ Render Properties -> Light Paths -> Max Bounces -> Transparent
 
 Note: Render Properties can be found in the Properties window which is on the bottom-right side of Blender's window by default.
 
-(assets/shell_fringe/cycles_transparent_samples.png)
+![picture](assets/shell_fringe/cycles_transparent_samples.png)
 
 6. EEVEE Settings
 Problem: EEVEE renderer does not show transparency.
@@ -107,10 +107,10 @@ Blend Mode set to Alpha Blend  might also work.
 
 Note: Material Properties can be found in the Properties window which is on the bottom-right side of Blender's window by default.
 
-(assets/shell_fringe/eevee_settings.png)
+![picture](assets/shell_fringe/eevee_settings.png)
 
 7. Complete
 Comparing the before and after, the Shell and Fringe effect is especially noticeable where the edges of the geometry meet the background: a bumpy fringe can be seen.
-(assets/shell_fringe/before_shell_fringe.png)
+![picture](assets/shell_fringe/before_shell_fringe.png)
 
-(assets/shell_fringe/after_shell_fringe.png)
+![picture](assets/shell_fringe/after_shell_fringe.png)
