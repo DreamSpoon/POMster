@@ -170,7 +170,7 @@ def create_cube_shader_mask_node(node_tree, override_create):
     for n in tree_nodes: n.select = False
 
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(CUBE_MASK_MAT_NG_NAME)
     node.inputs[3].default_value = (1.0, 1.0, 1.0)
     # set this node to be active node
@@ -267,7 +267,7 @@ def create_sphere_shader_mask_node(node_tree, override_create):
     for n in tree_nodes: n.select = False
 
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(SPHERE_MASK_MAT_NG_NAME)
     node.inputs[1].default_value = 1.0
     # set this node to be active node
@@ -305,7 +305,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
     # create nodes
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = "Loc_" + input_object.name
-    node.location = (node_tree.view_center[0] / 2.5, 140 + (node_tree.view_center[1] / 2.5))
+    node.location = (node_tree.view_center[0] / 1.5, 140 + (node_tree.view_center[1] / 1.5))
     node.inputs[0].default_value = 0.000000
     node.inputs[1].default_value = 0.000000
     node.inputs[2].default_value = 0.000000
@@ -347,7 +347,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
 
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = "Rot_" + input_object.name
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.inputs[0].default_value = 0.000000
     node.inputs[1].default_value = 0.000000
     node.inputs[2].default_value = 0.000000
@@ -387,7 +387,7 @@ def create_mask_obj_loc_rot_scl_nodes(node_tree, input_object):
 
     node = tree_nodes.new(type="ShaderNodeCombineXYZ")
     node.label = "Scl_" + input_object.name
-    node.location = (node_tree.view_center[0] / 2.5, -140 + (node_tree.view_center[1] / 2.5))
+    node.location = (node_tree.view_center[0] / 1.5, -140 + (node_tree.view_center[1] / 1.5))
     node.inputs[0].default_value = 1.000000
     node.inputs[1].default_value = 1.000000
     node.inputs[2].default_value = 1.000000

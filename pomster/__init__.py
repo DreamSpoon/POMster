@@ -92,7 +92,7 @@ class POMSTER_PT_ObjectGridSnap(bpy.types.Panel):
                 box.prop(context.active_object, "[\""+GRID_SIZE_CPROP_NAME+"\"]", text="")
 
 class POMSTER_PT_ObjectShellFringe(bpy.types.Panel):
-    bl_label = "Shells and Fringe"
+    bl_label = "Shell and Fringe"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "POMster"
@@ -100,7 +100,7 @@ class POMSTER_PT_ObjectShellFringe(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label(text="Parallax Shells and Fringe")
+        box.label(text="Parallax Shell and Fringe")
         box.operator("pomster.add_object_shell_fringe")
 
 class POMSTER_PT_General(bpy.types.Panel):

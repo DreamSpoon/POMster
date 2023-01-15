@@ -60,17 +60,12 @@ def create_mat_ng_iterate(custom_data):
     new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Height")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Ratio")
     new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Offset")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Index")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Sample Total")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="First Step Height")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Last Step Height")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Step Height")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Finished")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Next Height")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Height")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Ratio")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Offset")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Sample Index")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Sample Total")
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -110,28 +105,6 @@ def create_mat_ng_iterate(custom_data):
     node.label_size = 20
     node.shrink = True
     new_nodes["Frame.004"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Depth step next"
-    node.location = (-1400, -1100)
-    node.operation = "ADD"
-    node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
-    new_nodes["Math"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMapRange")
-    node.location = (-1580, -1100)
-    node.clamp = True
-    node.data_type = "FLOAT"
-    node.interpolation_type = "LINEAR"
-    node.inputs[1].default_value = 1.000000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
-    new_nodes["Map Range"] = node
 
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.label = "ray_ratio"
@@ -335,14 +308,14 @@ def create_mat_ng_iterate(custom_data):
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.023"] = node
+    new_nodes["Math.022"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-100, -1220)
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.024"] = node
+    new_nodes["Math.023"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "weight"
@@ -350,7 +323,7 @@ def create_mat_ng_iterate(custom_data):
     node.operation = "DIVIDE"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.025"] = node
+    new_nodes["Math.024"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "1 - weight"
@@ -359,21 +332,21 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.026"] = node
+    new_nodes["Math.025"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "final_depth"
     node.location = (440, -880)
     node.operation = "MULTIPLY_ADD"
     node.use_clamp = False
-    new_nodes["Math.027"] = node
+    new_nodes["Math.026"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (260, -1060)
     node.operation = "MULTIPLY"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.028"] = node
+    new_nodes["Math.027"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "after_depth"
@@ -381,35 +354,35 @@ def create_mat_ng_iterate(custom_data):
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.029"] = node
+    new_nodes["Math.028"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1360, -580)
     node.operation = "MULTIPLY"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.030"] = node
+    new_nodes["Math.029"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Depth"
     node.location = (1360, -400)
     node.operation = "MULTIPLY_ADD"
     node.use_clamp = False
-    new_nodes["Math.031"] = node
+    new_nodes["Math.030"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "Texel Depth"
     node.location = (1360, -760)
     node.operation = "MULTIPLY_ADD"
     node.use_clamp = False
-    new_nodes["Math.032"] = node
+    new_nodes["Math.031"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1360, -940)
     node.operation = "MULTIPLY"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.033"] = node
+    new_nodes["Math.032"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "If Finished = True"
@@ -418,7 +391,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = 1.000000
     node.inputs[2].default_value = 0.000000
-    new_nodes["Math.034"] = node
+    new_nodes["Math.033"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1180, -740)
@@ -426,7 +399,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.035"] = node
+    new_nodes["Math.034"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1180, -180)
@@ -434,7 +407,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.036"] = node
+    new_nodes["Math.035"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "If next depth below surface"
@@ -442,7 +415,7 @@ def create_mat_ng_iterate(custom_data):
     node.operation = "ADD"
     node.use_clamp = True
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.037"] = node
+    new_nodes["Math.036"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.label = "If next depth below surface"
@@ -450,7 +423,7 @@ def create_mat_ng_iterate(custom_data):
     node.operation = "LESS_THAN"
     node.use_clamp = False
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.038"] = node
+    new_nodes["Math.037"] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (-980, -660)
@@ -469,7 +442,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.040"] = node
+    new_nodes["Math.038"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-540, -800)
@@ -477,15 +450,15 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.041"] = node
+    new_nodes["Math.039"] = node
 
     node = tree_nodes.new(type="NodeReroute")
     node.location = (-360, -840)
-    new_nodes["Reroute.001"] = node
+    new_nodes["Reroute"] = node
 
     node = tree_nodes.new(type="NodeReroute")
     node.location = (-2680, -1060)
-    new_nodes["Reroute"] = node
+    new_nodes["Reroute.001"] = node
 
     node = tree_nodes.new(type="NodeReroute")
     node.location = (-2680, -1000)
@@ -497,7 +470,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.042"] = node
+    new_nodes["Math.040"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-2880, -1040)
@@ -505,7 +478,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.039"] = node
+    new_nodes["Math.041"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1600, -500)
@@ -513,7 +486,7 @@ def create_mat_ng_iterate(custom_data):
     node.use_clamp = False
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
-    new_nodes["Math.044"] = node
+    new_nodes["Math.042"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (1600, -340)
@@ -522,15 +495,6 @@ def create_mat_ng_iterate(custom_data):
     node.inputs[1].default_value = -1.000000
     node.inputs[2].default_value = 0.500000
     new_nodes["Math.043"] = node
-
-    node = tree_nodes.new(type="ShaderNodeMath")
-    node.label = "Next Sample Index"
-    node.location = (1800, -600)
-    node.operation = "ADD"
-    node.use_clamp = False
-    node.inputs[1].default_value = 1.000000
-    node.inputs[2].default_value = 0.500000
-    new_nodes["Math.022"] = node
 
     node = tree_nodes.new(type="NodeGroupInput")
     node.location = (-3100, -820)
@@ -565,55 +529,38 @@ def create_mat_ng_iterate(custom_data):
     new_nodes["Math.019"].parent = new_nodes["Frame.002"]
     new_nodes["Math.020"].parent = new_nodes["Frame.002"]
     new_nodes["Math.021"].parent = new_nodes["Frame.002"]
+    new_nodes["Math.022"].parent = new_nodes["Frame.003"]
     new_nodes["Math.023"].parent = new_nodes["Frame.003"]
     new_nodes["Math.024"].parent = new_nodes["Frame.003"]
     new_nodes["Math.025"].parent = new_nodes["Frame.003"]
     new_nodes["Math.026"].parent = new_nodes["Frame.003"]
     new_nodes["Math.027"].parent = new_nodes["Frame.003"]
     new_nodes["Math.028"].parent = new_nodes["Frame.003"]
-    new_nodes["Math.029"].parent = new_nodes["Frame.003"]
+    new_nodes["Math.029"].parent = new_nodes["Frame.004"]
     new_nodes["Math.030"].parent = new_nodes["Frame.004"]
     new_nodes["Math.031"].parent = new_nodes["Frame.004"]
     new_nodes["Math.032"].parent = new_nodes["Frame.004"]
     new_nodes["Math.033"].parent = new_nodes["Frame.004"]
     new_nodes["Math.034"].parent = new_nodes["Frame.004"]
-    new_nodes["Math.035"].parent = new_nodes["Frame.004"]
 
     # create links
     tree_links = new_node_group.links
-    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Group.ParallaxMap"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Group.ParallaxMap"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Group.ParallaxMap"].inputs[2])
-    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Group.ParallaxMap"].inputs[3])
-    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Group.ParallaxMap"].inputs[4])
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Group.ParallaxMap"].inputs[5])
-    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.038"].inputs[1])
-    tree_links.new(new_nodes["Math.037"].outputs[0], new_nodes["Group Output"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.037"].inputs[0])
-    tree_links.new(new_nodes["Math.038"].outputs[0], new_nodes["Math.036"].inputs[1])
-    tree_links.new(new_nodes["Math.036"].outputs[0], new_nodes["Math.037"].inputs[1])
+    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.037"].inputs[1])
+    tree_links.new(new_nodes["Math.036"].outputs[0], new_nodes["Group Output"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.036"].inputs[0])
+    tree_links.new(new_nodes["Math.037"].outputs[0], new_nodes["Math.035"].inputs[1])
+    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Math.036"].inputs[1])
     tree_links.new(new_nodes["Math.013"].outputs[0], new_nodes["Math.014"].inputs[0])
     tree_links.new(new_nodes["Math.014"].outputs[0], new_nodes["Math.015"].inputs[0])
     tree_links.new(new_nodes["Math.015"].outputs[0], new_nodes["Group Output"].inputs[3])
-    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.029"].inputs[0])
-    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.021"].inputs[1])
-    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.018"].inputs[1])
-    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[11], new_nodes["Math.022"].inputs[0])
-    tree_links.new(new_nodes["Math.022"].outputs[0], new_nodes["Group Output"].inputs[5])
-    tree_links.new(new_nodes["Group Input"].outputs[12], new_nodes["Group Output"].inputs[6])
-    tree_links.new(new_nodes["Group Input"].outputs[13], new_nodes["Map Range"].inputs[3])
-    tree_links.new(new_nodes["Group Input"].outputs[14], new_nodes["Map Range"].inputs[4])
-    tree_links.new(new_nodes["Group Input"].outputs[12], new_nodes["Map Range"].inputs[2])
-    tree_links.new(new_nodes["Group Input"].outputs[11], new_nodes["Map Range"].inputs[0])
-    tree_links.new(new_nodes["Map Range"].outputs[0], new_nodes["Math"].inputs[1])
+    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.028"].inputs[0])
+    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.021"].inputs[1])
+    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.018"].inputs[1])
     tree_links.new(new_nodes["Math.011"].outputs[0], new_nodes["Math.012"].inputs[2])
     tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.010"].inputs[1])
     tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["Math.012"].inputs[0])
     tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["Math.011"].inputs[0])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.009"].inputs[0])
-    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.012"].inputs[1])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.038"].inputs[0])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.037"].inputs[0])
     tree_links.new(new_nodes["Vector Math.002"].outputs[1], new_nodes["Combine XYZ"].inputs[0])
     tree_links.new(new_nodes["Vector Math.003"].outputs[1], new_nodes["Combine XYZ"].inputs[1])
     tree_links.new(new_nodes["Math.004"].outputs[0], new_nodes["Math.006"].inputs[1])
@@ -638,58 +585,66 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.004"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[9], new_nodes["Math.003"].inputs[1])
     tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.008"].inputs[2])
-    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.007"].inputs[0])
+    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.007"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[10], new_nodes["Math.007"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[9], new_nodes["Math.006"].inputs[0])
     tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.009"].inputs[1])
     tree_links.new(new_nodes["Math.008"].outputs[0], new_nodes["Math.011"].inputs[1])
-    tree_links.new(new_nodes["Math.030"].outputs[0], new_nodes["Math.031"].inputs[2])
-    tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.035"].inputs[1])
-    tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.031"].inputs[0])
-    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Math.030"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.034"].inputs[0])
-    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.031"].inputs[1])
+    tree_links.new(new_nodes["Math.029"].outputs[0], new_nodes["Math.030"].inputs[2])
+    tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Math.034"].inputs[1])
+    tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Math.030"].inputs[0])
+    tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.029"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Math.033"].inputs[0])
+    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.030"].inputs[1])
     tree_links.new(new_nodes["Math.043"].outputs[0], new_nodes["Group Output"].inputs[1])
-    tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Math.032"].inputs[2])
-    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.032"].inputs[1])
-    tree_links.new(new_nodes["Math.044"].outputs[0], new_nodes["Group Output"].inputs[2])
-    tree_links.new(new_nodes["Math.035"].outputs[0], new_nodes["Math.033"].inputs[0])
+    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.031"].inputs[2])
+    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.031"].inputs[1])
+    tree_links.new(new_nodes["Math.042"].outputs[0], new_nodes["Group Output"].inputs[2])
     tree_links.new(new_nodes["Math.034"].outputs[0], new_nodes["Math.032"].inputs[0])
+    tree_links.new(new_nodes["Math.033"].outputs[0], new_nodes["Math.031"].inputs[0])
     tree_links.new(new_nodes["Math.016"].outputs[0], new_nodes["Math.017"].inputs[2])
     tree_links.new(new_nodes["Math.021"].outputs[0], new_nodes["Math.020"].inputs[1])
     tree_links.new(new_nodes["Math.021"].outputs[0], new_nodes["Math.017"].inputs[0])
     tree_links.new(new_nodes["Math.020"].outputs[0], new_nodes["Math.016"].inputs[0])
     tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.021"].inputs[0])
     tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.017"].inputs[1])
-    tree_links.new(new_nodes["Math.017"].outputs[0], new_nodes["Math.030"].inputs[1])
+    tree_links.new(new_nodes["Math.017"].outputs[0], new_nodes["Math.029"].inputs[1])
     tree_links.new(new_nodes["Math.019"].outputs[0], new_nodes["Math.018"].inputs[2])
-    tree_links.new(new_nodes["Math.018"].outputs[0], new_nodes["Math.033"].inputs[1])
+    tree_links.new(new_nodes["Math.018"].outputs[0], new_nodes["Math.032"].inputs[1])
     tree_links.new(new_nodes["Math.021"].outputs[0], new_nodes["Math.018"].inputs[0])
     tree_links.new(new_nodes["Math.020"].outputs[0], new_nodes["Math.019"].inputs[0])
-    tree_links.new(new_nodes["Math.029"].outputs[0], new_nodes["Math.024"].inputs[0])
+    tree_links.new(new_nodes["Math.028"].outputs[0], new_nodes["Math.023"].inputs[0])
+    tree_links.new(new_nodes["Math.022"].outputs[0], new_nodes["Math.023"].inputs[1])
     tree_links.new(new_nodes["Math.023"].outputs[0], new_nodes["Math.024"].inputs[1])
+    tree_links.new(new_nodes["Math.028"].outputs[0], new_nodes["Math.024"].inputs[0])
     tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.025"].inputs[1])
-    tree_links.new(new_nodes["Math.029"].outputs[0], new_nodes["Math.025"].inputs[0])
+    tree_links.new(new_nodes["Math.024"].outputs[0], new_nodes["Math.027"].inputs[1])
+    tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.026"].inputs[2])
     tree_links.new(new_nodes["Math.025"].outputs[0], new_nodes["Math.026"].inputs[1])
-    tree_links.new(new_nodes["Math.025"].outputs[0], new_nodes["Math.028"].inputs[1])
-    tree_links.new(new_nodes["Math.028"].outputs[0], new_nodes["Math.027"].inputs[2])
-    tree_links.new(new_nodes["Math.026"].outputs[0], new_nodes["Math.027"].inputs[1])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.029"].inputs[1])
-    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.023"].inputs[1])
-    tree_links.new(new_nodes["Reroute"].outputs[0], new_nodes["Math.023"].inputs[0])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.027"].inputs[0])
-    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.028"].inputs[0])
-    tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.016"].inputs[1])
-    tree_links.new(new_nodes["Math.027"].outputs[0], new_nodes["Math.019"].inputs[1])
-    tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.039"].inputs[0])
-    tree_links.new(new_nodes["Math.039"].outputs[0], new_nodes["Reroute"].inputs[0])
-    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.040"].inputs[0])
-    tree_links.new(new_nodes["Math.040"].outputs[0], new_nodes["Group.ParallaxMap"].inputs[6])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.028"].inputs[1])
+    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.022"].inputs[1])
+    tree_links.new(new_nodes["Reroute.001"].outputs[0], new_nodes["Math.022"].inputs[0])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.026"].inputs[0])
+    tree_links.new(new_nodes["Reroute.002"].outputs[0], new_nodes["Math.027"].inputs[0])
+    tree_links.new(new_nodes["Math.026"].outputs[0], new_nodes["Math.016"].inputs[1])
+    tree_links.new(new_nodes["Math.026"].outputs[0], new_nodes["Math.019"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[8], new_nodes["Math.041"].inputs[0])
     tree_links.new(new_nodes["Math.041"].outputs[0], new_nodes["Reroute.001"].inputs[0])
-    tree_links.new(new_nodes["Math.042"].outputs[0], new_nodes["Reroute.002"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.042"].inputs[0])
-    tree_links.new(new_nodes["Math.031"].outputs[0], new_nodes["Math.043"].inputs[0])
-    tree_links.new(new_nodes["Math.032"].outputs[0], new_nodes["Math.044"].inputs[0])
+    tree_links.new(new_nodes["Math.012"].outputs[0], new_nodes["Math.038"].inputs[0])
+    tree_links.new(new_nodes["Math.039"].outputs[0], new_nodes["Reroute"].inputs[0])
+    tree_links.new(new_nodes["Math.040"].outputs[0], new_nodes["Reroute.002"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["Math.040"].inputs[0])
+    tree_links.new(new_nodes["Math.030"].outputs[0], new_nodes["Math.043"].inputs[0])
+    tree_links.new(new_nodes["Math.031"].outputs[0], new_nodes["Math.042"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[11], new_nodes["Math.009"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[11], new_nodes["Math.012"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Group.ParallaxMap"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[2], new_nodes["Group.ParallaxMap"].inputs[1])
+    tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Group.ParallaxMap"].inputs[2])
+    tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Group.ParallaxMap"].inputs[3])
+    tree_links.new(new_nodes["Group Input"].outputs[5], new_nodes["Group.ParallaxMap"].inputs[4])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Group.ParallaxMap"].inputs[5])
+    tree_links.new(new_nodes["Math.038"].outputs[0], new_nodes["Group.ParallaxMap"].inputs[6])
 
     tree_links.new(new_nodes["Group.ParallaxMap"].outputs[0],
                    new_nodes["Group.OCPOM_Input"].inputs[custom_data["uv_input_index"]])
@@ -698,7 +653,7 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["cone_ratio_divisor_output_index"]],
                    new_nodes["Math.015"].inputs[1])
     tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["height_output_index"]],
-                   new_nodes["Math.041"].inputs[0])
+                   new_nodes["Math.039"].inputs[0])
     tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["cone_ratio_angle_output_index"]],
                    new_nodes["Math.013"].inputs[0])
 
@@ -717,8 +672,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
     new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
     new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="First Step Height")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Last Step Height")
+    new_node_group.inputs.new(type='NodeSocketFloat', name="Total Step Height")
     new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Height Output")
     tree_nodes = new_node_group.nodes
@@ -754,6 +708,13 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     node.inputs[2].default_value = 0.000000
     new_nodes["Math.010"] = node
 
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.location = (-1400, -360)
+    node.operation = "DIVIDE"
+    node.use_clamp = False
+    node.inputs[1].default_value = custom_data["sample_num"]
+    new_nodes["Math.999"] = node
+
     node = tree_nodes.new(type="NodeGroupInput")
     node.location = (-1800, -160)
     new_nodes["Group Input"] = node
@@ -771,8 +732,6 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     node.location = (-980, 40)
     node.node_tree = custom_data["iterate_mat_ng"]
     node.inputs[7].default_value = 0.000000
-    node.inputs[11].default_value = 1.000000
-    node.inputs[12].default_value = custom_data["sample_num"]
     new_nodes["IterateGroup.0"] = node
 
     # create total number of samples, less one, because first node created already
@@ -790,6 +749,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     # create links
     tree_links = new_node_group.links
     tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["OuterMathTangent"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.999"].inputs[0])
 
     tree_links.new(new_nodes["Group Input"].outputs[0],
                    new_nodes["SampleOuterGroup"].inputs[custom_data["uv_input_index"]])
@@ -816,8 +776,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_divisor_output_index"]],
                    new_nodes["OuterMathConeRatioDivide"].inputs[1])
 
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["IterateGroup.0"].inputs[13])
-    tree_links.new(new_nodes["Group Input"].outputs[7], new_nodes["IterateGroup.0"].inputs[14])
+    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["IterateGroup.0"].inputs[11])
 
     # create needed number of sample iteration nodes
     prev_node = new_nodes["IterateGroup.0"]
@@ -834,10 +793,8 @@ def create_mat_ng_offset_conestep_pom(custom_data):
         tree_links.new(prev_node.outputs[2], next_node.inputs[8])
         tree_links.new(prev_node.outputs[3], next_node.inputs[9])
         tree_links.new(prev_node.outputs[4], next_node.inputs[10])
-        tree_links.new(prev_node.outputs[5], next_node.inputs[11])
-        tree_links.new(prev_node.outputs[6], next_node.inputs[12])
-        tree_links.new(new_nodes["Group Input"].outputs[6], next_node.inputs[13])
-        tree_links.new(new_nodes["Group Input"].outputs[7], next_node.inputs[14])
+        tree_links.new(new_nodes["Math.999"].outputs[0], next_node.inputs[11])
+
         prev_node = next_node
 
     # create link from final iteration node to the height output
@@ -886,46 +843,50 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     new_nodes = {}
 
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (0, 0)
     node.node_tree = ocpom_mat_ng
     node.inputs[1].default_value = (1, 1, 1)
     node.inputs[2].default_value = (1, 0, 0)
     node.inputs[3].default_value = (0, 1, 0)
     node.inputs[4].default_value = (0, 0, 1)
     node.inputs[6].default_value = 0.003
-    node.inputs[7].default_value = 0.003
     # set this OCPOM node to be active node
     node_tree.nodes.active = node
     new_nodes[OCPOM_NODENAME] = node
 
     # create nodes for OCPOM input
     node = tree_nodes.new(type="ShaderNodeTexCoord")
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)+160)
+    node.location = (-220, 160)
     new_nodes[UV_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-100)
+    node.location = (-220, -100)
     node.direction_type = "UV_MAP"
     node.uv_map = get_tangent_map_name("U", active_obj)
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-200)
+    node.location = (-220, -200)
     node.direction_type = "UV_MAP"
     node.uv_map = get_tangent_map_name("V", active_obj)
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-300)
+    node.location = (-220, -300)
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
     node.label = HEIGHT_STEP_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5), (node_tree.view_center[1] / 2.5)-360)
+    node.location = (0, -360)
     node.outputs[0].default_value = 0.002
     new_nodes[HEIGHT_STEP_INPUT_NODENAME] = node
+
+    # offset node locations relative to view center
+    view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
+    for n in new_nodes.values():
+        n.location = (n.location[0] + view_center[0], n.location[1] + view_center[1])
 
     # create links
     tree_links = node_tree.links
@@ -935,7 +896,6 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[OCPOM_NODENAME].inputs[4])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[OCPOM_NODENAME].inputs[5])
     tree_links.new(new_nodes[HEIGHT_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
-    tree_links.new(new_nodes[HEIGHT_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[7])
 
 def create_blank_node_group():
     # initialize variables
@@ -975,8 +935,9 @@ def create_blank_ocpom_input_node(node_tree):
         return None
     # create a node group type node with group set to the new blank group
     tree_nodes = node_tree.nodes
+    view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = ((node_tree.view_center[0] / 2.5), -460 + (node_tree.view_center[1] / 2.5))
+    node.location = (view_center[0], -460 + view_center[1])
     node.node_tree = bpy.data.node_groups.get(new_blank_node_group.name)
 
     return node

@@ -154,8 +154,7 @@ def create_parallax_map_nodes(active_obj, node_tree, override_create):
 
     # create a node group node and give it a ref to the POMster UV nodegroup
     node = tree_nodes.new(type="ShaderNodeGroup")
-    view_center = node_tree.view_center
-    node.location = (view_center[0] / 2.5, view_center[1] / 2.5)
+    node.location = (0, 0)
     node.node_tree = bpy.data.node_groups.get(PARALLAX_MAP_MAT_NG_NAME)
     node.inputs[0].default_value = (0, 0, 0)
     node.inputs[1].default_value = (1, 1, 1)
@@ -171,26 +170,31 @@ def create_parallax_map_nodes(active_obj, node_tree, override_create):
 
     # create nodes for OCPOM input
     node = tree_nodes.new(type="ShaderNodeTexCoord")
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)+160)
+    node.location = (-220, 160)
     new_nodes[UV_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_U_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-100)
+    node.location = (-220, -100)
     node.direction_type = "UV_MAP"
     node.uv_map = get_tangent_map_name("U", active_obj)
     new_nodes[TANGENT_U_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeTangent")
     node.label = TANGENT_V_INPUT_NODENAME
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-200)
+    node.location = (-220, -200)
     node.direction_type = "UV_MAP"
     node.uv_map = get_tangent_map_name("V", active_obj)
     new_nodes[TANGENT_V_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
-    node.location = ((node_tree.view_center[0] / 2.5)-220, (node_tree.view_center[1] / 2.5)-300)
+    node.location = (-220, -300)
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
+
+    # offset node locations relative to view center
+    view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
+    for n in new_nodes.values():
+        n.location = (n.location[0] + view_center[0], n.location[1] + view_center[1])
 
     # create links
     tree_links = node_tree.links

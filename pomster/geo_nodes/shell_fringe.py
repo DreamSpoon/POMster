@@ -336,7 +336,7 @@ def create_shell_array_node(node_tree, override_create):
     # create a node group node
     node = tree_nodes.new(type="GeometryNodeGroup")
     view_center = node_tree.view_center
-    node.location = (view_center[0] / 2.5, view_center[1] / 2.5)
+    node.location = (view_center[0] / 1.5, view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(SHELL_ARRAY_GEO_NG_NAME)
 
     node.select = True
@@ -640,7 +640,7 @@ def create_fringe_extrude_node(node_tree, override_create):
     # create a node group node
     node = tree_nodes.new(type="GeometryNodeGroup")
     view_center = node_tree.view_center
-    node.location = (view_center[0] / 2.5, view_center[1] / 2.5)
+    node.location = (view_center[0] / 1.5, view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(FRINGE_EXTRUDE_GEO_NG_NAME)
 
     node.select = True

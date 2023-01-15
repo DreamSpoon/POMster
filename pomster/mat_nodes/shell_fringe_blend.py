@@ -387,7 +387,7 @@ def create_shell_fringe_blend_node(node_tree, override_create):
     # create a node group node and give it a ref to the POMster UV nodegroup
     node = tree_nodes.new(type="ShaderNodeGroup")
     view_center = node_tree.view_center
-    node.location = (view_center[0] / 2.5, view_center[1] / 2.5)
+    node.location = (view_center[0] / 1.5, view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(SHELL_FRINGE_BLEND_MAT_NG_NAME)
     node.select = True
     # make new node the active node
@@ -760,7 +760,7 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     tree_links.new(new_nodes["Attribute.003"].outputs[2], new_nodes["Group.002"].inputs[1])
 
     # offset new nodes to view center
-    view_center = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     for n in new_nodes.values():
         # do not adjust frame location
         if n.type == 'FRAME':

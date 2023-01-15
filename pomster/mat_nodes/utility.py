@@ -183,7 +183,7 @@ def create_util_ortho_tangents(node_tree, override_create, uv_axes_str):
     else:
         rotate_axis_letter = "X"
 
-    offset = (node_tree.view_center[0]/2.5, node_tree.view_center[1]/2.5)
+    offset = (node_tree.view_center[0]/1.5, node_tree.view_center[1]/1.5)
 
     # deselect all nodes in the node tree
     for n in node_tree.nodes: n.select = False
@@ -312,7 +312,7 @@ def create_util_optimum_ray_type(node_tree, override_create):
     # create nodes
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(OPTIMUM_RAY_TYPE_MAT_NG_NAME)
 
     # make new node the active node
@@ -406,7 +406,7 @@ def create_util_optimum_ray_length(node_tree, override_create):
     # create nodes
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(OPTIMUM_RAY_LENGTH_MAT_NG_NAME)
     node.inputs[0].default_value = -1.0
     node.inputs[1].default_value = 0.03
@@ -508,7 +508,7 @@ def create_util_optimum_ray_angle(node_tree, override_create):
     # create nodes
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(OPTIMUM_RAY_ANGLE_MAT_NG_NAME)
     node.inputs[0].default_value = 0.0
     node.inputs[1].default_value = 2.0
@@ -644,7 +644,7 @@ def create_util_combine_optimum_tla(node_tree, override_create):
     # create nodes
     tree_nodes = node_tree.nodes
     node = tree_nodes.new(type="ShaderNodeGroup")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     node.node_tree = bpy.data.node_groups.get(COMBINE_OPTIMUM_TLA_MAT_NG_NAME)
     node.inputs[0].default_value = -1.000000
     node.inputs[1].default_value = 0.030000
@@ -657,7 +657,7 @@ def create_util_combine_optimum_tla(node_tree, override_create):
 
     # create mix shader node and link
     node = tree_nodes.new(type="ShaderNodeMixShader")
-    node.location = (node_tree.view_center[0] / 2.5, node_tree.view_center[1] / 2.5 + 140)
+    node.location = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5 + 140)
     new_nodes["Mix Shader"] = node
 
     # create links

@@ -612,9 +612,9 @@ def create_obj_shell_fringe(ob, override_create):
             geo_nodes_mod[mod_io_item[0]] = GEO_NODES_MOD_OUTPUT_NAME_STR[output_count]
 
 class POMSTER_CreateObjModShellFringe(bpy.types.Operator):
-    bl_description = "Add geometry nodes modifier to active Mesh object to add Parallax Map Shells and Fringe"
+    bl_description = "Add geometry nodes modifier to active Mesh object to add Parallax Map Shell and Fringe"
     bl_idname = "pomster.add_object_shell_fringe"
-    bl_label = "Shells and Fringe"
+    bl_label = "Shell and Fringe"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
