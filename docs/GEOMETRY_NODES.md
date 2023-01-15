@@ -111,6 +111,11 @@ Note: Material Properties can be found in the Properties window which is on the 
 
 7. Complete
 Comparing the before and after, the Shell and Fringe effect is especially noticeable where the edges of the geometry meet the background: a bumpy fringe can be seen.
+
+Before Shell and Fringe
+
 ![picture](assets/shell_fringe/before_shell_fringe.png)
+
+After Shell and Fringe
 
 ![picture](assets/shell_fringe/after_shell_fringe.png)

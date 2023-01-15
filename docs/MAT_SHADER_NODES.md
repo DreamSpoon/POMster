@@ -51,7 +51,11 @@ Note: The parallax effect only works with negative Height values. Depth is negat
 Comparing old material with new material, the new material's texture looks like it's inside the geometry.
 The effect is is more noticable at edges, and at red-white Cursor at world origin.
 
+Before Parallax map
+
 ![picture](assets/parallax_map/before_parallax_render.png)
+
+After Parallax Map
 
 ![picture](assets/parallax_map/after_parallax_render.png)
 
@@ -113,6 +117,10 @@ Create Math node to Multiply by 0.05 the Value output of Math Subtract node.
 Comparing old material with new material, the new material's texture looks like it's inside the geometry.
 The effect is is more noticable at edges, and at red-white Cursor at world origin.
 
+Before OCPOM
+
 ![picture](assets/ocpom/before_ocpom_render.png)
+
+After OCPOM
 
 ![picture](assets/ocpom/after_ocpom_render.png)
