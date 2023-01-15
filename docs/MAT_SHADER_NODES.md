@@ -9,11 +9,13 @@ Usage is demonstrated with examples:
 This example is a plane with Parallax Map material shader nodes applied, to give a 'flat' depth effect.
 
 1. Create Plane, including UV map
+
 3DView -> Add menu -> Mesh -> Plane
 
 ![picture](assets/parallax_map/create_plane.png)
 
 2. Create VU Map from UV Map
+
 3DView -> Tools -> POMster -> Flip UV -> U-V Map to V-U Map
 
 Create VU Map from the default UV Map with the Flip UV panel.
@@ -24,12 +26,14 @@ If UV Map is not available then other sources of Tangent U/V might be available,
 ![picture](assets/parallax_map/flip_uv.png)
 
 3. Create Image Texture nodes
+
 Go to the Shader Editor, and create an Image Texture node.
 The example uses a Coast Sand texture that can be downloaded from PolyHaven.com - although any texture can be used.
 
 ![picture](assets/parallax_map/before_parallax_map.png)
 
 4. Create Parallax Map for UV Coordinates
+
 Add Parallax Map node and connect to texture node.
 Shader Editor -> Tools -> POMster -> Parallax Map -> Parallax Map
 
@@ -48,6 +52,7 @@ Note: The parallax effect only works with negative Height values. Depth is negat
 ![picture](assets/parallax_map/change_height_0.1.png)
 
 5. Complete
+
 Comparing old material with new material, the new material's texture looks like it's inside the geometry.
 The effect is is more noticable at edges, and at red-white Cursor at world origin.
 
@@ -63,11 +68,13 @@ After Parallax Map
 This example is a plane with Offset Conestep Parallax Occlusion Map (OCPOM) material shader nodes applied, to give a 'bumpy' depth effect.
 
 1. Create Plane, including UV map
+
 3DView -> Add menu -> Mesh -> Plane
 
 ![picture](assets/parallax_map/create_plane.png)
 
 2. Create VU Map from UV Map
+
 3DView -> Tools -> POMster -> Flip UV -> U-V Map to V-U Map
 
 Create VU Map from the default UV Map with the Flip UV panel.
@@ -77,12 +84,14 @@ If UV Map is not available then other sources of Tangent U/V might be available,
 ![picture](assets/parallax_map/flip_uv.png)
 
 3. Create Image Texture nodes
+
 In the Shader Editor, create an Image Texture node for color, and create an Image Texture node for height (displacement).
 The example uses a Coast Sand texture that can be downloaded from PolyHaven.com - although any texture can be used.
 
 ![picture](assets/ocpom/before_ocpom.png)
 
 4. Create OCPOM for UV Coordinates
+
 Add OCPOM node and connect to texture nodes.
 
 Shader Editor -> Tools -> POMster -> OCPOM -> Offset Conestep POM
@@ -95,6 +104,7 @@ If the UV Map and VU Map have names different from "UVMap" and "VUMap.UVMap", th
 ![picture](assets/parallax_map/parallax_map_uv_vu_map_names.png)
 
 5. Fill in OCPOM Input node
+
 Select heightmap Image Texture node and press Ctrl-C, or right click heightmap Image Texture node and select Copy.
 
 ![picture](assets/ocpom/copy_height_tex.png)
@@ -114,6 +124,7 @@ Create Math node to Multiply by 0.05 the Value output of Math Subtract node.
 ![picture](assets/ocpom/filled_ocpom_input.png)
 
 6. Complete
+
 Comparing old material with new material, the new material's texture looks like it's inside the geometry.
 The effect is is more noticable at edges, and at red-white Cursor at world origin.
 

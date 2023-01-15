@@ -8,11 +8,13 @@ Usage is demonstrated with example:
 Plane mesh with Shell and Fringe geometry nodes combined with material shader nodes applied, to create a 'bumpy' depth effect with accurate shadows.
 
 1. Create Plane, including UV map
+
 3DView -> Add menu -> Mesh -> Plane
 
 ![picture](assets/parallax_map/create_plane.png)
 
 2. Create VU Map from UV Map
+
 3DView -> Tools -> POMster -> Flip UV -> U-V Map to V-U Map
 
 Create VU Map from the default UV Map with the Flip UV panel.
@@ -22,6 +24,7 @@ If UV Map is not available then other sources of Tangent U/V might be available,
 ![picture](assets/parallax_map/flip_uv.png)
 
 3. Add Object Shell and Fringe Geometry Nodes
+
 3DView -> Tools -> POMster -> Shell and Fringe -> Shell and Fringe
 
 ![picture](assets/shell_fringe/obj_shell_fringe.png)
@@ -46,6 +49,7 @@ With Min Height equal -0.05 , the innermost 'shell' is 0.05 meters inside the or
 Set Shell Count to 32 , this will add more detail to the depth effect.
 
 3. Create Image Texture nodes
+
 In the Shader Editor, create 3 Image Texture nodes:
    1. Color
    2. Normal
@@ -56,6 +60,7 @@ The example uses a Coast Sand texture that can be downloaded from PolyHaven.com 
 ![picture](assets/shell_fringe/mat_before_shell_fringe.png)
 
 4. Add Material Shell Fringe Blend Shader Nodes
+
 Before pressing button to add nodes, ensure the "Add Shell Fringe Inputs" option is enabled.
 Then set Base Color, Normal, and Height image values to the images used in the previous step.
 Setting these image values will help save time later, because the addon will auto-populate generated Image Texture nodes with these values.
@@ -85,7 +90,9 @@ Inside this node group is where any extra nodes for creating the material shader
 Outside the node group are support nodes needed to make the Shell and Fringe Blend work, and these nodes can be used to control how much the effect is applied - e.g. Opaque / Shell blend by viewing angle.
 
 5. Cycles Settings
+
 Problem: Blender's Cycles renderer will show patches of black pixels when rendering geometry with Shell and Fringe applied.
+
 Solution: Increase the number of Transparent bounces in Cycles renderer options for Light Paths.
 Generally this number needs to be higher than the total number of 'shells' in the geometry.
 E.g. if 32 shells are used, then set Transparent bounces to equal 40.
@@ -98,7 +105,9 @@ Note: Render Properties can be found in the Properties window which is on the bo
 ![picture](assets/shell_fringe/cycles_transparent_samples.png)
 
 6. EEVEE Settings
+
 Problem: EEVEE renderer does not show transparency.
+
 Solution: For each material with transparency, go to its Settings and turn on transparency.
 
 Material Properties -> Settings -> Blend Mode -> Alpha Hashed
@@ -110,6 +119,7 @@ Note: Material Properties can be found in the Properties window which is on the 
 ![picture](assets/shell_fringe/eevee_settings.png)
 
 7. Complete
+
 Comparing the before and after, the Shell and Fringe effect is especially noticeable where the edges of the geometry meet the background: a bumpy fringe can be seen.
 
 Before Shell and Fringe
