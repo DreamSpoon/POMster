@@ -33,7 +33,7 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
     new_input.default_value = 4
     node_group.inputs.new(type='NodeSocketBool', name="Delete Zero Index")
     new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
-    new_input.default_value = -0.020000
+    new_input.default_value = -0.050000
     node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
     node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
     node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
@@ -75,33 +75,37 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
     new_input.default_value = 340282346638528859811704183484516925440.000000
     node_group.inputs.new(type='NodeSocketVector', name="UV")
     node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Shell Count")
-    new_output.min_value = 2.000000
-    new_output.default_value = 4.000000
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Min Height")
-    new_output.default_value = -0.050000
+    node_group.outputs.new(type='NodeSocketFloat', name="Shell Count")
+    node_group.outputs.new(type='NodeSocketFloat', name="Min Height")
     node_group.outputs.new(type='NodeSocketFloat', name="Max Height")
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Shell Index")
-    new_output.min_value = 0.000000
+    node_group.outputs.new(type='NodeSocketFloat', name="Shell Index")
     node_group.outputs.new(type='NodeSocketFloat', name="Shell Height")
     node_group.outputs.new(type='NodeSocketVector', name="Shell Offset")
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Is Fringe")
-    new_output.min_value = 0.000000
-    new_output.max_value = 1.000000
+    node_group.outputs.new(type='NodeSocketFloat', name="Is Fringe")
     node_group.outputs.new(type='NodeSocketFloat', name="Fringe Height")
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
-    new_output.min_value = 0.000000
-    new_output.max_value = 1.000000
-    new_output = node_group.outputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
-    new_output.min_value = 0.000000
-    new_output.max_value = 1.000000
-    new_output = node_group.outputs.new(type='NodeSocketVector', name="UV")
-    new_output.attribute_domain = 'CORNER'
+    node_group.outputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
+    node_group.outputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
+    node_group.outputs.new(type='NodeSocketVector', name="Original Position")
+    node_group.outputs.new(type='NodeSocketVector', name="UV")
     tree_nodes = node_group.nodes
     # delete all nodes
     tree_nodes.clear()
 
     # create nodes
+    node = tree_nodes.new(type="GeometryNodeInputPosition")
+    node.location = (-1340, -20)
+    new_nodes["Position.002"] = node
+
+    node = tree_nodes.new(type="GeometryNodeCaptureAttribute")
+    node.location = (-1340, 160)
+    node.data_type = "FLOAT_VECTOR"
+    node.domain = "POINT"
+    node.inputs[2].default_value = 0.000000
+    node.inputs[3].default_value = (0.0, 0.0, 0.0, 0.0)
+    node.inputs[4].default_value = False
+    node.inputs[5].default_value = 0
+    new_nodes["Capture Attribute.002"] = node
+
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.location = (-620, -960)
     node.operation = "NORMALIZE"
@@ -118,7 +122,7 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
     new_nodes["Math.006"] = node
 
     node = tree_nodes.new(type="GeometryNodeCaptureAttribute")
-    node.label = "CaptureShell  Exclue"
+    node.label = "Capture Shell Exclude"
     node.location = (-900, 200)
     node.data_type = "FLOAT"
     node.domain = "FACE"
@@ -466,6 +470,11 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
 
     # create links
     tree_links = node_group.links
+    tree_links.new(new_nodes["Position.002"].outputs[0], new_nodes["Capture Attribute.002"].inputs[1])
+    tree_links.new(new_nodes["Capture Attribute.002"].outputs[1], new_nodes["Group Output"].inputs[11])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Capture Attribute.002"].inputs[0])
+    tree_links.new(new_nodes["Capture Attribute.002"].outputs[0], new_nodes["Capture Attribute.001"].inputs[0])
+    tree_links.new(new_nodes["Capture Attribute.002"].outputs[0], new_nodes["Group.001"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Group"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Group"].inputs[6])
     tree_links.new(new_nodes["Group"].outputs[2], new_nodes["Group Output"].inputs[5])
@@ -481,8 +490,7 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
     tree_links.new(new_nodes["Join Geometry"].outputs[0], new_nodes["Group Output"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[3], new_nodes["Group.001"].inputs[1])
     tree_links.new(new_nodes["Group Input"].outputs[4], new_nodes["Group.001"].inputs[2])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Group.001"].inputs[0])
-    tree_links.new(new_nodes["Group Input"].outputs[21], new_nodes["Group Output"].inputs[11])
+    tree_links.new(new_nodes["Group Input"].outputs[21], new_nodes["Group Output"].inputs[12])
     tree_links.new(new_nodes["Group Input"].outputs[12], new_nodes["Object Info"].inputs[0])
     tree_links.new(new_nodes["Object Info"].outputs[0], new_nodes["Vector Math"].inputs[0])
     tree_links.new(new_nodes["Position"].outputs[0], new_nodes["Vector Math"].inputs[1])
@@ -496,7 +504,6 @@ def create_obj_mod_geo_nodes_shell_fringe(node_group):
     tree_links.new(new_nodes["Normal.001"].outputs[0], new_nodes["Vector Math.002"].inputs[1])
     tree_links.new(new_nodes["Group"].outputs[1], new_nodes["Group Output"].inputs[4])
     tree_links.new(new_nodes["Capture Attribute.001"].outputs[2], new_nodes["Group"].inputs[8])
-    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Capture Attribute.001"].inputs[0])
     tree_links.new(new_nodes["Capture Attribute.001"].outputs[0], new_nodes["Group"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[1], new_nodes["Group Output"].inputs[1])
     tree_links.new(new_nodes["Capture Attribute"].outputs[0], new_nodes["Join Geometry"].inputs[0])
@@ -578,10 +585,11 @@ GEO_NODES_MOD_OUTPUT_NAME_STR = [
     "poms_fringe_height",
     "poms_shell_exclude",
     "poms_fringe_exclude",
+    "poms_original_pos",
     "uv_map",
 ]
 
-def create_obj_shell_fringe(ob, override_create):
+def create_obj_shell_fringe(ob, override_create, height_mult):
     ensure_node_groups(override_create, [SHELL_ARRAY_GEO_NG_NAME, FRINGE_EXTRUDE_GEO_NG_NAME], 'GeometryNodeTree',
                        create_prereq_shell_fringe_node_group)
     geo_nodes_mod = ob.modifiers.new(name="Shells and Fringe Geometry Nodes", type='NODES')
@@ -611,6 +619,12 @@ def create_obj_shell_fringe(ob, override_create):
             # assign the string to the output
             geo_nodes_mod[mod_io_item[0]] = GEO_NODES_MOD_OUTPUT_NAME_STR[output_count]
 
+    # set default height multiplier in the modifier inputs - so search for correct input just like when setting outputs
+    for mod_io_item in geo_nodes_mod.items():
+        if mod_io_item[0].lower() == "input_3":
+            geo_nodes_mod[mod_io_item[0]] = -height_mult
+            break
+
 class POMSTER_CreateObjModShellFringe(bpy.types.Operator):
     bl_description = "Add geometry nodes modifier to active Mesh object to add Parallax Map Shell and Fringe"
     bl_idname = "pomster.add_object_shell_fringe"
@@ -622,5 +636,7 @@ class POMSTER_CreateObjModShellFringe(bpy.types.Operator):
         return context.active_object != None and context.active_object.type == 'MESH'
 
     def execute(self, context):
-        create_obj_shell_fringe(context.active_object, context.scene.POMster.nodes_override_create)
+        scn = context.scene
+        create_obj_shell_fringe(context.active_object, scn.POMster.nodes_override_create,
+                                scn.POMster.default_height_multiplier)
         return {'FINISHED'}

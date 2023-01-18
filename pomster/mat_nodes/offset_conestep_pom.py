@@ -897,7 +897,7 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[OCPOM_NODENAME].inputs[5])
     tree_links.new(new_nodes[HEIGHT_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
 
-def create_blank_node_group():
+def create_blank_node_group(height_img, height_mult):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=BLANK_NODE_GROUP_NAME, type='ShaderNodeTree')
@@ -912,24 +912,51 @@ def create_blank_node_group():
 
     # create nodes
     node = tree_nodes.new(type="NodeGroupInput")
-    node.location = (-200, 0)
+    node.location = (-300, 0)
     new_nodes["Group Input"] = node
 
     node = tree_nodes.new(type="NodeGroupOutput")
-    node.location = (540, 0)
+    node.location = (560, 0)
     node.inputs[0].default_value = -0.05
     node.inputs[1].default_value = 0.9
     node.inputs[2].default_value = 1.0
     node.inputs[3].default_value = 0.001
     new_nodes["Group Output"] = node
 
+    # if height_img given then create nodes to implement default height Image Texture inputs
+    if height_img != None:
+        node = tree_nodes.new(type="ShaderNodeTexImage")
+        node.location = (-100, 0)
+        node.image = height_img
+        new_nodes["Image Texture"] = node
+
+        node = tree_nodes.new(type="ShaderNodeMath")
+        node.location = (180, 0)
+        node.operation = "SUBTRACT"
+        node.use_clamp = False
+        node.inputs[1].default_value = 1.000000
+        new_nodes["Math"] = node
+
+        node = tree_nodes.new(type="ShaderNodeMath")
+        node.location = (360, 0)
+        node.operation = "MULTIPLY"
+        node.use_clamp = False
+        node.inputs[1].default_value = height_mult
+        new_nodes["Math.001"] = node
+
+        tree_links = new_node_group.links
+        tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["Image Texture"].inputs[0])
+        tree_links.new(new_nodes["Image Texture"].outputs[0], new_nodes["Math"].inputs[0])
+        tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Math.001"].inputs[0])
+        tree_links.new(new_nodes["Math.001"].outputs[0], new_nodes["Group Output"].inputs[0])
+
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
 
     return new_node_group
 
-def create_blank_ocpom_input_node(node_tree):
-    new_blank_node_group = create_blank_node_group()
+def create_blank_ocpom_input_node(node_tree, height_img, height_mult):
+    new_blank_node_group = create_blank_node_group(height_img, height_mult)
     if new_blank_node_group is None:
         print("ERROR: Create new blank node group failed.")
         return None
@@ -970,7 +997,8 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
             # deselect all nodes
             for n in tree_nodes: n.select = False
 
-            blank_node = create_blank_ocpom_input_node(context.space_data.edit_tree)
+            blank_node = create_blank_ocpom_input_node(context.space_data.edit_tree, scn.POMster.height_img_input,
+                                                       scn.POMster.default_height_multiplier)
             # blank OCPOM input node was created, so use default input/output indexes to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create,
                 blank_node, scn.POMster.num_samples, 0, 0, 1, 2, 3)

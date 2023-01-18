@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 5, 0),
+    "version": (0, 5, 1),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -31,7 +31,7 @@ import math
 
 import bpy
 from bpy.types import PropertyGroup
-from bpy.props import (BoolProperty, EnumProperty, IntProperty, PointerProperty)
+from bpy.props import (BoolProperty, EnumProperty, FloatProperty, IntProperty, PointerProperty)
 
 from .mat_nodes.parallax_map import POMSTER_AddParallaxMapNode
 from .mat_nodes.utility import (POMSTER_AddUtilOrthoTangentNodes, POMSTER_CreateUtilOptimumRayTypeNode,
@@ -99,9 +99,11 @@ class POMSTER_PT_ObjectShellFringe(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        scn = context.scene
         box = layout.box()
         box.label(text="Parallax Shell and Fringe")
         box.operator("pomster.add_object_shell_fringe")
+        box.prop(scn.POMster, "default_height_multiplier")
 
 class POMSTER_PT_General(bpy.types.Panel):
     bl_label = "Parallax Map"
@@ -140,6 +142,9 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         sub_box.operator("pomster.create_offset_conestep_pom_nodes")
         sub_box.prop(scn.POMster, "num_samples")
         sub_box = box.box()
+        sub_box.label(text="Height (Displacement) Texture")
+        sub_box.prop(scn.POMster, "height_img_input", text="")
+        sub_box.prop(scn.POMster, "default_height_multiplier")
         sub_box.label(text="Custom Node Input")
         sub_box.prop(scn.POMster, "uv_input_index")
         sub_box.label(text="Custom Node Output")
@@ -253,6 +258,8 @@ class POMsterPropGrp(PropertyGroup):
         type=bpy.types.Image)
     height_img_input: PointerProperty(name="Height", description="Image texture for height (displacement)",
         type=bpy.types.Image)
+    default_height_multiplier: FloatProperty(name="Height Multiplier", description="Height (Displacement) " +
+        "texture's value is multiplied by Height Multiplier", default=0.05, min=0)
 
 classes = [
     POMSTER_PT_FlipUV,
@@ -285,15 +292,12 @@ classes = [
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    register_props()
+    bpy.types.Scene.POMster = PointerProperty(type=POMsterPropGrp)
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
     del bpy.types.Scene.POMster
-
-def register_props():
-    bpy.types.Scene.POMster = PointerProperty(type=POMsterPropGrp)
 
 if __name__ == "__main__":
     register()

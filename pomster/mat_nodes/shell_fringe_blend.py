@@ -77,14 +77,12 @@ def create_mat_ng_shell_fringe_blend():
     node.location = (-320, -420)
     node.operation = "GREATER_THAN"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.018"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-320, -260)
     node.operation = "GREATER_THAN"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.017"] = node
 
     node = tree_nodes.new(type="ShaderNodeMapRange")
@@ -94,12 +92,6 @@ def create_mat_ng_shell_fringe_blend():
     node.interpolation_type = "LINEAR"
     node.inputs[1].default_value = 0.000000
     node.inputs[2].default_value = 1.000000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
     new_nodes["Map Range.002"] = node
 
     node = tree_nodes.new(type="ShaderNodeMapRange")
@@ -109,19 +101,12 @@ def create_mat_ng_shell_fringe_blend():
     node.interpolation_type = "LINEAR"
     node.inputs[3].default_value = 1.000000
     node.inputs[4].default_value = 0.000000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
     new_nodes["Map Range.003"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-320, -840)
     node.operation = "SUBTRACT"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.022"] = node
 
     node = tree_nodes.new(type="ShaderNodeMapRange")
@@ -131,19 +116,12 @@ def create_mat_ng_shell_fringe_blend():
     node.interpolation_type = "LINEAR"
     node.inputs[3].default_value = 1.000000
     node.inputs[4].default_value = 0.000000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
     new_nodes["Map Range"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-560, -780)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.000000
     new_nodes["Math.009"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -166,21 +144,18 @@ def create_mat_ng_shell_fringe_blend():
     node.location = (-940, -1060)
     node.operation = "SUBTRACT"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.016"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-560, -260)
     node.operation = "SUBTRACT"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.000000
     new_nodes["Math.010"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-760, -260)
     node.operation = "ADD"
     node.use_clamp = True
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.013"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -188,7 +163,6 @@ def create_mat_ng_shell_fringe_blend():
     node.operation = "LESS_THAN"
     node.use_clamp = False
     node.inputs[1].default_value = 1.000000
-    node.inputs[2].default_value = 0.000000
     new_nodes["Math.014"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -196,7 +170,6 @@ def create_mat_ng_shell_fringe_blend():
     node.operation = "SUBTRACT"
     node.use_clamp = False
     node.inputs[0].default_value = 1.000000
-    node.inputs[2].default_value = 0.000000
     new_nodes["Math.015"] = node
 
     node = tree_nodes.new(type="ShaderNodeMapRange")
@@ -206,26 +179,18 @@ def create_mat_ng_shell_fringe_blend():
     node.interpolation_type = "LINEAR"
     node.inputs[1].default_value = 0.000000
     node.inputs[2].default_value = 1.000000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
     new_nodes["Map Range.001"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-940, -440)
     node.operation = "GREATER_THAN"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.011"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-940, -620)
     node.operation = "GREATER_THAN"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.012"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -241,7 +206,6 @@ def create_mat_ng_shell_fringe_blend():
     node.location = (-560, -440)
     node.operation = "MULTIPLY"
     node.use_clamp = False
-    node.inputs[2].default_value = 0.000000
     new_nodes["Math.008"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -257,7 +221,6 @@ def create_mat_ng_shell_fringe_blend():
     node.location = (-760, 180)
     node.operation = "SUBTRACT"
     node.use_clamp = True
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.002"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -265,14 +228,12 @@ def create_mat_ng_shell_fringe_blend():
     node.operation = "GREATER_THAN"
     node.use_clamp = False
     node.inputs[1].default_value = 0.000000
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.001"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
     node.location = (-760, 20)
     node.operation = "ADD"
     node.use_clamp = True
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.006"] = node
 
     node = tree_nodes.new(type="ShaderNodeMixShader")
@@ -284,7 +245,6 @@ def create_mat_ng_shell_fringe_blend():
     node.location = (-140, -100)
     node.operation = "SUBTRACT"
     node.use_clamp = True
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math"] = node
 
     node = tree_nodes.new(type="ShaderNodeMixShader")
@@ -413,60 +373,23 @@ def create_mat_ng_custom_sfb_input(custom_data):
     node = tree_nodes.new(type="ShaderNodeTexImage")
     node.label = "Base Color"
     node.location = (-160, 240)
-    node.extension = "REPEAT"
-    node.image = custom_data["base_color"]
-    node.interpolation = "Linear"
-    node.projection = "FLAT"
-    node.projection_blend = 0.000000
+    node.image = custom_data["base_color_img"]
     new_nodes["Image Texture.005"] = node
 
     node = tree_nodes.new(type="ShaderNodeTexImage")
     node.label = "Normal"
     node.location = (-160, -300)
-    node.extension = "REPEAT"
-    node.image = custom_data["normal"]
-    node.interpolation = "Linear"
-    node.projection = "FLAT"
-    node.projection_blend = 0.000000
+    node.image = custom_data["normal_img"]
     new_nodes["Image Texture.004"] = node
 
     node = tree_nodes.new(type="ShaderNodeTexImage")
     node.label = "Displacement"
     node.location = (-160, -620)
-    node.extension = "REPEAT"
-    node.image = custom_data["height"]
-    node.interpolation = "Linear"
-    node.projection = "FLAT"
-    node.projection_blend = 0.000000
+    node.image = custom_data["height_img"]
     new_nodes["Image Texture"] = node
 
     node = tree_nodes.new(type="ShaderNodeBsdfPrincipled")
-    node.label = "Opaque"
     node.location = (240, 240)
-    node.distribution = "GGX"
-    node.subsurface_method = "RANDOM_WALK"
-    node.inputs[1].default_value = 0.000000
-    node.inputs[2].default_value = (1.0, 0.20000000298023224, 0.10000000149011612)
-    node.inputs[3].default_value = (0.800000011920929, 0.800000011920929, 0.800000011920929, 1.0)
-    node.inputs[4].default_value = 1.400000
-    node.inputs[5].default_value = 0.000000
-    node.inputs[6].default_value = 0.000000
-    node.inputs[7].default_value = 0.004000
-    node.inputs[8].default_value = 0.000000
-    node.inputs[9].default_value = 0.350000
-    node.inputs[10].default_value = 0.000000
-    node.inputs[11].default_value = 0.000000
-    node.inputs[12].default_value = 0.000000
-    node.inputs[13].default_value = 0.500000
-    node.inputs[14].default_value = 0.000000
-    node.inputs[15].default_value = 0.030000
-    node.inputs[16].default_value = 1.450000
-    node.inputs[17].default_value = 0.000000
-    node.inputs[18].default_value = 0.000000
-    node.inputs[19].default_value = (0.0, 0.0, 0.0, 1.0)
-    node.inputs[20].default_value = 1.000000
-    node.inputs[21].default_value = 1.000000
-    node.inputs[25].default_value = 0.000000
     new_nodes["Principled BSDF.002"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -474,7 +397,6 @@ def create_mat_ng_custom_sfb_input(custom_data):
     node.operation = "SUBTRACT"
     node.use_clamp = True
     node.inputs[0].default_value = 1.000000
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math.001"] = node
 
     node = tree_nodes.new(type="ShaderNodeNormalMap")
@@ -488,7 +410,6 @@ def create_mat_ng_custom_sfb_input(custom_data):
     node.operation = "MULTIPLY"
     node.use_clamp = False
     node.inputs[1].default_value = 0.600000
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math"] = node
 
     node = tree_nodes.new(type="NodeGroupInput")
@@ -522,9 +443,9 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
                                               height_img_input):
     ensure_node_group(True, CUSTOM_SFB_INPUT_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group,
                       {
-                          "base_color": base_color_img_input,
-                          "normal": normal_img_input,
-                          "height": height_img_input,
+                          "base_color_img": base_color_img_input,
+                          "normal_img": normal_img_input,
+                          "height_img": height_img_input,
                         } )
     ensure_node_group(override_create, SHELL_FRINGE_BLEND_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
 
@@ -564,8 +485,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.location = (480, -240)
     node.operation = "DOT_PRODUCT"
-    node.inputs[2].default_value = (0.0, 0.0, 0.0)
-    node.inputs[3].default_value = 1.000000
     new_nodes["Vector Math"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -573,8 +492,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node.location = (480, -100)
     node.operation = "ABSOLUTE"
     node.use_clamp = False
-    node.inputs[1].default_value = 0.500000
-    node.inputs[2].default_value = 0.500000
     new_nodes["Math"] = node
 
     node = tree_nodes.new(type="ShaderNodeValToRGB")
@@ -584,9 +501,9 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node.color_ramp.interpolation = "LINEAR"
     node.color_ramp.elements.remove(node.color_ramp.elements[0])
     elem = node.color_ramp.elements[0]
-    elem.position = 0.552727
+    elem.position = 0.85
     elem.color = (0.000000, 0.000000, 0.000000, 1.000000)
-    elem = node.color_ramp.elements.new(0.658182)
+    elem = node.color_ramp.elements.new(1.0)
     elem.color = (1.000000, 1.000000, 1.000000, 1.000000)
     new_nodes["ColorRamp.001"] = node
 
@@ -639,8 +556,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
 
     node = tree_nodes.new(type="ShaderNodeBsdfTransparent")
     node.location = (680, 600)
-    node.inputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
-    node.inputs[1].default_value = 0.000000
     new_nodes["Transparent BSDF"] = node
 
     node = tree_nodes.new(type="ShaderNodeMapRange")
@@ -649,14 +564,8 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node.clamp = True
     node.data_type = "FLOAT"
     node.interpolation_type = "LINEAR"
-    node.inputs[1].default_value = 0.200000
-    node.inputs[2].default_value = 0.700000
-    node.inputs[5].default_value = 4.000000
-    node.inputs[7].default_value = (0.0, 0.0, 0.0)
-    node.inputs[8].default_value = (1.0, 1.0, 1.0)
-    node.inputs[9].default_value = (0.0, 0.0, 0.0)
-    node.inputs[10].default_value = (1.0, 1.0, 1.0)
-    node.inputs[11].default_value = (4.0, 4.0, 4.0)
+    node.inputs[1].default_value = 0.100000
+    node.inputs[2].default_value = 0.900000
     new_nodes["Map Range"] = node
 
     node = tree_nodes.new(type="ShaderNodeAttribute")
@@ -669,7 +578,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.location = (-443, 660)
     node.operation = "MULTIPLY_ADD"
-    node.inputs[3].default_value = 1.000000
     new_nodes["Vector Math.010"] = node
 
     node = tree_nodes.new(type="ShaderNodeAttribute")
@@ -687,9 +595,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node = tree_nodes.new(type="ShaderNodeVectorMath")
     node.location = (-623, 480)
     node.operation = "LENGTH"
-    node.inputs[1].default_value = (0.0, 0.0, 0.0)
-    node.inputs[2].default_value = (0.0, 0.0, 0.0)
-    node.inputs[3].default_value = 1.000000
     new_nodes["Vector Math.009"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
@@ -702,10 +607,6 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
 
     node = tree_nodes.new(type="ShaderNodeMapping")
     node.location = (-260, 660)
-    node.vector_type = "POINT"
-    node.inputs[1].default_value = (0.0, 0.0, 0.0)
-    node.inputs[2].default_value = (0.0, 0.0, 0.0)
-    node.inputs[3].default_value = (1.0, 1.0, 1.0)
     new_nodes["Mapping"] = node
 
     node = tree_nodes.new(type="ShaderNodeGroup")
