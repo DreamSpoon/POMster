@@ -22,9 +22,9 @@ bl_info = {
     "author": "Dave",
     "version": (0, 6, 0),
     "blender": (2, 80, 0),
-    "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
-    "category": "Shader Nodes",
-    "wiki_url": "",
+    "location": "Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
+    "category": "Shader Nodes, Geometry Nodes",
+    "wiki_url": "https://github.com/DreamSpoon/POMster#readme",
 }
 
 import math
