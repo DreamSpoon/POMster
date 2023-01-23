@@ -1,4 +1,3 @@
-
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
 #  This program is free software; you can redistribute it and/or
@@ -32,7 +31,7 @@ UV_INPUT_NODENAME = "UV Input"
 TANGENT_U_INPUT_NODENAME = "Tangent U"
 TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
-HEIGHT_STEP_INPUT_NODENAME = "Height Step"
+STEP_HEIGHT_INPUT_NODENAME = "Total Step Height"
 
 def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
@@ -818,25 +817,7 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     return new_node_group
 
-def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node, sample_num, uv_input_index,
-                      height_output_index, cone_ratio_angle_output_index, cone_ratio_divisor_output_index,
-                      cone_offset_output_index):
-    ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
-    # these node groups need to be re-created every time, because they use the custom group node
-    custom_data = {
-        "custom_group_node": custom_group_node,
-        "sample_num": sample_num,
-        "uv_input_index": uv_input_index,
-        "height_output_index": height_output_index,
-        "cone_ratio_angle_output_index": cone_ratio_angle_output_index,
-        "cone_ratio_divisor_output_index": cone_ratio_divisor_output_index,
-        "cone_offset_output_index": cone_offset_output_index,
-    }
-
-    iterate_mat_ng = create_mat_ng_iterate(custom_data)
-    custom_data["iterate_mat_ng"] = iterate_mat_ng
-    ocpom_mat_ng = create_mat_ng_offset_conestep_pom(custom_data)
-
+def create_ocpom_inputs_simple(node_tree, ocpom_mat_ng, active_obj):
     tree_nodes = node_tree.nodes
 
     # create nodes
@@ -845,11 +826,6 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.location = (0, 0)
     node.node_tree = ocpom_mat_ng
-    node.inputs[1].default_value = (1, 1, 1)
-    node.inputs[2].default_value = (1, 0, 0)
-    node.inputs[3].default_value = (0, 1, 0)
-    node.inputs[4].default_value = (0, 0, 1)
-    node.inputs[6].default_value = 0.003
     # set this OCPOM node to be active node
     node_tree.nodes.active = node
     new_nodes[OCPOM_NODENAME] = node
@@ -878,10 +854,10 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
 
     node = tree_nodes.new(type="ShaderNodeValue")
-    node.label = HEIGHT_STEP_INPUT_NODENAME
+    node.label = STEP_HEIGHT_INPUT_NODENAME
     node.location = (0, -360)
-    node.outputs[0].default_value = 0.002
-    new_nodes[HEIGHT_STEP_INPUT_NODENAME] = node
+    node.outputs[0].default_value = 0.005
+    new_nodes[STEP_HEIGHT_INPUT_NODENAME] = node
 
     # offset node locations relative to view center
     view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
@@ -895,7 +871,162 @@ def create_ocpom_node(active_obj, node_tree, override_create, custom_group_node,
     tree_links.new(new_nodes[TANGENT_V_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[3])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[OCPOM_NODENAME].inputs[4])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[OCPOM_NODENAME].inputs[5])
-    tree_links.new(new_nodes[HEIGHT_STEP_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
+    tree_links.new(new_nodes[STEP_HEIGHT_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
+
+def create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj):
+    tree_nodes = node_tree.nodes
+
+    # create nodes
+    new_nodes = {}
+
+    # create nodes
+    node = tree_nodes.new(type="ShaderNodeTangent")
+    node.label = "Tangent U"
+    node.location = (-380, -120)
+    node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("U", active_obj)
+    new_nodes["Tangent"] = node
+
+    node = tree_nodes.new(type="ShaderNodeTangent")
+    node.label = "Tangent V"
+    node.location = (-380, -220)
+    node.direction_type = "UV_MAP"
+    node.uv_map = get_tangent_map_name("V", active_obj)
+    new_nodes["Tangent.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeNewGeometry")
+    node.location = (-380, -320)
+    new_nodes["Geometry"] = node
+
+    node = tree_nodes.new(type="ShaderNodeMath")
+    node.label = "Degrees to Radians"
+    node.hide = True
+    node.location = (-380, -80)
+    node.operation = "MULTIPLY"
+    node.use_clamp = False
+    node.inputs[1].default_value = math.pi / 180.0
+    new_nodes["Math"] = node
+
+    node = tree_nodes.new(type="ShaderNodeTexCoord")
+    node.location = (-580, 0)
+    node.from_instancer = False
+    new_nodes["Texture Coordinate"] = node
+
+    node = tree_nodes.new(type="ShaderNodeCombineXYZ")
+    node.label = "UV Scale"
+    node.location = (-580, -240)
+    node.inputs[0].default_value = 1.000000
+    node.inputs[1].default_value = 1.000000
+    node.inputs[2].default_value = 1.000000
+    new_nodes["Combine XYZ.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeValue")
+    node.label = "Total Step Height"
+    node.location = (0, -340)
+    node.outputs[0].default_value = 0.005000
+    new_nodes["Value"] = node
+
+    node = tree_nodes.new(type="ShaderNodeVectorRotate")
+    node.hide = True
+    node.location = (-180, -160)
+    node.invert = True
+    node.rotation_type = "AXIS_ANGLE"
+    node.inputs[1].default_value = (0.0, 0.0, 0.0)
+    new_nodes["Vector Rotate.002"] = node
+
+    node = tree_nodes.new(type="ShaderNodeVectorRotate")
+    node.hide = True
+    node.location = (-180, -240)
+    node.invert = True
+    node.rotation_type = "AXIS_ANGLE"
+    node.inputs[1].default_value = (0.0, 0.0, 0.0)
+    new_nodes["Vector Rotate.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeVectorMath")
+    node.label = "UV Scale, UV Locate"
+    node.hide = True
+    node.location = (-380, -40)
+    node.operation = "MULTIPLY_ADD"
+    new_nodes["Vector Math"] = node
+
+    node = tree_nodes.new(type="ShaderNodeVectorRotate")
+    node.label = "UV Rotate"
+    node.hide = True
+    node.location = (-180, -80)
+    node.invert = False
+    node.rotation_type = "AXIS_ANGLE"
+    node.inputs[2].default_value = (0.0, 0.0, 1.0)
+    new_nodes["Vector Rotate"] = node
+
+    node = tree_nodes.new(type="ShaderNodeGroup")
+    node.location = (0, 0)
+    node.node_tree = ocpom_mat_ng
+    new_nodes["Group.001"] = node
+
+    node = tree_nodes.new(type="ShaderNodeCombineXYZ")
+    node.label = "UV Locate"
+    node.location = (-580, -360)
+    node.inputs[0].default_value = 0.000000
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 0.000000
+    new_nodes["Combine XYZ"] = node
+
+    node = tree_nodes.new(type="ShaderNodeValue")
+    node.label = "UV Rotation (degrees)"
+    node.location = (-580, -480)
+    node.outputs[0].default_value = 0.000000
+    new_nodes["Value.001"] = node
+
+    # offset node locations relative to view center
+    view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
+    for n in new_nodes.values():
+        n.location = (n.location[0] + view_center[0], n.location[1] + view_center[1])
+
+    # create links
+    tree_links = node_tree.links
+    tree_links.new(new_nodes["Vector Rotate"].outputs[0], new_nodes["Group.001"].inputs[0])
+    tree_links.new(new_nodes["Vector Rotate.002"].outputs[0], new_nodes["Group.001"].inputs[2])
+    tree_links.new(new_nodes["Vector Rotate.001"].outputs[0], new_nodes["Group.001"].inputs[3])
+    tree_links.new(new_nodes["Geometry"].outputs[1], new_nodes["Group.001"].inputs[4])
+    tree_links.new(new_nodes["Geometry"].outputs[4], new_nodes["Group.001"].inputs[5])
+    tree_links.new(new_nodes["Value"].outputs[0], new_nodes["Group.001"].inputs[6])
+    tree_links.new(new_nodes["Tangent"].outputs[0], new_nodes["Vector Rotate.002"].inputs[0])
+    tree_links.new(new_nodes["Tangent.001"].outputs[0], new_nodes["Vector Rotate.001"].inputs[0])
+    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Vector Rotate"].inputs[3])
+    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Vector Rotate.002"].inputs[3])
+    tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Vector Rotate.001"].inputs[3])
+    tree_links.new(new_nodes["Geometry"].outputs[3], new_nodes["Vector Rotate.002"].inputs[2])
+    tree_links.new(new_nodes["Geometry"].outputs[3], new_nodes["Vector Rotate.001"].inputs[2])
+    tree_links.new(new_nodes["Texture Coordinate"].outputs[2], new_nodes["Vector Math"].inputs[0])
+    tree_links.new(new_nodes["Vector Math"].outputs[0], new_nodes["Vector Rotate"].inputs[0])
+    tree_links.new(new_nodes["Value.001"].outputs[0], new_nodes["Math"].inputs[0])
+    tree_links.new(new_nodes["Combine XYZ.001"].outputs[0], new_nodes["Vector Math"].inputs[1])
+    tree_links.new(new_nodes["Combine XYZ"].outputs[0], new_nodes["Vector Math"].inputs[2])
+    tree_links.new(new_nodes["Combine XYZ"].outputs[0], new_nodes["Vector Rotate"].inputs[1])
+
+def create_ocpom_node(active_obj, node_tree, override_create, ocpom_mapping_nodes, custom_group_node, sample_num,
+                      uv_input_index, height_output_index, cone_ratio_angle_output_index,
+                      cone_ratio_divisor_output_index, cone_offset_output_index):
+    ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
+    # these node groups need to be re-created every time, because they use the custom group node
+    custom_data = {
+        "custom_group_node": custom_group_node,
+        "sample_num": sample_num,
+        "uv_input_index": uv_input_index,
+        "height_output_index": height_output_index,
+        "cone_ratio_angle_output_index": cone_ratio_angle_output_index,
+        "cone_ratio_divisor_output_index": cone_ratio_divisor_output_index,
+        "cone_offset_output_index": cone_offset_output_index,
+    }
+
+    iterate_mat_ng = create_mat_ng_iterate(custom_data)
+    custom_data["iterate_mat_ng"] = iterate_mat_ng
+    ocpom_mat_ng = create_mat_ng_offset_conestep_pom(custom_data)
+
+    if ocpom_mapping_nodes:
+        create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj)
+    else:
+        create_ocpom_inputs_simple(node_tree, ocpom_mat_ng, active_obj)
 
 def create_blank_node_group(height_img, height_mult):
     # initialize variables
@@ -1001,7 +1132,7 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
                                                        scn.POMster.default_height_multiplier)
             # blank OCPOM input node was created, so use default input/output indexes to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create,
-                blank_node, scn.POMster.num_samples, 0, 0, 1, 2, 3)
+                scn.POMster.ocpom_mapping_nodes, blank_node, scn.POMster.num_samples, 0, 0, 1, 2, 3)
         else:
             # check custom node's type, inputs and report any errors to user
             # check user selected node to ensure minimum amount of inputs
@@ -1052,7 +1183,7 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
 
             # get the UI panel properties for index numbers and use them to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create,
-                active_node, scn.POMster.num_samples, scn.POMster.uv_input_index-1, scn.POMster.height_output_index-1,
-                scn.POMster.cone_ratio_angle_output_index-1, scn.POMster.cone_ratio_divisor_output_index-1,
-                scn.POMster.cone_offset_output_index-1)
+                scn.POMster.ocpom_mapping_nodes, active_node, scn.POMster.num_samples, scn.POMster.uv_input_index-1,
+                scn.POMster.height_output_index-1, scn.POMster.cone_ratio_angle_output_index-1,
+                scn.POMster.cone_ratio_divisor_output_index-1, scn.POMster.cone_offset_output_index-1)
         return {'FINISHED'}

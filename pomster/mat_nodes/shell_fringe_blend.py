@@ -501,10 +501,10 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node.color_ramp.interpolation = "LINEAR"
     node.color_ramp.elements.remove(node.color_ramp.elements[0])
     elem = node.color_ramp.elements[0]
-    elem.position = 0.85
+    elem.position = 0.0
     elem.color = (0.000000, 0.000000, 0.000000, 1.000000)
     elem = node.color_ramp.elements.new(1.0)
-    elem.color = (1.000000, 1.000000, 1.000000, 1.000000)
+    elem.color = (0.000000, 0.000000, 0.000000, 1.000000)
     new_nodes["ColorRamp.001"] = node
 
     node = tree_nodes.new(type="ShaderNodeNewGeometry")
@@ -564,8 +564,8 @@ def create_shell_fringe_blend_and_input_nodes(node_tree, override_create, base_c
     node.clamp = True
     node.data_type = "FLOAT"
     node.interpolation_type = "LINEAR"
-    node.inputs[1].default_value = 0.100000
-    node.inputs[2].default_value = 0.900000
+    node.inputs[1].default_value = 0.000000
+    node.inputs[2].default_value = 1.000000
     new_nodes["Map Range"] = node
 
     node = tree_nodes.new(type="ShaderNodeAttribute")

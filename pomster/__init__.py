@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 5, 1),
+    "version": (0, 6, 0),
     "blender": (2, 80, 0),
     "location": "Material Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes",
@@ -114,7 +114,6 @@ class POMSTER_PT_General(bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
         box = layout.box()
         sub_box = box.box()
         sub_box.operator("pomster.create_parallax_map_node")
@@ -135,7 +134,6 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
         box = layout.box()
         box.label(text="Create Nodes")
         sub_box = box.box()
@@ -145,6 +143,8 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         sub_box.label(text="Height (Displacement) Texture")
         sub_box.prop(scn.POMster, "height_img_input", text="")
         sub_box.prop(scn.POMster, "default_height_multiplier")
+        sub_box.prop(scn.POMster, "ocpom_mapping_nodes")
+        sub_box = box.box()
         sub_box.label(text="Custom Node Input")
         sub_box.prop(scn.POMster, "uv_input_index")
         sub_box.label(text="Custom Node Output")
@@ -165,7 +165,6 @@ class POMSTER_PT_Optimize(bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
         box = layout.box()
         sub_box = box.box()
         sub_box.label(text="Reduce Cycles Render Time")
@@ -190,7 +189,6 @@ class POMSTER_PT_ShaderMask(bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
         box = layout.box()
         box.label(text="Mask")
         box.operator("pomster.create_cube_shader_mask_node")
@@ -212,7 +210,6 @@ class POMSTER_PT_NodeShellFringe(bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-
         box = layout.box()
         box.label(text="Geometry Nodes")
         box.operator("pomster.create_shell_array_node")
@@ -260,6 +257,8 @@ class POMsterPropGrp(PropertyGroup):
         type=bpy.types.Image)
     default_height_multiplier: FloatProperty(name="Height Multiplier", description="Height (Displacement) " +
         "texture's value is multiplied by Height Multiplier", default=0.05, min=0)
+    ocpom_mapping_nodes: BoolProperty(name="Mapping Nodes", description="Add UV mapping nodes for Location, " +
+        "Rotation, Scale when OCPOM node inputs are created", default=True)
 
 classes = [
     POMSTER_PT_FlipUV,
