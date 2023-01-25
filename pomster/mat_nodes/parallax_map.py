@@ -37,14 +37,25 @@ def create_mat_ng_parallax_map():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=PARALLAX_MAP_MAT_NG_NAME, type='ShaderNodeTree')
+    # remove old group inputs and outputs
+    new_node_group.inputs.clear()
+    new_node_group.outputs.clear()
+    # create new group inputs and outputs
     new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
+    new_input.default_value = (1.0, 1.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
+    new_input.default_value = (1.0, 0.0, 0.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
+    new_input.default_value = (0.0, 1.0, 0.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+    new_input.default_value = (0.0, 0.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
+    new_input.default_value = (0.0, 0.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
+    new_input.max_value = 0.000000
     new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()

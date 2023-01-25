@@ -31,7 +31,6 @@ UV_INPUT_NODENAME = "UV Input"
 TANGENT_U_INPUT_NODENAME = "Tangent U"
 TANGENT_V_INPUT_NODENAME = "Tangent V"
 GEOMETRY_INPUT_NODENAME = "Geometry Input"
-STEP_HEIGHT_INPUT_NODENAME = "Total Step Height"
 
 def create_prereq_node_group(node_group_name, node_tree_type, custom_data):
     if node_tree_type == 'ShaderNodeTree':
@@ -665,15 +664,27 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=OFFSET_CONESTEP_POM_MAT_NG_NAME, type='ShaderNodeTree')
+    # remove old group inputs and outputs
+    new_node_group.inputs.clear()
+    new_node_group.outputs.clear()
+    # create new group inputs and outputs
     new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Total Step Height")
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
+    new_input.default_value = (1.0, 1.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
+    new_input.default_value = (1.0, 0.0, 0.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
+    new_input.default_value = (0.0, 1.0, 0.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+    new_input.default_value = (0.0, 0.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
+    new_input.default_value = (0.0, 0.0, 1.0)
+    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Total Step Height")
+    new_input.min_value = 0.000000
+    new_input.default_value = 0.005000
     new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
     new_node_group.outputs.new(type='NodeSocketFloat', name="Height Output")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -853,12 +864,6 @@ def create_ocpom_inputs_simple(node_tree, ocpom_mat_ng, active_obj):
     node.location = (-220, -300)
     new_nodes[GEOMETRY_INPUT_NODENAME] = node
 
-    node = tree_nodes.new(type="ShaderNodeValue")
-    node.label = STEP_HEIGHT_INPUT_NODENAME
-    node.location = (0, -360)
-    node.outputs[0].default_value = 0.005
-    new_nodes[STEP_HEIGHT_INPUT_NODENAME] = node
-
     # offset node locations relative to view center
     view_center = (node_tree.view_center[0] / 1.5, node_tree.view_center[1] / 1.5)
     for n in new_nodes.values():
@@ -871,7 +876,6 @@ def create_ocpom_inputs_simple(node_tree, ocpom_mat_ng, active_obj):
     tree_links.new(new_nodes[TANGENT_V_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[3])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[1], new_nodes[OCPOM_NODENAME].inputs[4])
     tree_links.new(new_nodes[GEOMETRY_INPUT_NODENAME].outputs[4], new_nodes[OCPOM_NODENAME].inputs[5])
-    tree_links.new(new_nodes[STEP_HEIGHT_INPUT_NODENAME].outputs[0], new_nodes[OCPOM_NODENAME].inputs[6])
 
 def create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj):
     tree_nodes = node_tree.nodes
@@ -919,12 +923,6 @@ def create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj):
     node.inputs[1].default_value = 1.000000
     node.inputs[2].default_value = 1.000000
     new_nodes["Combine XYZ.001"] = node
-
-    node = tree_nodes.new(type="ShaderNodeValue")
-    node.label = "Total Step Height"
-    node.location = (0, -340)
-    node.outputs[0].default_value = 0.005000
-    new_nodes["Value"] = node
 
     node = tree_nodes.new(type="ShaderNodeVectorRotate")
     node.hide = True
@@ -989,7 +987,6 @@ def create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj):
     tree_links.new(new_nodes["Vector Rotate.001"].outputs[0], new_nodes["Group.001"].inputs[3])
     tree_links.new(new_nodes["Geometry"].outputs[1], new_nodes["Group.001"].inputs[4])
     tree_links.new(new_nodes["Geometry"].outputs[4], new_nodes["Group.001"].inputs[5])
-    tree_links.new(new_nodes["Value"].outputs[0], new_nodes["Group.001"].inputs[6])
     tree_links.new(new_nodes["Tangent"].outputs[0], new_nodes["Vector Rotate.002"].inputs[0])
     tree_links.new(new_nodes["Tangent.001"].outputs[0], new_nodes["Vector Rotate.001"].inputs[0])
     tree_links.new(new_nodes["Math"].outputs[0], new_nodes["Vector Rotate"].inputs[3])
