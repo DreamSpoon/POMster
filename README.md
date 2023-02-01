@@ -29,7 +29,11 @@ Once installed and enabled, the add-on can be found in these places:
 
 Each of these places has a *POMster* tab for access to POMster functions.
 
-# Usage
+# Usage Video
+
+[Parallax Occlusion Mapping with POMster for Blender - Part 1](https://youtu.be/BspcE3a6aVQ)
+
+# Usage Docs
 
 ## [Material Shader Nodes](docs/MAT_SHADER_NODES.md)
 
