@@ -19,6 +19,8 @@
 import bpy
 
 def create_vu_from_uv_map(obj, convert_all):
+    if obj is None:
+        return
     # make copy of refs to UV layers (UV maps), because this list will change as it's refs are iterated over
     uv_layers_copy = [uvl for uvl in obj.data.uv_layers]
     # convert all UV layers
@@ -34,6 +36,8 @@ def create_vu_from_uv_map(obj, convert_all):
     # convert only the active UV layer
     else:
         active_uv_map = obj.data.uv_layers.active
+        if active_uv_map is None:
+            return
         new_uv_map = obj.data.uv_layers.new(name="VUMap." + active_uv_map.name)
         # iterate through all UV pairs in the map, switching the U and V values
         for loop in obj.data.loops:
@@ -52,7 +56,8 @@ class POMSTER_CreateVUMap(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_object != None and context.active_object.type == 'MESH'
+        return context.active_object != None and context.active_object.type == 'MESH' and \
+            context.active_object.data.uv_layers.active != None
 
     def execute(self, context):
         scn = context.scene

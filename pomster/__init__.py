@@ -20,7 +20,7 @@ bl_info = {
     "name": "POMster",
     "description": "Parallax Occlusion Map(ster) for holographic texture effects.",
     "author": "Dave",
-    "version": (0, 6, 1),
+    "version": (0, 6, 2),
     "blender": (2, 80, 0),
     "location": "Node Editor -> Tools -> POMster,  3DView -> Tools -> POMster",
     "category": "Shader Nodes, Geometry Nodes",

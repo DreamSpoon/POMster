@@ -431,7 +431,7 @@ def create_mat_ng_iterate(custom_data):
     node = tree_nodes.new(type="ShaderNodeGroup")
     node.label = "Next texel"
     node.location = (-720, -800)
-    node.node_tree = bpy.data.node_groups.get(BLANK_NODE_GROUP_NAME)
+    node.node_tree = custom_data["custom_group_node"].node_tree
     new_nodes["Group.OCPOM_Input"] = node
 
     node = tree_nodes.new(type="ShaderNodeMath")
