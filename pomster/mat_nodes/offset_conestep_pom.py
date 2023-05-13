@@ -1108,7 +1108,7 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         s = context.space_data
-        return s.type == 'NODE_EDITOR' and s.node_tree != None and s.tree_type == 'ShaderNodeTree'
+        return s.node_tree != None and s.tree_type == 'ShaderNodeTree'
 
     def execute(self, context):
         scn = context.scene

@@ -66,7 +66,7 @@ class POMSTER_PT_FlipUV(bpy.types.Panel):
         col = box.column()
         col.active = o_data != None
         col.label(text="Create VU Map from UV Map")
-        col.operator("pomster.create_vu_from_uv")
+        col.operator(POMSTER_CreateVUMap.bl_idname)
         col.label(text="Select UV Map")
         col.prop(scn.POMster, "uv_to_vu_map_convert_all")
         if o_data != None and hasattr(o_data, "uv_layers"):
@@ -84,7 +84,7 @@ class POMSTER_PT_ObjectGridSnap(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         box.label(text="Snap Object Location to Grid")
-        box.operator("pomster.add_object_grid_snap")
+        box.operator(POMSTER_AddObjGridSnap.bl_idname)
         if context.active_object != None:
             grid_size_cprop = context.active_object.get(GRID_SIZE_CPROP_NAME)
             if grid_size_cprop != None:
@@ -102,7 +102,7 @@ class POMSTER_PT_ObjectShellFringe(bpy.types.Panel):
         scn = context.scene
         box = layout.box()
         box.label(text="Parallax Shell and Fringe")
-        box.operator("pomster.add_object_shell_fringe")
+        box.operator(POMSTER_CreateObjModShellFringe.bl_idname)
         box.prop(scn.POMster, "default_height_multiplier")
 
 class POMSTER_PT_General(bpy.types.Panel):
@@ -116,10 +116,10 @@ class POMSTER_PT_General(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         sub_box = box.box()
-        sub_box.operator("pomster.create_parallax_map_node")
+        sub_box.operator(POMSTER_AddParallaxMapNode.bl_idname)
         sub_box = box.box()
         sub_box.label(text="Landscape / Procedural Tangent")
-        sub_box.operator("pomster.create_util_orthographic_tangent_nodes")
+        sub_box.operator(POMSTER_AddUtilOrthoTangentNodes.bl_idname)
         sub_box.prop(scn.POMster, "uv_axes")
         box = layout.box()
         box.prop(scn.POMster, "nodes_override_create")
@@ -137,7 +137,7 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         box = layout.box()
         box.label(text="Create Nodes")
         sub_box = box.box()
-        sub_box.operator("pomster.create_offset_conestep_pom_nodes")
+        sub_box.operator(POMSTER_AddOCPOM_Node.bl_idname)
         sub_box.prop(scn.POMster, "num_samples")
         sub_box = box.box()
         sub_box.label(text="Height (Displacement) Texture")
@@ -168,14 +168,14 @@ class POMSTER_PT_Optimize(bpy.types.Panel):
         box = layout.box()
         sub_box = box.box()
         sub_box.label(text="Reduce Cycles Render Time")
-        sub_box.operator("pomster.create_util_optimum_ray_type_node")
-        sub_box.operator("pomster.create_util_optimum_ray_length_node")
+        sub_box.operator(POMSTER_CreateUtilOptimumRayTypeNode.bl_idname)
+        sub_box.operator(POMSTER_AddUtilOptimumRayLengthNode.bl_idname)
         sub_box = box.box()
         sub_box.label(text="Reduce Texture Warp")
-        sub_box.operator("pomster.create_util_optimum_ray_angle_node")
+        sub_box.operator(POMSTER_AddUtilOptimumRayAngleNode.bl_idname)
         sub_box = box.box()
         sub_box.label(text="Combine Optimum")
-        sub_box.operator("pomster.create_util_optimum_combine_tla")
+        sub_box.operator(POMSTER_AddUtilCombineOptimumTLA_Node.bl_idname)
         box = layout.box()
         box.prop(scn.POMster, "nodes_override_create")
 
@@ -191,11 +191,11 @@ class POMSTER_PT_ShaderMask(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         box.label(text="Mask")
-        box.operator("pomster.create_cube_shader_mask_node")
-        box.operator("pomster.create_sphere_shader_mask_node")
+        box.operator(POMSTER_AddCubeMask.bl_idname)
+        box.operator(POMSTER_AddSphereMask.bl_idname)
         box = layout.box()
         box.label(text="Object Loc, Rot, Scl")
-        box.operator("pomster.create_mask_object_loc_rot_scl_nodes")
+        box.operator(POMSTER_AddMaskObjLocRotSclNodes.bl_idname)
         box.prop(scn.POMster, "mask_input_object")
         box = layout.box()
         box.prop(scn.POMster, "nodes_override_create")
@@ -212,10 +212,10 @@ class POMSTER_PT_NodeShellFringe(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         box.label(text="Geometry Nodes")
-        box.operator("pomster.create_shell_array_node")
-        box.operator("pomster.create_fringe_extrude_node")
+        box.operator(POMSTER_AddShellArrayNode.bl_idname)
+        box.operator(POMSTER_AddFringeExtrudeNode.bl_idname)
         box.label(text="Shader Nodes")
-        box.operator("pomster.create_shell_fringe_blend_node")
+        box.operator(POMSTER_AddShellFringeBlendNode.bl_idname)
         box.prop(scn.POMster, "add_shell_fringe_inputs")
         col = box.column()
         col.active = scn.POMster.add_shell_fringe_inputs

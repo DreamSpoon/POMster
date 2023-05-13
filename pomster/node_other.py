@@ -47,16 +47,16 @@ def get_node_group_for_type(ng_type):
 
 # get the UVMap to be used as either tangent U or tangent V,
 # with tangent_type = either "U" or "V"
-def get_tangent_map_name(tangent_type, active_obj):
-    if active_obj is None:
+def get_tangent_map_name(tangent_type, ob):
+    if ob is None:
         return ""
     # check all UV layers (UV maps) by name for either:
     #     a '(U, V) Map' to use as Tangent U vector, or
     #     a '(V, U) Map' to use as Tangent V vector
-    # else:
-    #     return error # graceful fail
-    for uv_layer in active_obj.data.uv_layers:
-        if (uv_layer.name.lower().startswith("uvmap") and tangent_type == "U") or \
-            (uv_layer.name.lower().startswith("vumap") and tangent_type == "V"): return uv_layer.name
-    # graceful fail will not cause errors later, return error
+    try:
+        for uv_layer in ob.data.uv_layers:
+            if (uv_layer.name.lower().startswith("uvmap") and tangent_type == "U") or \
+                (uv_layer.name.lower().startswith("vumap") and tangent_type == "V"): return uv_layer.name
+    except:
+        pass
     return ""
