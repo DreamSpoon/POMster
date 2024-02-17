@@ -45,25 +45,56 @@ def create_mat_ng_iterate(custom_data):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=ITERATE_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.clear()
-    new_node_group.outputs.clear()
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Finished")
-    new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Current Height")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Height")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Ratio")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Offset")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Step Height")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Finished")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Next Height")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Height")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Ratio")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Offset")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Finished", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Input", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Aspect Ratio", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent U", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent V", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Normal", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Incoming", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Current Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Current Texel Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Current Texel Cone Ratio", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Current Texel Cone Offset", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Step Height", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Finished")
+        new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Current Height")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Height")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Ratio")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Current Texel Cone Offset")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Step Height")
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Finished", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Next Height", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Next Texel Height", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Next Texel Cone Ratio", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Next Texel Cone Offset", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Finished")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Next Height")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Height")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Ratio")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Next Texel Cone Offset")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -644,16 +675,11 @@ def create_mat_ng_iterate(custom_data):
     tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Group.ParallaxMap"].inputs[5])
     tree_links.new(new_nodes["Math.038"].outputs[0], new_nodes["Group.ParallaxMap"].inputs[6])
 
-    tree_links.new(new_nodes["Group.ParallaxMap"].outputs[0],
-                   new_nodes["Group.OCPOM_Input"].inputs[custom_data["uv_input_index"]])
-    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["cone_offset_output_index"]],
-                   new_nodes["Group Output"].inputs[4])
-    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["cone_ratio_divisor_output_index"]],
-                   new_nodes["Math.015"].inputs[1])
-    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["height_output_index"]],
-                   new_nodes["Math.039"].inputs[0])
-    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[custom_data["cone_ratio_angle_output_index"]],
-                   new_nodes["Math.013"].inputs[0])
+    tree_links.new(new_nodes["Group.ParallaxMap"].outputs[0], new_nodes["Group.OCPOM_Input"].inputs[0])
+    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[3], new_nodes["Group Output"].inputs[4])
+    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[2], new_nodes["Math.015"].inputs[1])
+    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[0], new_nodes["Math.039"].inputs[0])
+    tree_links.new(new_nodes["Group.OCPOM_Input"].outputs[1], new_nodes["Math.013"].inputs[0])
 
     # deselect all new nodes
     for n in new_nodes.values(): n.select = False
@@ -664,26 +690,46 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=OFFSET_CONESTEP_POM_MAT_NG_NAME, type='ShaderNodeTree')
+
     # remove old group inputs and outputs
-    new_node_group.inputs.clear()
-    new_node_group.outputs.clear()
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
     # create new group inputs and outputs
-    new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_input.default_value = (1.0, 1.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
-    new_input.default_value = (1.0, 0.0, 0.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
-    new_input.default_value = (0.0, 1.0, 0.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_input.default_value = (0.0, 0.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_input.default_value = (0.0, 0.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Total Step Height")
-    new_input.min_value = 0.000000
-    new_input.default_value = 0.005000
-    new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Height Output")
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Input", in_out='INPUT')
+        new_in_socket[1] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Aspect Ratio", in_out='INPUT')
+        new_in_socket[2] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent U", in_out='INPUT')
+        new_in_socket[3] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent V", in_out='INPUT')
+        new_in_socket[4] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Normal", in_out='INPUT')
+        new_in_socket[5] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Incoming", in_out='INPUT')
+        new_in_socket[6] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Total Step Height", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
+        new_in_socket[1] = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
+        new_in_socket[2] = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
+        new_in_socket[3] = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
+        new_in_socket[4] = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+        new_in_socket[5] = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
+        new_in_socket[6] = new_node_group.inputs.new(type='NodeSocketFloat', name="Total Step Height")
+    new_in_socket[1].default_value = (1.000000, 1.000000, 1.000000)
+    new_in_socket[2].default_value = (1.000000, 0.000000, 0.000000)
+    new_in_socket[3].default_value = (0.000000, 1.000000, 0.000000)
+    new_in_socket[4].default_value = (0.000000, 0.000000, 1.000000)
+    new_in_socket[5].default_value = (0.000000, 0.000000, 1.000000)
+    new_in_socket[6].min_value = 0.000000
+    new_in_socket[6].default_value = 0.005000
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Output", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Height Output", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Height Output")
 
     tree_nodes = new_node_group.nodes
     # delete all nodes
@@ -761,17 +807,12 @@ def create_mat_ng_offset_conestep_pom(custom_data):
     tree_links.new(new_nodes["Math.009"].outputs[0], new_nodes["OuterMathTangent"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["Math.999"].inputs[0])
 
-    tree_links.new(new_nodes["Group Input"].outputs[0],
-                   new_nodes["SampleOuterGroup"].inputs[custom_data["uv_input_index"]])
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["height_output_index"]],
-                   new_nodes["Math.010"].inputs[0])
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_angle_output_index"]],
-                   new_nodes["Math.009"].inputs[0])
+    tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["SampleOuterGroup"].inputs[0])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[0], new_nodes["Math.010"].inputs[0])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[1], new_nodes["Math.009"].inputs[0])
 
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["height_output_index"]],
-                   new_nodes["IterateGroup.0"].inputs[8])
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_offset_output_index"]],
-                   new_nodes["IterateGroup.0"].inputs[10])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[0], new_nodes["IterateGroup.0"].inputs[8])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[3], new_nodes["IterateGroup.0"].inputs[10])
 
     tree_links.new(new_nodes["Math.010"].outputs[0], new_nodes["IterateGroup.0"].inputs[0])
     tree_links.new(new_nodes["Group Input"].outputs[0], new_nodes["IterateGroup.0"].inputs[1])
@@ -783,10 +824,9 @@ def create_mat_ng_offset_conestep_pom(custom_data):
 
     tree_links.new(new_nodes["OuterMathTangent"].outputs[0], new_nodes["OuterMathConeRatioDivide"].inputs[0])
     tree_links.new(new_nodes["OuterMathConeRatioDivide"].outputs[0], new_nodes["IterateGroup.0"].inputs[9])
-    tree_links.new(new_nodes["SampleOuterGroup"].outputs[custom_data["cone_ratio_divisor_output_index"]],
-                   new_nodes["OuterMathConeRatioDivide"].inputs[1])
+    tree_links.new(new_nodes["SampleOuterGroup"].outputs[2], new_nodes["OuterMathConeRatioDivide"].inputs[1])
 
-    tree_links.new(new_nodes["Group Input"].outputs[6], new_nodes["IterateGroup.0"].inputs[11])
+    tree_links.new(new_nodes["Math.999"].outputs[0], new_nodes["IterateGroup.0"].inputs[11])
 
     # create needed number of sample iteration nodes
     prev_node = new_nodes["IterateGroup.0"]
@@ -1001,19 +1041,12 @@ def create_ocpom_inputs_mapping(node_tree, ocpom_mat_ng, active_obj):
     tree_links.new(new_nodes["Combine XYZ"].outputs[0], new_nodes["Vector Math"].inputs[2])
     tree_links.new(new_nodes["Combine XYZ"].outputs[0], new_nodes["Vector Rotate"].inputs[1])
 
-def create_ocpom_node(active_obj, node_tree, override_create, ocpom_mapping_nodes, custom_group_node, sample_num,
-                      uv_input_index, height_output_index, cone_ratio_angle_output_index,
-                      cone_ratio_divisor_output_index, cone_offset_output_index):
+def create_ocpom_node(active_obj, node_tree, override_create, ocpom_mapping_nodes, custom_group_node, sample_num):
     ensure_node_group(override_create, PARALLAX_MAP_MAT_NG_NAME, 'ShaderNodeTree', create_prereq_node_group)
     # these node groups need to be re-created every time, because they use the custom group node
     custom_data = {
         "custom_group_node": custom_group_node,
         "sample_num": sample_num,
-        "uv_input_index": uv_input_index,
-        "height_output_index": height_output_index,
-        "cone_ratio_angle_output_index": cone_ratio_angle_output_index,
-        "cone_ratio_divisor_output_index": cone_ratio_divisor_output_index,
-        "cone_offset_output_index": cone_offset_output_index,
     }
 
     iterate_mat_ng = create_mat_ng_iterate(custom_data)
@@ -1029,11 +1062,33 @@ def create_blank_node_group(height_img, height_mult):
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=BLANK_NODE_GROUP_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Height")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Angle")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Divisor")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Offset")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Input", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
+    new_out_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Height", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Cone Ratio Angle", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Cone Ratio Divisor", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Cone Offset", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Height")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Angle")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Ratio Divisor")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Cone Offset")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -1129,50 +1184,43 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
                                                        scn.POMster.default_height_multiplier)
             # blank OCPOM input node was created, so use default input/output indexes to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create,
-                scn.POMster.ocpom_mapping_nodes, blank_node, scn.POMster.num_samples, 0, 0, 1, 2, 3)
+                scn.POMster.ocpom_mapping_nodes, blank_node, scn.POMster.num_samples)
         else:
             # check custom node's type, inputs and report any errors to user
-            # check user selected node to ensure minimum amount of inputs
-            if len(active_node.inputs) < scn.POMster.uv_input_index:
-                self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
-                            "group node does not have enough inputs to get input number " +
-                            str(scn.POMster.uv_input_index) + " .")
-                return {'CANCELLED'}
             # check user selected node to ensure correct type of inputs
-            if not hasattr(active_node.inputs[scn.POMster.uv_input_index-1], 'default_value') or \
-                not hasattr(active_node.inputs[scn.POMster.uv_input_index-1].default_value, '__len__') or \
-                len(active_node.inputs[scn.POMster.uv_input_index-1].default_value) != 3 or \
-                not isinstance(active_node.inputs[scn.POMster.uv_input_index-1].default_value[0], float):
+            if not hasattr(active_node.inputs[0], 'default_value') or \
+                not hasattr(active_node.inputs[0].default_value, '__len__') or \
+                len(active_node.inputs[0].default_value) != 3 or \
+                not isinstance(active_node.inputs[0].default_value[0], float):
                 self.report({'ERROR'}, "Cannot create Offset Conestep Parallax Occlusion Map nodes because active " +
-                            "group node's input number " + str(scn.POMster.uv_input_index) + " is not a Vector type.")
+                            "group node's input number 1 is not a Vector type.")
                 return {'CANCELLED'}
 
             # check custom node's type outputs, and report any errors to user
             # check user selected node to ensure minimum amount of outputs for height output
             num_outputs = len(active_node.outputs)
-            if num_outputs < scn.POMster.height_output_index or \
-                    not isinstance(active_node.outputs[scn.POMster.height_output_index-1].default_value, float):
+            if num_outputs < 1 or \
+                not isinstance(active_node.outputs[0].default_value, float):
                 self.report({'ERROR'}, "Cannot get Height output, cannot create Offset Conestep Parallax Occlusion Map " +
-                            "with output number " +
-                            str(scn.POMster.height_output_index) + " .")
+                            "with output number 1.")
                 return {'CANCELLED'}
             # check user selected node to ensure minimum amount of outputs for cone ratio angle output
-            if num_outputs < scn.POMster.cone_ratio_angle_output_index or \
-                    not isinstance(active_node.outputs[scn.POMster.cone_ratio_angle_output_index-1].default_value, float):
+            if num_outputs < 2 or \
+                    not isinstance(active_node.outputs[1].default_value, float):
                 self.report({'ERROR'}, "Cannot get Cone Ratio Angle output, cannot create Offset Conestep Parallax " +
-                            "Occlusion Map with output number " + str(scn.POMster.cone_ratio_angle_output_index) + " .")
+                            "Occlusion Map with output number 2.")
                 return {'CANCELLED'}
             # check user selected node to ensure minimum amount of outputs for cone ratio divisor output
-            if num_outputs < scn.POMster.cone_ratio_divisor_output_index or \
-                    not isinstance(active_node.outputs[scn.POMster.cone_ratio_divisor_output_index-1].default_value, float):
+            if num_outputs < 3 or \
+                    not isinstance(active_node.outputs[2].default_value, float):
                 self.report({'ERROR'}, "Cannot get Cone Ratio Divisor output, cannot create Offset Conestep Parallax "+
-                            "Occlusion Map with output number " + str(scn.POMster.cone_ratio_divisor_output_index) + " .")
+                            "Occlusion Map with output number 3.")
                 return {'CANCELLED'}
             # check user selected node to ensure minimum amount of outputs for cone offset output
-            if num_outputs < scn.POMster.cone_offset_output_index or \
-                    not isinstance(active_node.outputs[scn.POMster.cone_offset_output_index-1].default_value, float):
+            if num_outputs < 4 or \
+                    not isinstance(active_node.outputs[3].default_value, float):
                 self.report({'ERROR'}, "Cannot get Cone Offset output, cannot create Offset Conestep Parallax " +
-                            "Occlusion Map with output number " + str(scn.POMster.cone_offset_output_index) + " .")
+                            "Occlusion Map with output number 4.")
                 return {'CANCELLED'}
 
             # deselect all nodes
@@ -1180,7 +1228,5 @@ class POMSTER_AddOCPOM_Node(bpy.types.Operator):
 
             # get the UI panel properties for index numbers and use them to create OCPOM Node Group node
             create_ocpom_node(context.active_object, context.space_data.edit_tree, scn.POMster.nodes_override_create,
-                scn.POMster.ocpom_mapping_nodes, active_node, scn.POMster.num_samples, scn.POMster.uv_input_index-1,
-                scn.POMster.height_output_index-1, scn.POMster.cone_ratio_angle_output_index-1,
-                scn.POMster.cone_ratio_divisor_output_index-1, scn.POMster.cone_offset_output_index-1)
+                scn.POMster.ocpom_mapping_nodes, active_node, scn.POMster.num_samples)
         return {'FINISHED'}

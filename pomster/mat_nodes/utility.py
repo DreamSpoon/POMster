@@ -57,18 +57,35 @@ def create_mat_ng_util_ortho_tangent(custom_data):
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=ORTHO_TANGENT_NODE_GROUP_NAME+
         custom_data["uv_axes_str"]+MAT_NG_NAME_SUFFIX, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketVector', name="Position")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Rotate Center")
-    if custom_data["uv_axes_str"] == "XY":
-        new_node_group.inputs.new(type='NodeSocketFloatAngle', name="Rotate Angle Z")
-    elif custom_data["uv_axes_str"] == "XZ":
-        new_node_group.inputs.new(type='NodeSocketFloatAngle', name="Rotate Angle Y")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
     else:
-        new_node_group.inputs.new(type='NodeSocketFloatAngle', name="Rotate Angle X")
-    new_node_group.outputs.new(type='NodeSocketVector', name="UV")
-    new_node_group.outputs.new(type='NodeSocketVector', name="Tangent U")
-    new_node_group.outputs.new(type='NodeSocketVector', name="Tangent V")
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Position", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Normal", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Rotate Center", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Rotate Angle Z", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketVector', name="Position")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Rotate Center")
+        new_node_group.inputs.new(type='NodeSocketFloatAngle', name="Rotate Angle Z")
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent U", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent V", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketVector', name="UV")
+        new_node_group.outputs.new(type='NodeSocketVector', name="Tangent U")
+        new_node_group.outputs.new(type='NodeSocketVector', name="Tangent V")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -252,7 +269,12 @@ def create_mat_ng_optimum_ray_type():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=OPTIMUM_RAY_TYPE_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Type Factor")
+
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Type Factor", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Type Factor")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -344,9 +366,27 @@ def create_mat_ng_optimum_ray_length():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=OPTIMUM_RAY_LENGTH_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Length Add")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Length Multiply")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Mix Shader Fac")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Length Add", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Length Multiply", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Length Add")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Length Multiply")
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Mix Shader Fac", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Mix Shader Fac")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -440,9 +480,27 @@ def create_mat_ng_optimum_ray_angle():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=OPTIMUM_RAY_ANGLE_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Add")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Multiply")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Value")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Angle Add", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Angle Multiply", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Add")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Multiply")
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Value", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Value")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -543,11 +601,31 @@ def create_mat_ng_combine_optimum_tla():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=COMBINE_OPTIMUM_TLA_MAT_NG_NAME, type='ShaderNodeTree')
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Length Add")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Length Multiply")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Add")
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Multiply")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Mix Fac")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Length Add", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Length Multiply", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Angle Add", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Angle Multiply", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Length Add")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Length Multiply")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Add")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Angle Multiply")
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Mix Fac", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Mix Fac")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()

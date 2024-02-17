@@ -34,27 +34,57 @@ def create_geo_ng_shell_array():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=SHELL_ARRAY_GEO_NG_NAME, type='GeometryNodeTree')
-    new_node_group.inputs.clear()
-    new_node_group.outputs.clear()
-    new_node_group.inputs.new(type='NodeSocketGeometry', name="Geometry")
-    new_input = new_node_group.inputs.new(type='NodeSocketInt', name="Shell Count")
-    new_input.min_value = 2
-    new_input.default_value = 4
-    new_node_group.inputs.new(type='NodeSocketBool', name="Delete Zero Index")
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
-    new_input.default_value = -0.020000
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
-    new_node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
-    new_input.min_value = 0.000000
-    new_input.default_value = 1.000000
-    new_node_group.inputs.new(type='NodeSocketBool', name="Shell Exclude")
-    new_node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
-    new_output = new_node_group.outputs.new(type='NodeSocketInt', name="Shell Index")
-    new_output.min_value = 0
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Shell Height")
-    new_node_group.outputs.new(type='NodeSocketVector', name="Shell Offset")
+ 
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Geometry", in_out='INPUT')
+        new_in_socket[1] = new_node_group.interface.new_socket(socket_type='NodeSocketInt', name="Shell Count", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketBool', name="Delete Zero Index", in_out='INPUT')
+        new_in_socket[3] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketBool', name="Use Other Normal", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Other Normal", in_out='INPUT')
+        new_in_socket[7] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Stretch Factor", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketBool', name="Shell Exclude", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketGeometry', name="Geometry")
+        new_in_socket[1] = new_node_group.inputs.new(type='NodeSocketInt', name="Shell Count")
+        new_node_group.inputs.new(type='NodeSocketBool', name="Delete Zero Index")
+        new_in_socket[3] = new_node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
+        new_node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
+        new_in_socket[7] = new_node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
+        new_node_group.inputs.new(type='NodeSocketBool', name="Shell Exclude")
+    new_in_socket[1].min_value = 2
+    new_in_socket[1].max_value = 2147483647
+    new_in_socket[1].default_value = 4
+    new_in_socket[3].default_value = -0.020000
+    new_in_socket[7].min_value = 0.000000
+    new_in_socket[7].default_value = 1.000000
+    new_out_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Geometry", in_out='OUTPUT')
+        new_out_socket[1] = new_node_group.interface.new_socket(socket_type='NodeSocketInt', name="Shell Index", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Height", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Shell Offset", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
+        new_out_socket[1] = new_node_group.outputs.new(type='NodeSocketInt', name="Shell Index")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Shell Height")
+        new_node_group.outputs.new(type='NodeSocketVector', name="Shell Offset")
+    new_out_socket[1].min_value = 0
+    new_out_socket[1].max_value = 2147483647
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()
@@ -147,7 +177,6 @@ def create_geo_ng_shell_array():
 
     node = tree_nodes.new(type="GeometryNodeRealizeInstances")
     node.location = (-1180, 60)
-    node.legacy_behavior = False
     new_nodes["Realize Instances"] = node
 
     node = tree_nodes.new(type="GeometryNodeDuplicateElements")
@@ -368,20 +397,43 @@ def create_geo_ng_fringe_extrude():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=FRINGE_EXTRUDE_GEO_NG_NAME, type='GeometryNodeTree')
-    new_node_group.inputs.clear()
-    new_node_group.outputs.clear()
-    new_node_group.inputs.new(type='NodeSocketGeometry', name="Mesh")
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
-    new_input.default_value = -0.020000
-    new_node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
-    new_node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
-    new_node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
-    new_input.min_value = 0.000000
-    new_input.default_value = 4.000000
-    new_node_group.inputs.new(type='NodeSocketBool', name="Fringe Exclude")
-    new_node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
-    new_node_group.outputs.new(type='NodeSocketFloat', name="Height")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
+    # create new group inputs and outputs
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Mesh", in_out='INPUT')
+        new_in_socket[1] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Height", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketBool', name="Use Other Normal", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Other Normal", in_out='INPUT')
+        new_in_socket[5] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Stretch Factor", in_out='INPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketBool', name="Fringe Exclude", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketGeometry', name="Mesh")
+        new_in_socket[1] = new_node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
+        new_node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
+        new_node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
+        new_node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
+        new_in_socket[5] = new_node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
+        new_node_group.inputs.new(type='NodeSocketBool', name="Fringe Exclude")
+    new_in_socket[1].default_value = -0.020000
+    new_in_socket[5].min_value = 0.000000
+    new_in_socket[5].default_value = 4.000000
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Geometry", in_out='OUTPUT')
+        new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Height", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
+        new_node_group.outputs.new(type='NodeSocketFloat', name="Height")
+
     tree_nodes = new_node_group.nodes
     # delete all nodes
     tree_nodes.clear()

@@ -25,68 +25,118 @@ from .geo_nodes.shell_fringe import (create_prereq_shell_fringe_node_group, SHEL
 def create_obj_mod_geo_nodes_shell_fringe(node_group):
     # initialize variables
     new_nodes = {}
-    node_group.inputs.clear()
-    node_group.outputs.clear()
-    node_group.inputs.new(type='NodeSocketGeometry', name="Geometry")
-    new_input = node_group.inputs.new(type='NodeSocketInt', name="Shell Count")
-    new_input.min_value = 2
-    new_input.default_value = 4
-    node_group.inputs.new(type='NodeSocketBool', name="Delete Zero Index")
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
-    new_input.default_value = -0.050000
-    node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
-    node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
-    node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
-    new_input.min_value = 0.000000
-    new_input.default_value = 4.000000
-    node_group.inputs.new(type='NodeSocketBool', name="Shell Geo Exclude")
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
-    new_input.min_value = 0.000000
-    new_input.max_value = 1.000000
-    node_group.inputs.new(type='NodeSocketBool', name="Fringe Geo Exclude")
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
-    new_input.min_value = 0.000000
-    new_input.max_value = 1.000000
-    node_group.inputs.new(type='NodeSocketObject', name="Camera Object")
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Shell Angle Factor")
-    new_input.min_value = 0.000000
-    new_input.max_value = 2.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Max Shell Angle Factor")
-    new_input.min_value = 0.000000
-    new_input.max_value = 2.000000
-    new_input.default_value = 2.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Fringe Angle Factor")
-    new_input.min_value = 0.000000
-    new_input.max_value = 2.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Max Fringe Angle Factor")
-    new_input.min_value = 0.000000
-    new_input.max_value = 2.000000
-    new_input.default_value = 2.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Shell View Distance")
-    new_input.min_value = 0.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Max Shell View Distance")
-    new_input.min_value = 0.000000
-    new_input.default_value = 340282346638528859811704183484516925440.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Min Fringe View Distance")
-    new_input.min_value = 0.000000
-    new_input = node_group.inputs.new(type='NodeSocketFloat', name="Max Fringe View Distance")
-    new_input.min_value = 0.000000
-    new_input.default_value = 340282346638528859811704183484516925440.000000
-    node_group.inputs.new(type='NodeSocketVector', name="UV")
-    node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
-    node_group.outputs.new(type='NodeSocketFloat', name="Shell Count")
-    node_group.outputs.new(type='NodeSocketFloat', name="Min Height")
-    node_group.outputs.new(type='NodeSocketFloat', name="Max Height")
-    node_group.outputs.new(type='NodeSocketFloat', name="Shell Index")
-    node_group.outputs.new(type='NodeSocketFloat', name="Shell Height")
-    node_group.outputs.new(type='NodeSocketVector', name="Shell Offset")
-    node_group.outputs.new(type='NodeSocketFloat', name="Is Fringe")
-    node_group.outputs.new(type='NodeSocketFloat', name="Fringe Height")
-    node_group.outputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
-    node_group.outputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
-    node_group.outputs.new(type='NodeSocketVector', name="Original Position")
-    node_group.outputs.new(type='NodeSocketVector', name="UV")
+
+    # remove old group inputs and outputs
+    if bpy.app.version >= (4, 0, 0):
+        for item in node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                node_group.interface.remove(item)
+    else:
+        node_group.inputs.clear()
+        node_group.outputs.clear()
+    # create new group inputs and outputs
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Geometry", in_out='INPUT')
+        new_in_socket[1] = node_group.interface.new_socket(socket_type='NodeSocketInt', name="Shell Count", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketBool', name="Delete Zero Index", in_out='INPUT')
+        new_in_socket[3] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Height", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Height", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketBool', name="Use Other Normal", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketVector', name="Other Normal", in_out='INPUT')
+        new_in_socket[7] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Stretch Factor", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketBool', name="Shell Geo Exclude", in_out='INPUT')
+        new_in_socket[9] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Mat Exclude", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketBool', name="Fringe Geo Exclude", in_out='INPUT')
+        new_in_socket[11] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Fringe Mat Exclude", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketObject', name="Camera Object", in_out='INPUT')
+        new_in_socket[13] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Shell Angle Factor", in_out='INPUT')
+        new_in_socket[14] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Shell Angle Factor", in_out='INPUT')
+        new_in_socket[15] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Fringe Angle Factor", in_out='INPUT')
+        new_in_socket[16] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Fringe Angle Factor", in_out='INPUT')
+        new_in_socket[17] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Shell View Distance", in_out='INPUT')
+        new_in_socket[18] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Shell View Distance", in_out='INPUT')
+        new_in_socket[19] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Fringe View Distance", in_out='INPUT')
+        new_in_socket[20] = node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Fringe View Distance", in_out='INPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV", in_out='INPUT')
+    else:
+        node_group.inputs.new(type='NodeSocketGeometry', name="Geometry")
+        new_in_socket[1] = node_group.inputs.new(type='NodeSocketInt', name="Shell Count")
+        node_group.inputs.new(type='NodeSocketBool', name="Delete Zero Index")
+        new_in_socket[3] = node_group.inputs.new(type='NodeSocketFloat', name="Min Height")
+        node_group.inputs.new(type='NodeSocketFloat', name="Max Height")
+        node_group.inputs.new(type='NodeSocketBool', name="Use Other Normal")
+        node_group.inputs.new(type='NodeSocketVector', name="Other Normal")
+        new_in_socket[7] = node_group.inputs.new(type='NodeSocketFloat', name="Max Stretch Factor")
+        node_group.inputs.new(type='NodeSocketBool', name="Shell Geo Exclude")
+        new_in_socket[9] = node_group.inputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
+        node_group.inputs.new(type='NodeSocketBool', name="Fringe Geo Exclude")
+        new_in_socket[11] = node_group.inputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
+        node_group.inputs.new(type='NodeSocketObject', name="Camera Object")
+        new_in_socket[13] = node_group.inputs.new(type='NodeSocketFloat', name="Min Shell Angle Factor")
+        new_in_socket[14] = node_group.inputs.new(type='NodeSocketFloat', name="Max Shell Angle Factor")
+        new_in_socket[15] = node_group.inputs.new(type='NodeSocketFloat', name="Min Fringe Angle Factor")
+        new_in_socket[16] = node_group.inputs.new(type='NodeSocketFloat', name="Max Fringe Angle Factor")
+        new_in_socket[17] = node_group.inputs.new(type='NodeSocketFloat', name="Min Shell View Distance")
+        new_in_socket[18] = node_group.inputs.new(type='NodeSocketFloat', name="Max Shell View Distance")
+        new_in_socket[19] = node_group.inputs.new(type='NodeSocketFloat', name="Min Fringe View Distance")
+        new_in_socket[20] = node_group.inputs.new(type='NodeSocketFloat', name="Max Fringe View Distance")
+        node_group.inputs.new(type='NodeSocketVector', name="UV")
+    new_in_socket[1].min_value = 2
+    new_in_socket[1].max_value = 2147483647
+    new_in_socket[1].default_value = 4
+    new_in_socket[3].default_value = -0.050000
+    new_in_socket[7].min_value = 0.000000
+    new_in_socket[7].default_value = 4.000000
+    new_in_socket[9].min_value = 0.000000
+    new_in_socket[9].max_value = 1.000000
+    new_in_socket[11].min_value = 0.000000
+    new_in_socket[11].max_value = 1.000000
+    new_in_socket[13].min_value = 0.000000
+    new_in_socket[13].max_value = 2.000000
+    new_in_socket[14].min_value = 0.000000
+    new_in_socket[14].max_value = 2.000000
+    new_in_socket[14].default_value = 2.000000
+    new_in_socket[15].min_value = 0.000000
+    new_in_socket[15].max_value = 2.000000
+    new_in_socket[16].min_value = 0.000000
+    new_in_socket[16].max_value = 2.000000
+    new_in_socket[16].default_value = 2.000000
+    new_in_socket[17].min_value = 0.000000
+    new_in_socket[18].min_value = 0.000000
+    new_in_socket[18].default_value = 340282346638528859811704183484516925440.000000
+    new_in_socket[19].min_value = 0.000000
+    new_in_socket[20].min_value = 0.000000
+    new_in_socket[20].default_value = 340282346638528859811704183484516925440.000000
+    if bpy.app.version >= (4, 0, 0):
+        node_group.interface.new_socket(socket_type='NodeSocketGeometry', name="Geometry", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Count", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Min Height", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Max Height", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Index", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Height", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketVector', name="Shell Offset", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Is Fringe", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Fringe Height", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Shell Mat Exclude", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Fringe Mat Exclude", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketVector', name="Original Position", in_out='OUTPUT')
+        node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV", in_out='OUTPUT')
+    else:
+        node_group.outputs.new(type='NodeSocketGeometry', name="Geometry")
+        node_group.outputs.new(type='NodeSocketFloat', name="Shell Count")
+        node_group.outputs.new(type='NodeSocketFloat', name="Min Height")
+        node_group.outputs.new(type='NodeSocketFloat', name="Max Height")
+        node_group.outputs.new(type='NodeSocketFloat', name="Shell Index")
+        node_group.outputs.new(type='NodeSocketFloat', name="Shell Height")
+        node_group.outputs.new(type='NodeSocketVector', name="Shell Offset")
+        node_group.outputs.new(type='NodeSocketFloat', name="Is Fringe")
+        node_group.outputs.new(type='NodeSocketFloat', name="Fringe Height")
+        node_group.outputs.new(type='NodeSocketFloat', name="Shell Mat Exclude")
+        node_group.outputs.new(type='NodeSocketFloat', name="Fringe Mat Exclude")
+        node_group.outputs.new(type='NodeSocketVector', name="Original Position")
+        node_group.outputs.new(type='NodeSocketVector', name="UV")
+
     tree_nodes = node_group.nodes
     # delete all nodes
     tree_nodes.clear()

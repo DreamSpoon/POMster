@@ -37,24 +37,43 @@ def create_mat_ng_parallax_map():
     # initialize variables
     new_nodes = {}
     new_node_group = bpy.data.node_groups.new(name=PARALLAX_MAP_MAT_NG_NAME, type='ShaderNodeTree')
+
     # remove old group inputs and outputs
-    new_node_group.inputs.clear()
-    new_node_group.outputs.clear()
+    if bpy.app.version >= (4, 0, 0):
+        for item in new_node_group.interface.items_tree:
+            if item.item_type == 'SOCKET':
+                new_node_group.interface.remove(item)
+    else:
+        new_node_group.inputs.clear()
+        new_node_group.outputs.clear()
     # create new group inputs and outputs
-    new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
-    new_input.default_value = (1.0, 1.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
-    new_input.default_value = (1.0, 0.0, 0.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
-    new_input.default_value = (0.0, 1.0, 0.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
-    new_input.default_value = (0.0, 0.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
-    new_input.default_value = (0.0, 0.0, 1.0)
-    new_input = new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
-    new_input.max_value = 0.000000
-    new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
+    new_in_socket = {}
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Input", in_out='INPUT')
+        new_in_socket[1] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Aspect Ratio", in_out='INPUT')
+        new_in_socket[2] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent U", in_out='INPUT')
+        new_in_socket[3] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Tangent V", in_out='INPUT')
+        new_in_socket[4] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Normal", in_out='INPUT')
+        new_in_socket[5] = new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="Incoming", in_out='INPUT')
+        new_in_socket[6] = new_node_group.interface.new_socket(socket_type='NodeSocketFloat', name="Height", in_out='INPUT')
+    else:
+        new_node_group.inputs.new(type='NodeSocketVector', name="UV Input")
+        new_in_socket[1] = new_node_group.inputs.new(type='NodeSocketVector', name="Aspect Ratio")
+        new_in_socket[2] = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent U")
+        new_in_socket[3] = new_node_group.inputs.new(type='NodeSocketVector', name="Tangent V")
+        new_in_socket[4] = new_node_group.inputs.new(type='NodeSocketVector', name="Normal")
+        new_in_socket[5] = new_node_group.inputs.new(type='NodeSocketVector', name="Incoming")
+        new_in_socket[6] = new_node_group.inputs.new(type='NodeSocketFloat', name="Height")
+    new_in_socket[1].default_value = (1.000000, 1.000000, 1.000000)
+    new_in_socket[2].default_value = (1.000000, 0.000000, 0.000000)
+    new_in_socket[3].default_value = (0.000000, 1.000000, 0.000000)
+    new_in_socket[4].default_value = (0.000000, 0.000000, 1.000000)
+    new_in_socket[5].default_value = (0.000000, 0.000000, 1.000000)
+    new_in_socket[6].max_value = 0.000000
+    if bpy.app.version >= (4, 0, 0):
+        new_node_group.interface.new_socket(socket_type='NodeSocketVector', name="UV Output", in_out='OUTPUT')
+    else:
+        new_node_group.outputs.new(type='NodeSocketVector', name="UV Output")
 
     tree_nodes = new_node_group.nodes
     # delete all nodes

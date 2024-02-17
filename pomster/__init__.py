@@ -144,14 +144,6 @@ class POMSTER_PT_OCPOM(bpy.types.Panel):
         sub_box.prop(scn.POMster, "height_img_input", text="")
         sub_box.prop(scn.POMster, "default_height_multiplier")
         sub_box.prop(scn.POMster, "ocpom_mapping_nodes")
-        sub_box = box.box()
-        sub_box.label(text="Custom Node Input")
-        sub_box.prop(scn.POMster, "uv_input_index")
-        sub_box.label(text="Custom Node Output")
-        sub_box.prop(scn.POMster, "height_output_index")
-        sub_box.prop(scn.POMster, "cone_ratio_angle_output_index")
-        sub_box.prop(scn.POMster, "cone_ratio_divisor_output_index")
-        sub_box.prop(scn.POMster, "cone_offset_output_index")
         box = layout.box()
         box.prop(scn.POMster, "nodes_override_create")
 
@@ -230,18 +222,6 @@ class POMsterPropGrp(PropertyGroup):
     nodes_override_create: BoolProperty(name="Override Create", description="Shader Nodes custom Node Groups will " +
         "be re-created if this option is enabled. When custom Node Groups are override created, old Node Groups of " +
         "the same name are renamed and deprecated", default=False)
-    uv_input_index: IntProperty(name="UV Input Number", description="Choose the input number number of the " +
-        "selected node that has the UV coordinates input - usually input #1", default=1, min=1)
-    height_output_index: IntProperty(name="Height Output Number", description="Choose the output number of the " +
-        "active node that has the Height output - usually output #1", default=1, min=1)
-    cone_ratio_angle_output_index: IntProperty(name="Cone Ratio Angle Output Number", description="Choose output " +
-        "number of active node for Cone Ratio Angle output - usually output #2. Value range is 0 to 1 inclusive, " +
-        "re: 0 to 90 degrees angle. Value of 0 is zero conestep, value of 1 is full conestep", default=2, min=1)
-    cone_ratio_divisor_output_index: IntProperty(name="Cone Ratio Divisor Output Number", description="Choose " +
-        "output number of active node for Cone Ratio Divisor output - usually output #3", default=3, min=1)
-    cone_offset_output_index: IntProperty(name="Cone Offset Output Number", description="Choose output number of " +
-        "active node for Cone Offset output - usually output #4. Value range is same as Height output", default=4,
-        min=1)
     uv_to_vu_map_convert_all: BoolProperty(name="All UV Maps", description="Make VU Maps for all UV Maps of " +
         "selected object, instead of only selected UV Map", default=False)
     uv_axes: EnumProperty(name= "UV axes", description= "Axes to use for UV input", items=UV_ORTHO_AXES_ENUM_ITEMS)
